@@ -294,7 +294,7 @@ add(78, "SAL", `<q>Le n° 78 est neuf et a été refait pour remplacer un pannea
 // Creswell
 add(43, "CRE", `Pl. 89b, <q>the fifth panel in column III</q>: <q>divided into fifteen compartments by four horizontal and two vertical bars, which pass over and under each other</q>; corner and central outer compartments hold circles with four-leaved whorls, the two largest hold vine-leaves and grapes; p. 319.`);
 add(43, "ID", `Creswell counts from the bottom: the fifth panel up in this column is no. 43.`, true);
-add(36, "ID", `The lower panel visible in Creswell's Pl. 89b, below no. 43. Creswell does not describe it.`, true);
+add(48, "ID", `The panel above no. 43 in Creswell's Pl. 89b and V&A 721-1929. Creswell does not describe it.`, true);
 add(44, "CRE", `Pl. 89d, <q>the fifth panel in column IV</q>: <q>a charming arched frame in which rising and coiling tendrils form nine loops</q>, each with a five-lobed leaf or split palmette; spandrels with quatrefoils; <q>crowned by a row of stepped crenellations</q>; p. 319.`);
 add(44, "ID", `The plate caption says “Column 4, 3rd panel”. Counting from the bottom, as for Pl. 89b, the arched panel is the fifth: the text is right and the caption wrong.`, true);
 add(45, "CRE", `Pl. 90a: <q>the superposition of heterogenous motifs</q>. <q>At the bottom is a remarkably clear cut and well-preserved acanthus whorl, on which stands a tripod supporting a conical vase from which spring a pair of half-palmettes with a pine-cone between them</q>; p. 318.`);
@@ -417,6 +417,8 @@ const clean = raw => {
   Object.entries(raw.photos || {}).forEach(([id, p]) => {
     if (!/^[a-z0-9]{1,8}$/.test(id) || !p || !Array.isArray(p.panels)) return;
     out.photos[id] = {panels: [...new Set(p.panels.map(Number).filter(isN))].sort((a, b) => a - b), whole: p.whole === true};
+    const news = (Array.isArray(p.news) ? p.news : []).filter(s => SLOT[s]);
+    if (news.length) out.photos[id].news = [...new Set(news)];
   });
   return out;
 };
@@ -442,9 +444,14 @@ const savedCount = () => NUMS.filter(touched).length;
 // photographs: the panels each shows, starting from what its source caption names
 const assignedOf = id => E.photos[id]?.panels ?? PHOTO[id].def;
 const wholeOf = id => E.photos[id]?.whole ?? PHOTO[id].whole;
-const setPhoto = (id, panels, whole) => { E.photos[id] = {panels: [...new Set(panels)].sort((a, b) => a - b), whole: !!whole}; };
+const newsOf = id => E.photos[id]?.news ?? [];
+const setPhoto = (id, panels, whole, news = newsOf(id)) => {
+  E.photos[id] = {panels: [...new Set(panels)].sort((a, b) => a - b), whole: !!whole};
+  if (news.length) E.photos[id].news = [...new Set(news)];
+};
+const photosOfSlot = id => PHOTOS.filter(p => newsOf(p.id).includes(id));
 const photosOf = n => PHOTOS.filter(p => assignedOf(p.id).includes(n));
-const placed = id => assignedOf(id).length > 0 || wholeOf(id);
+const placed = id => assignedOf(id).length > 0 || newsOf(id).length > 0 || wholeOf(id);
 const savedLabel = () => `${savedCount()}/79, photos ${PHOTOS.filter(p => placed(p.id)).length}/${PHOTOS.length}`;
 
 // ---- saving: the page's database when it has one, this browser otherwise
@@ -580,8 +587,8 @@ let current = null, currentSlot = null, view = "before", partner = "after", edit
 let photoMode = false, curPhoto = null, photoFilter = "all";
 const marks = {before: {}, after: {}};
 
-const flags = n => ({ geo: GEO.includes(n), ori: ORI.includes(n), rep: REP.includes(n), pl: PL26.includes(n) || PL27.includes(n),
-  cre: CRE.includes(n), tri: !!TRI[n], bal: isBal(n), todo: !done(n), gone: P(n).cre === "no" || (!homeOf(n) && P(n).cre !== "moved"), newp: !!homeOf(n) && newOf(homeOf(n)) === "yes" });
+const flags = n => ({ geo: GEO.includes(n), ori: ORI.includes(n), rep: REP.includes(n), pl: assignedOf("s26").includes(n) || assignedOf("s27").includes(n),
+  cre: PHOTOS.some(p => p.group === G_C && assignedOf(p.id).includes(n)), tri: !!TRI[n], bal: isBal(n), todo: !done(n), gone: P(n).cre === "no" || (!homeOf(n) && P(n).cre !== "moved"), newp: !!homeOf(n) && newOf(homeOf(n)) === "yes" });
 
 function makeMark(host, d, poly, text, label, cls, onClick) {
   const [x, y] = centroid(poly), b = document.createElement("button");
@@ -627,11 +634,11 @@ function paintSelection() {
   if (sid) marks.after[sid]?.classList.add("sel");
 }
 function applyFilter() {
-  const shown = photoMode && curPhoto ? assignedOf(curPhoto) : null;
-  VW.forEach(v => $("stage-" + v).classList.toggle("filtering", shown ? shown.length > 0 : !!filter));
+  const shown = photoMode && curPhoto ? assignedOf(curPhoto) : null, shownNew = shown ? newsOf(curPhoto) : [];
+  VW.forEach(v => $("stage-" + v).classList.toggle("filtering", shown ? shown.length + shownNew.length > 0 : !!filter));
   const found = shown ?? (filter ? NUMS.filter(n => flags(n)[filter]) : []);
   document.querySelector("#stage-before .holes").innerHTML = found.map(n => `<polygon points="${pts(POLY.before[outlineOf(n)])}"/>`).join("");
-  const afterIds = !shown && filter === "newp" ? Object.keys(SLOT).filter(id => newOf(id) === "yes") : found.map(n => slotOf(n)).filter(Boolean);
+  const afterIds = !shown && filter === "newp" ? Object.keys(SLOT).filter(id => newOf(id) === "yes") : [...found.map(n => slotOf(n)).filter(Boolean), ...shownNew];
   document.querySelector("#stage-saladin .holes").innerHTML = found.map(n => `<polygon points="${pts(POLY.saladin[n])}"/>`).join("");
   document.querySelector("#stage-after .holes").innerHTML = afterIds.map(id => `<polygon points="${pts(SLOT[id])}"/>`).join("");
   found.forEach(n => marks.before[n]?.classList.add("hit"));
@@ -717,7 +724,7 @@ function renderCard() {
   if (!current && !currentSlot) return;
   if (currentSlot) return showSlot(currentSlot);
   const n = current, i = info(outlineOf(n)), notes = N[n] || [];
-  const plates = [PL26.includes(n) && "XXVI", PL27.includes(n) && "XXVII"].filter(Boolean);
+  const plates = [assignedOf("s26").includes(n) && "XXVI", assignedOf("s27").includes(n) && "XXVII"].filter(Boolean);
   const an = afterNote(n);
   const figs = photosOf(n).map(p => `<figure class="fig"><img src="${p.file}" alt="${p.title}" loading="lazy"><figcaption>${p.group}: ${p.title}</figcaption></figure>`);
   const top = card.scrollTop;
@@ -752,6 +759,7 @@ function showSlot(id) {
       <div class="field"><span class="lab">Is this Creswell panel new?</span>${seg("isNew", isNew, YESNO)}</div>
       <div class="field"><label for="e-as">If not, its Saladin number</label><div class="row"><input id="e-as" type="number" min="1" max="79"><button type="button" id="e-asgo">Assign</button></div></div>
     </form>` : ""}
+    ${photosOfSlot(id).length ? `<div class="figs">${photosOfSlot(id).map(p => `<figure class="fig"><img src="${p.file}" alt="${p.title}" loading="lazy"><figcaption>${p.group}: ${p.title}</figcaption></figure>`).join("")}</div>` : ""}
     ${(id === "b10" || id === "b16") ? `<div class="note"><span class="src">${S.CRE}</span><p>The balustrade <q>now consists of sixteen only, of which Nos. 10 and 16 are new, the latter being twice the width of the rest</q>; p. 317.</p></div>` : ""}
     ${id === "b16" ? `<div class="note"><span class="src">${S.PD}</span><p>The two original panels nos. 68 and 69 of the left face were replaced by a single one; p. 223.</p></div>` : ""}
     ${!ns.length && isNew !== "yes" && id[0] === "f" ? `<p class="empty">The panel that was here is marked as gone or moved. Say whether this one is new, or which old panel it is.</p>` : ""}`;
@@ -911,6 +919,11 @@ function stepPhoto(d) {
   curPhoto = list[(i + d + list.length) % list.length].id; renderAll();
 }
 const photoList = () => { const l = PHOTOS.filter(p => photoFilter === "all" || !placed(p.id) || p.id === curPhoto); return l.length ? l : PHOTOS; };
+function toggleNew(id) {
+  const a = newsOf(curPhoto);
+  setPhoto(curPhoto, assignedOf(curPhoto), wholeOf(curPhoto), a.includes(id) ? a.filter(s => s !== id) : [...a, id]);
+  changed();
+}
 function parsePanels(t) {
   const out = [];
   t.split(/[\s,;]+/).filter(Boolean).forEach(x => {
@@ -923,32 +936,38 @@ function parsePanels(t) {
 function renderPhotoCard() {
   const p = PHOTO[curPhoto], a = assignedOf(curPhoto), w = wholeOf(curPhoto), top = card.scrollTop;
   const groups = [...new Set(PHOTOS.map(q => q.group))];
+  const nw = newsOf(curPhoto), free = SLOT_ORDER.filter(id => !numbersAt(id).length && !nw.includes(id));
   card.innerHTML = `<figure class="fig"><img src="${p.file}" alt="${p.title}"><figcaption>${p.group}: ${p.title}. Click the photo to enlarge it.</figcaption></figure>
     <div class="edit">
       <div class="field"><span class="lab">Panels in this photo: click numbers on the images to add or remove</span>
         <div class="chips">${a.length ? a.map(n => `<button type="button" class="chip" data-rm="${n}" aria-label="Remove panel ${n}">${n} ×</button>`).join("") : `<span class="hint-t">None yet</span>`}</div></div>
       <div class="row"><input id="p-add" aria-label="Panel numbers to add" placeholder="12, 40-45"><button type="button" id="p-addgo">Add</button></div>
+      <div class="field"><span class="lab">New panels in this photo: click an N on Creswell's photograph, or choose one</span>
+        ${nw.length ? `<div class="chips">${nw.map(id => `<button type="button" class="chip" data-rmn="${id}" aria-label="Remove new panel, ${slotName(id)}">N: ${slotName(id)} ×</button>`).join("")}</div>` : ""}
+        ${free.length ? `<select id="p-new" aria-label="Add a new panel"><option value="">Add a new panel…</option>${free.map(id => `<option value="${id}">${slotName(id)}</option>`).join("")}</select>` : ""}</div>
       <div class="row"><button type="button" id="p-whole" aria-pressed="${w}">${w ? "Shows the whole minbar ✓" : "Shows the whole minbar"}</button><button type="button" id="p-clear">Clear</button>${E.photos[curPhoto] ? `<button type="button" id="p-reset">Reset</button>` : ""}</div>
     </div>
     <div class="nav"><button id="p-prev">← Previous</button><button id="p-next">Next →</button></div>
     <div class="seg small" role="group" aria-label="Which photos to list"><button type="button" data-pf="all" aria-pressed="${photoFilter === "all"}">All ${PHOTOS.length}</button><button type="button" data-pf="todo" aria-pressed="${photoFilter === "todo"}">Not assigned ${PHOTOS.filter(q => !placed(q.id)).length}</button></div>
     ${groups.map(g => { const l = PHOTOS.filter(q => q.group === g && (photoFilter === "all" || !placed(q.id) || q.id === curPhoto));
-      return l.length ? `<div class="field"><span class="lab">${g}</span><div class="thumbs">${l.map(q => `<button type="button" class="thumb${q.id === curPhoto ? " on" : ""}" data-ph="${q.id}" title="${q.title}" aria-label="${q.title}"><img src="${q.thumb}" alt="" loading="lazy"><span class="n${placed(q.id) ? "" : " zero"}">${wholeOf(q.id) ? "all" : assignedOf(q.id).length}</span></button>`).join("")}</div></div>` : ""; }).join("")}`;
+      return l.length ? `<div class="field"><span class="lab">${g}</span><div class="thumbs">${l.map(q => `<button type="button" class="thumb${q.id === curPhoto ? " on" : ""}" data-ph="${q.id}" title="${q.title}" aria-label="${q.title}"><img src="${q.thumb}" alt="" loading="lazy"><span class="n${placed(q.id) ? "" : " zero"}">${wholeOf(q.id) ? "all" : assignedOf(q.id).length + newsOf(q.id).length}</span></button>`).join("")}</div></div>` : ""; }).join("")}`;
   card.scrollTop = top;
   const add = () => { const n = parsePanels($("p-add").value); if (n.length) { setPhoto(curPhoto, [...assignedOf(curPhoto), ...n], wholeOf(curPhoto)); changed(); } };
   $("p-addgo").onclick = add;
   $("p-add").onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); add(); } };
   $("p-whole").onclick = () => { setPhoto(curPhoto, assignedOf(curPhoto), !wholeOf(curPhoto)); changed(); };
-  $("p-clear").onclick = () => { setPhoto(curPhoto, [], false); changed(); };
+  $("p-clear").onclick = () => { setPhoto(curPhoto, [], false, []); changed(); };
+  if ($("p-new")) $("p-new").onchange = e => { if (e.target.value) toggleNew(e.target.value); };
   if ($("p-reset")) $("p-reset").onclick = () => { delete E.photos[curPhoto]; changed(); };
   $("p-prev").onclick = () => stepPhoto(-1);
   $("p-next").onclick = () => stepPhoto(1);
 }
 card.addEventListener("click", e => {
   const el = e.target;
-  const pick = el.closest?.("[data-ph]"), rm = el.closest?.("[data-rm]"), pf = el.closest?.("[data-pf]");
+  const pick = el.closest?.("[data-ph]"), rm = el.closest?.("[data-rm]"), pf = el.closest?.("[data-pf]"), rmn = el.closest?.("[data-rmn]");
   if (pick) { curPhoto = pick.dataset.ph; card.scrollTop = 0; renderAll(); return; }
   if (rm) { togglePanel(+rm.dataset.rm); return; }
+  if (rmn) { toggleNew(rmn.dataset.rmn); return; }
   if (pf) { photoFilter = pf.dataset.pf; renderAll(); return; }
   if (el.matches?.(".fig img")) openLb(el.getAttribute("src"), el.closest(".fig").querySelector("figcaption")?.textContent || "");
 });
@@ -963,7 +982,7 @@ document.querySelectorAll(".scroll").forEach(sc => sc.addEventListener("click", 
   if (!a) return;
   const nAttr = a.getAttribute("data-n"), k = a.getAttribute("data-k"), slot = a.getAttribute("data-slot");
   const n = nAttr ? +nAttr : k ? numberAt(+k) : numbersAt(slot)[0];
-  if (n) togglePanel(n); else status("No Saladin panel is assigned to that Creswell position");
+  if (n) togglePanel(n); else toggleNew(slot);
 }, true));
 
 const dock = () => $("views").classList.toggle("docked", !card.hidden);

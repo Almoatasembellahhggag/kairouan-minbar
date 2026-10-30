@@ -366,5 +366,195 @@
   "f13": {
    "isNew": "yes"
   }
+ },
+ "photos": {
+  "q02": {
+   "panels": [
+    31,
+    40
+   ],
+   "whole": false
+  },
+  "q03": {
+   "panels": [
+    36
+   ],
+   "whole": false
+  },
+  "q04": {
+   "panels": [
+    26
+   ],
+   "whole": false
+  },
+  "q05": {
+   "panels": [
+    35
+   ],
+   "whole": false
+  },
+  "q06": {
+   "panels": [
+    15
+   ],
+   "whole": false
+  },
+  "q07": {
+   "panels": [
+    30
+   ],
+   "whole": false
+  },
+  "q08": {
+   "panels": [
+    39
+   ],
+   "whole": false
+  },
+  "q09": {
+   "panels": [
+    45
+   ],
+   "whole": false
+  },
+  "q10": {
+   "panels": [
+    19
+   ],
+   "whole": false
+  },
+  "q11": {
+   "panels": [
+    74
+   ],
+   "whole": false
+  },
+  "q12": {
+   "panels": [
+    74
+   ],
+   "whole": false
+  },
+  "q13": {
+   "panels": [],
+   "whole": false
+  },
+  "q14": {
+   "panels": [
+    74
+   ],
+   "whole": false
+  },
+  "s26": {
+   "panels": [
+    15,
+    17,
+    25,
+    26,
+    27,
+    28,
+    29,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    41,
+    42,
+    43,
+    44,
+    45
+   ],
+   "whole": false
+  },
+  "s27": {
+   "panels": [
+    19,
+    21,
+    23,
+    24,
+    30,
+    31,
+    32,
+    33,
+    39,
+    40,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78
+   ],
+   "whole": false
+  },
+  "c83c": {
+   "panels": [],
+   "whole": false
+  },
+  "c89b": {
+   "panels": [
+    43,
+    48
+   ],
+   "whole": false
+  },
+  "c90a": {
+   "panels": [
+    38,
+    45
+   ],
+   "whole": false
+  },
+  "v721": {
+   "panels": [
+    43,
+    48
+   ],
+   "whole": false
+  },
+  "v722": {
+   "panels": [
+    19,
+    30
+   ],
+   "whole": false
+  },
+  "v723": {
+   "panels": [
+    6,
+    19,
+    30
+   ],
+   "whole": false
+  },
+  "v724": {
+   "panels": [
+    38,
+    45
+   ],
+   "whole": false
+  },
+  "v725": {
+   "panels": [
+    29,
+    38
+   ],
+   "whole": false
+  },
+  "v726": {
+   "panels": [
+    30,
+    39
+   ],
+   "whole": false
+  }
  }
 }
