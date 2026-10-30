@@ -409,7 +409,7 @@ async function loadEdits() {
   if (local) { E = clean(local); renderAll(); status(`Saved ${savedCount()}/79 in this browser only`); }
   try {
     const r = await fetch("edits.json", {cache: "no-store"});
-    if (r.ok && !local) { E = clean(await r.json()); renderAll(); }
+    if (r.ok && !local) { E = clean(await r.json()); renderAll(); status(`Saved ${savedCount()}/79 on the site`); }
   } catch (e) {}
   if (!window.claude?.use) return;
   db = await window.claude.use("db");
