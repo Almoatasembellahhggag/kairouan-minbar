@@ -43,10 +43,11 @@ body { background: var(--stage); color: var(--fg); font-family: var(--serif); fo
 .shade { opacity: 0; transition: opacity .2s; }
 .filtering .shade { opacity: 1; }
 .hits polygon { fill: transparent; pointer-events: all; cursor: pointer; outline: none; }
-.hits polygon:hover, .hits polygon:focus-visible { fill: rgba(232, 134, 47, .28); }
-.editing .hits polygon.c1 { fill: rgba(227, 195, 74, .32); }
-.editing .hits polygon.c2 { fill: rgba(47, 143, 78, .32); }
-.hits polygon.sel { fill: rgba(232, 134, 47, .25); }
+.hits polygon:hover, .hits polygon:focus-visible { fill: rgba(232, 134, 47, .14); }
+#stage-saladin .hits polygon:hover, #stage-saladin .hits polygon:focus-visible { fill: rgba(232, 134, 47, .28); }
+.editing #stage-saladin .hits polygon.c1 { fill: rgba(227, 195, 74, .32); }
+.editing #stage-saladin .hits polygon.c2 { fill: rgba(47, 143, 78, .32); }
+#stage-saladin .hits polygon.sel { fill: rgba(232, 134, 47, .25); }
 .outline { fill: none; stroke: var(--sel); stroke-width: 3; vector-effect: non-scaling-stroke; stroke-linejoin: round; filter: drop-shadow(0 0 6px rgba(0,0,0,.8)); }
 .tag { position: absolute; left: 10px; bottom: 10px; font-family: var(--label); font-size: .78rem; color: #f3ede3; background: rgba(0,0,0,.55); padding: 3px 8px; border-radius: 4px; pointer-events: none; }
 
@@ -463,14 +464,17 @@ function focusView(v, p) {
 }
 const polyFor = (v, n) => v === "before" ? POLY.before[outlineOf(n)] : v === "saladin" ? POLY.saladin[n] : (shownSlot(n) ? SLOT[shownSlot(n)] : null);
 let focusKey = "";
+let follow = null;   // the panel a double-click zoomed to, kept in view when the layout changes
 function focusPanel(force) {
-  if (!editing || (!current && !currentSlot)) return;
+  if (!current && !currentSlot) return;
+  if (!editing && follow !== (current ?? currentSlot)) return;
   const key = [current, currentSlot, current && outlineOf(current), current && slotOf(current), view, partner].join("|");
   if (!force && key === focusKey) return;
   focusKey = key;
   VW.forEach(v => focusView(v, current ? polyFor(v, current) : (v === "after" ? SLOT[currentSlot] : null)));
 }
-const fitAll = () => { focusKey = ""; VW.forEach(v => focusView(v, null)); };
+const fitAll = () => { follow = null; focusKey = ""; VW.forEach(v => focusView(v, null)); };
+function zoomSelected() { follow = current ?? currentSlot; soon(() => focusPanel(true)); }
 for (const [v, d] of Object.entries(VIEWS)) {
   const st = $("stage-" + v), pane = $("pane-" + v);
   st.style.setProperty("--ar", d.vw / d.vh);
@@ -479,7 +483,7 @@ for (const [v, d] of Object.entries(VIEWS)) {
       <defs><mask id="m-${v}"><rect width="${d.vw}" height="${d.vh}" fill="#fff"/><g class="holes" fill="#000"></g></mask></defs>
       <rect class="shade" width="${d.vw}" height="${d.vh}" fill="rgba(6,5,3,.74)" mask="url(#m-${v})"/>
       <polygon class="outline" points=""/>
-    </svg><div class="marks"></div>${v === "saladin" ? `<svg class="hits" viewBox="0 0 ${d.vw} ${d.vh}" preserveAspectRatio="none"></svg>` : ""}`;
+    </svg><svg class="hits" viewBox="0 0 ${d.vw} ${d.vh}" preserveAspectRatio="none"></svg><div class="marks"></div>`;
   const fit = () => { st.style.setProperty("--pw", pane.clientWidth + "px"); st.style.setProperty("--ph", pane.clientHeight + "px"); };
   new ResizeObserver(() => { fit(); soon(() => focusPanel(true)); }).observe(pane); fit();
 }
@@ -491,6 +495,14 @@ NUMS.forEach(n => {
   g.addEventListener("click", go); g.addEventListener("keydown", e => { if (e.key === "Enter") go(); });
   document.querySelector("#stage-saladin .hits").appendChild(g); hits[n] = g;
 });
+// the panels on the photographs answer a double-click; one click there counts as outside the numbers
+const photoHit = (v, poly, attr, val) => {
+  const g = document.createElementNS(SVGNS, "polygon");
+  g.setAttribute("points", pts(poly)); g.setAttribute(attr, val);
+  document.querySelector(`#stage-${v} .hits`).appendChild(g);
+};
+NUMS.forEach(k => photoHit("before", POLY.before[k], "data-k", k));
+Object.keys(SLOT).forEach(id => photoHit("after", SLOT[id], "data-slot", id));
 const card = $("card");
 let current = null, currentSlot = null, view = "before", partner = "after", editing = false, picking = false, filter = "";
 const marks = {before: {}, after: {}};
@@ -760,11 +772,40 @@ new MutationObserver(dock).observe(card, {attributes: true, attributeFilter: ["h
 
 setView("before");
 renderMarks();
+function clearSelection() {
+  current = null; currentSlot = null; follow = null; focusKey = "";
+  renderMarks();
+  card.innerHTML = `<button class="close" id="close">Close</button><p class="empty">Click a number to read about a panel. Double-click a panel to zoom to it.</p>${sources}`;
+  $("close").onclick = () => { card.hidden = true; };
+  card.hidden = card.hidden || innerWidth <= 760;
+  try { if (location.hash) history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
+}
+let lastClick = null;
+document.querySelectorAll(".scroll").forEach(sc => sc.addEventListener("click", e => {
+  const t = performance.now(), l = lastClick, el = e.target;
+  const isNumber = !!el.closest?.(".mark, #stage-saladin .hits polygon");
+  const k = el.getAttribute?.("data-k"), slot = el.getAttribute?.("data-slot");
+  if (picking && !isNumber) { if (slot) clickSlot(slot); return; }   // choosing a Creswell position
+  const hit = isNumber ? {n: current, slot: currentSlot}
+    : k ? {n: numberAt(+k), slot: null}
+    : slot ? (numbersAt(slot).length ? {n: numbersAt(slot)[0], slot: null} : {n: null, slot}) : null;
+  if (!hit) { lastClick = null; if (current || currentSlot) clearSelection(); return; }
+  if (l && t - l.t < 400 && Math.hypot(e.clientX - l.x, e.clientY - l.y) < 10) {
+    lastClick = null;
+    // in Edit the first click already zoomed, so the second may land on a neighbouring panel
+    if (l.n) { if (current !== l.n) select(l.n, false); } else if (l.slot && currentSlot !== l.slot) showSlot(l.slot);
+    zoomSelected();
+    return;
+  }
+  lastClick = {t, x: e.clientX, y: e.clientY, n: hit.n, slot: hit.slot};
+  if (!isNumber && (current || currentSlot)) clearSelection();
+}));
+
 const fromHash = () => { const m = location.hash.match(/^#panel-(\d+)$/); return m ? +m[1] : null; };
 window.addEventListener("hashchange", () => { const n = fromHash(); if (n) select(n, true); });
 if (fromHash()) select(fromHash(), true);
 else {
-  card.innerHTML = `<button class="close hint" id="close">Close</button><p class="empty">Click a number to read what the sources say about that panel. Use Compare to see the 1890s photograph beside Creswell's, taken after the 1907 restoration, or beside Saladin's numbered diagram.</p>${sources}`;
+  card.innerHTML = `<button class="close hint" id="close">Close</button><p class="empty">Click a number to read what the sources say about that panel. Double-click a panel to zoom to it. Use Compare to see the 1890s photograph beside Creswell's, taken after the 1907 restoration, or beside Saladin's numbered diagram.</p>${sources}`;
   $("close").onclick = () => { card.hidden = true; };
 }
 loadEdits();
