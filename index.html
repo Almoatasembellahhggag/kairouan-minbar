@@ -33,7 +33,8 @@ body { background: var(--stage); color: var(--fg); font-family: var(--serif); fo
 
 .views { position: fixed; inset: 0; display: flex; gap: 2px; background: var(--stage); }
 @media (max-aspect-ratio: 1/1) { .views.both { flex-direction: column; } }
-.pane { position: relative; flex: 1 1 0; min-width: 0; min-height: 0; overflow: auto; display: flex; }
+.pane { position: relative; flex: 1 1 0; min-width: 0; min-height: 0; }
+.scroll { position: absolute; inset: 0; overflow: auto; display: flex; }
 .pane[hidden] { display: none !important; }
 .stage { position: relative; margin: auto; flex: none; container-type: inline-size;
   width: calc(min(var(--pw), var(--ph) * var(--ar)) * var(--zf, 1)); }
@@ -41,17 +42,22 @@ body { background: var(--stage); color: var(--fg); font-family: var(--serif); fo
 .stage svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .shade { opacity: 0; transition: opacity .2s; }
 .filtering .shade { opacity: 1; }
-.outline { fill: none; stroke: var(--sel); stroke-width: 7; stroke-linejoin: round; filter: drop-shadow(0 0 6px rgba(0,0,0,.8)); }
+.hits polygon { fill: transparent; pointer-events: all; cursor: pointer; outline: none; }
+.hits polygon:hover, .hits polygon:focus-visible { fill: rgba(232, 134, 47, .28); }
+.editing .hits polygon.c1 { fill: rgba(227, 195, 74, .32); }
+.editing .hits polygon.c2 { fill: rgba(47, 143, 78, .32); }
+.hits polygon.sel { fill: rgba(232, 134, 47, .25); }
+.outline { fill: none; stroke: var(--sel); stroke-width: 3; vector-effect: non-scaling-stroke; stroke-linejoin: round; filter: drop-shadow(0 0 6px rgba(0,0,0,.8)); }
 .tag { position: absolute; left: 10px; bottom: 10px; font-family: var(--label); font-size: .78rem; color: #f3ede3; background: rgba(0,0,0,.55); padding: 3px 8px; border-radius: 4px; pointer-events: none; }
 
-.mark { position: absolute; transform: translate(-50%, -50%); width: 1.7cqw; height: 1.7cqw; min-width: 18px; min-height: 18px;
+.mark { position: absolute; transform: translate(-50%, -50%); width: clamp(18px, 1.7cqw, 30px); height: clamp(18px, 1.7cqw, 30px);
   border-radius: 50%; border: 0; background: rgba(18, 14, 10, .6); color: #f6f1e8; padding: 0; cursor: pointer;
-  font-family: var(--label); font-weight: 500; font-size: max(9px, .85cqw); line-height: 1; display: grid; place-items: center;
+  font-family: var(--label); font-weight: 500; font-size: clamp(9px, .85cqw, 14px); line-height: 1; display: grid; place-items: center;
   font-variant-numeric: tabular-nums; transition: opacity .15s, background .15s; }
 .mark:hover { background: rgba(18, 14, 10, .9); }
 .mark.new { background: rgba(120, 40, 20, .8); }
 .mark.orphan { background: rgba(170, 130, 10, .9); }
-.mark.clash { background: rgba(170, 20, 20, .92); width: auto; padding: 0 .4cqw; border-radius: 1cqw; }
+.mark.clash { background: rgba(170, 20, 20, .92); width: auto; padding: 0 6px; border-radius: 12px; }
 .editing .mark.c1 { box-shadow: 0 0 0 2px #e3c34a; }
 .editing .mark.c2 { background: #2f8f4e; color: #fff; }
 .editing .mark.sel { background: var(--sel); box-shadow: 0 0 0 2px #fff; }
@@ -122,16 +128,22 @@ details ul { padding-left: 1.2em; display: flex; flex-direction: column; gap: 4p
 </head>
 <body>
 <div class="views" id="views">
-  <div class="pane" id="pane-before"><div class="stage" id="stage-before"></div><span class="tag">Before 1907: Garrigues no. 271</span></div>
-  <div class="pane" id="pane-after"><div class="stage" id="stage-after"></div><span class="tag">After 1907: Creswell 1940, Pl. 89a</span></div>
+  <div class="pane" id="pane-before"><div class="scroll" id="scroll-before"><div class="stage" id="stage-before"></div></div><span class="tag">Before 1907: Garrigues no. 271</span></div>
+  <div class="pane" id="pane-after"><div class="scroll" id="scroll-after"><div class="stage" id="stage-after"></div></div><span class="tag">After 1907: Creswell 1940, Pl. 89a</span></div>
+  <div class="pane" id="pane-saladin"><div class="scroll" id="scroll-saladin"><div class="stage" id="stage-saladin"></div></div><span class="tag">Saladin 1899, fig. 52, drawn 1896</span></div>
 </div>
 
 <div class="tools">
   <h1>Kairouan Minbar Panels</h1>
   <div class="seg" id="viewseg" role="group" aria-label="View">
     <button data-v="before" aria-pressed="true">Before</button>
-    <button data-v="after" aria-pressed="false">After</button>
+    <button data-v="after" aria-pressed="false">Creswell</button>
+    <button data-v="saladin" aria-pressed="false">Saladin</button>
     <button data-v="both" aria-pressed="false">Compare</button>
+  </div>
+  <div class="seg" id="withseg" role="group" aria-label="Compare the 1890s photograph with" hidden>
+    <button data-w="after" aria-pressed="true">with Creswell</button>
+    <button data-w="saladin" aria-pressed="false">with Saladin</button>
   </div>
   <select id="hl" aria-label="Highlight panels">
     <option value="">Highlight…</option>
@@ -148,6 +160,7 @@ details ul { padding-left: 1.2em; display: flex; flex-direction: column; gap: 4p
   <button id="nums" aria-pressed="true">Numbers on</button>
   <button id="zout" aria-label="Zoom out">−</button>
   <button id="zin" aria-label="Zoom in">+</button>
+  <button id="fitb">Whole minbar</button>
   <input id="go" type="number" min="1" max="79" inputmode="numeric" placeholder="Panel" aria-label="Go to panel">
   <button id="editb" aria-pressed="false">Edit</button>
   <span class="edit-only" id="progress" hidden></span>
@@ -160,6 +173,7 @@ details ul { padding-left: 1.2em; display: flex; flex-direction: column; gap: 4p
 
 <script>
 const POLY = {"before":{"1":[[885,2248],[1058,2248],[1058,2340],[885,2340]],"2":[[1140,2125],[1272,2125],[1272,2340],[1140,2340]],"3":[[1332,2265],[1458,2265],[1458,2340],[1332,2340]],"4":[[1545,2140],[1640,2140],[1640,2335],[1545,2335]],"5":[[1682,2280],[1805,2280],[1805,2340],[1682,2340]],"6":[[1847,2150],[1985,2150],[1985,2340],[1847,2340]],"7":[[2060,2240],[2155,2240],[2155,2340],[2060,2340]],"8":[[2195,2110],[2330,2110],[2330,2340],[2195,2340]],"9":[[2378,2250],[2520,2250],[2520,2340],[2378,2340]],"10":[[2565,2110],[2712,2110],[2712,2340],[2565,2340]],"11":[[2750,2230],[2885,2230],[2885,2340],[2750,2340]],"12":[[2925,2010],[3075,2010],[3075,2345],[2925,2345]],"13":[[3110,2040],[3280,2040],[3280,2350],[3110,2350]],"14":[[885,1985],[1058,1985],[1058,2220],[885,2220]],"15":[[1140,1852],[1272,1852],[1272,2090],[1140,2090]],"16":[[1332,1980],[1458,1980],[1458,2232],[1332,2232]],"17":[[1545,1870],[1640,1870],[1640,2100],[1545,2100]],"18":[[1682,2020],[1805,2020],[1805,2235],[1682,2235]],"19":[[1847,1880],[1985,1880],[1985,2110],[1847,2110]],"20":[[2060,1980],[2155,1980],[2155,2210],[2060,2210]],"21":[[2195,1840],[2330,1840],[2330,2070],[2195,2070]],"22":[[2378,1970],[2520,1970],[2520,2230],[2378,2230]],"23":[[2565,1830],[2712,1830],[2712,2050],[2565,2050]],"24":[[2750,1960],[2885,1960],[2885,2210],[2750,2210]],"25":[[885,1730],[1058,1730],[1058,1950],[885,1950]],"26":[[1140,1590],[1272,1590],[1272,1825],[1140,1825]],"27":[[1332,1730],[1458,1730],[1458,1945],[1332,1945]],"28":[[1545,1640],[1640,1640],[1640,1820],[1545,1820]],"29":[[1682,1760],[1805,1760],[1805,1965],[1682,1965]],"30":[[1847,1600],[1985,1600],[1985,1820],[1847,1820]],"31":[[2060,1700],[2155,1700],[2155,1940],[2060,1940]],"32":[[2195,1560],[2330,1560],[2330,1800],[2195,1800]],"33":[[2378,1700],[2520,1700],[2520,1930],[2378,1930]],"34":[[885,1462],[1058,1462],[1058,1700],[885,1700]],"35":[[1140,1330],[1272,1330],[1272,1540],[1140,1540]],"36":[[1332,1462],[1458,1462],[1458,1690],[1332,1690]],"37":[[1545,1350],[1640,1350],[1640,1580],[1545,1580]],"38":[[1682,1480],[1805,1480],[1805,1700],[1682,1700]],"39":[[1847,1330],[1985,1330],[1985,1560],[1847,1560]],"40":[[2060,1420],[2155,1420],[2155,1660],[2060,1660]],"41":[[885,1192],[1058,1192],[1058,1432],[885,1432]],"42":[[1140,1052],[1272,1052],[1272,1282],[1140,1282]],"43":[[1332,1190],[1458,1190],[1458,1420],[1332,1420]],"44":[[1545,1075],[1640,1075],[1640,1300],[1545,1300]],"45":[[1682,1180],[1805,1180],[1805,1432],[1682,1432]],"46":[[885,935],[1058,935],[1058,1160],[885,1160]],"47":[[1140,938],[1272,938],[1272,1030],[1140,1030]],"48":[[1332,940],[1458,940],[1458,1155],[1332,1155]],"49":[[885,670],[1058,670],[1058,900],[885,900]],"50":[[1140,680],[1272,680],[1272,905],[1140,905]],"51":[[885,385],[1058,385],[1058,600],[885,600]],"52":[[1140,398],[1272,398],[1272,615],[1140,615]],"53":[[1330,470],[1388,506],[1388,760],[1330,724]],"54":[[1422,540],[1500,588],[1500,830],[1422,782]],"55":[[1535,610],[1610,656],[1610,900],[1535,854]],"56":[[1655,690],[1725,733],[1725,970],[1655,927]],"57":[[1760,770],[1840,820],[1840,1050],[1760,1000]],"58":[[1880,850],[1960,900],[1960,1150],[1880,1100]],"59":[[2010,940],[2080,983],[2080,1230],[2010,1187]],"60":[[2120,1020],[2195,1066],[2195,1310],[2120,1264]],"61":[[2245,1100],[2320,1146],[2320,1370],[2245,1324]],"62":[[2365,1190],[2440,1236],[2440,1460],[2365,1414]],"63":[[2480,1260],[2565,1313],[2565,1560],[2480,1507]],"64":[[2615,1345],[2690,1392],[2690,1640],[2615,1594]],"65":[[2735,1420],[2820,1473],[2820,1730],[2735,1677]],"66":[[2860,1500],[2950,1556],[2950,1830],[2860,1774]],"67":[[2980,1590],[3060,1640],[3060,1900],[2980,1850]],"68":[[3105,1675],[3185,1725],[3185,2010],[3105,1960]],"69":[[3220,1740],[3290,1783],[3290,2060],[3220,2017]],"70":[[1332,800],[1458,925],[1332,925]],"71":[[1520,935],[1650,1045],[1520,1045]],"72":[[1680,1045],[1832,1170],[1680,1170]],"73":[[1845,1170],[1990,1285],[1845,1285]],"74":[[2012,1290],[2190,1398],[2012,1398]],"75":[[2195,1385],[2362,1530],[2195,1530]],"76":[[2375,1520],[2540,1660],[2375,1660]],"77":[[2565,1655],[2730,1780],[2565,1780]],"78":[[2750,1790],[2910,1920],[2750,1920]],"79":[[2925,1910],[3080,2000],[2925,2000]]},"after":{"51":[[495,200],[640,200],[640,390],[495,390]],"49":[[490,460],[660,460],[660,680],[490,680]],"46":[[490,720],[655,720],[655,935],[490,935]],"41":[[490,975],[655,975],[655,1185],[490,1185]],"34":[[490,1235],[650,1235],[650,1425],[490,1425]],"25":[[490,1495],[650,1495],[650,1695],[490,1695]],"14":[[490,1740],[655,1740],[655,1940],[490,1940]],"1":[[490,1985],[655,1985],[655,2065],[490,2065]],"52":[[737,245],[848,245],[848,425],[737,425]],"50":[[740,460],[848,460],[848,660],[740,660]],"47":[[750,735],[870,735],[870,800],[750,800]],"42":[[755,855],[865,855],[865,1050],[755,1050]],"35":[[750,1105],[860,1105],[860,1310],[750,1310]],"26":[[750,1365],[860,1365],[860,1565],[750,1565]],"15":[[750,1620],[870,1620],[870,1820],[750,1820]],"2":[[750,1870],[860,1870],[860,2065],[750,2065]],"48":[[925,740],[1040,740],[1040,940],[925,940]],"43":[[925,990],[1038,990],[1038,1190],[925,1190]],"36":[[920,1245],[1035,1245],[1035,1450],[920,1450]],"27":[[915,1495],[1035,1495],[1035,1710],[915,1710]],"16":[[915,1760],[1035,1760],[1035,1960],[915,1960]],"3":[[915,2015],[1035,2015],[1035,2070],[915,2070]],"44":[[1125,878],[1200,878],[1200,1062],[1125,1062]],"37":[[1125,1105],[1200,1105],[1200,1315],[1125,1315]],"28":[[1122,1375],[1200,1375],[1200,1570],[1122,1570]],"17":[[1120,1620],[1205,1620],[1205,1820],[1120,1820]],"4":[[1120,1870],[1205,1870],[1205,2070],[1120,2070]],"45":[[1250,990],[1365,990],[1365,1195],[1250,1195]],"38":[[1250,1250],[1365,1250],[1365,1450],[1250,1450]],"29":[[1245,1505],[1355,1505],[1355,1705],[1245,1705]],"18":[[1240,1760],[1355,1760],[1355,1970],[1240,1970]],"5":[[1240,2010],[1355,2010],[1355,2085],[1240,2085]],"39":[[1410,1110],[1525,1110],[1525,1320],[1410,1320]],"30":[[1410,1370],[1525,1370],[1525,1575],[1410,1575]],"19":[[1405,1625],[1525,1625],[1525,1840],[1405,1840]],"6":[[1405,1880],[1520,1880],[1520,2090],[1405,2090]],"40":[[1595,1230],[1695,1230],[1695,1460],[1595,1460]],"31":[[1595,1495],[1685,1495],[1685,1705],[1595,1705]],"20":[[1595,1760],[1680,1760],[1680,1970],[1595,1970]],"7":[[1595,2015],[1680,2015],[1680,2090],[1595,2090]],"32":[[1735,1385],[1845,1385],[1845,1590],[1735,1590]],"21":[[1730,1635],[1835,1635],[1835,1835],[1730,1835]],"8":[[1730,1880],[1830,1880],[1830,2090],[1730,2090]],"33":[[1885,1490],[2005,1490],[2005,1700],[1885,1700]],"22":[[1885,1755],[2000,1755],[2000,1960],[1885,1960]],"9":[[1885,2005],[2000,2005],[2000,2085],[1885,2085]],"23":[[2050,1630],[2165,1630],[2165,1835],[2050,1835]],"10":[[2050,1885],[2165,1885],[2165,2085],[2050,2085]],"24":[[2205,1750],[2325,1750],[2325,1965],[2205,1965]],"11":[[2205,2005],[2320,2005],[2320,2075],[2205,2075]],"12":[[2370,1880],[2490,1880],[2490,2080],[2370,2080]],"13":[[2540,1870],[2650,1870],[2650,2070],[2540,2070]],"70":[[925,575],[1055,680],[925,680]],"71":[[1090,700],[1205,820],[1090,820]],"72":[[1248,850],[1375,940],[1248,940]],"73":[[1412,950],[1535,1060],[1412,1060]],"74":[[1580,1100],[1700,1195],[1580,1195]],"75":[[1735,1250],[1868,1335],[1735,1335]],"76":[[1900,1355],[2040,1450],[1900,1450]],"77":[[2055,1485],[2185,1582],[2055,1582]],"78":[[2210,1600],[2330,1698],[2210,1698]],"79":[[2375,1712],[2505,1832],[2375,1832]],"53":null,"54":[[2400,1500],[2458,1542],[2458,1720],[2400,1678]],"55":[[2300,1420],[2355,1460],[2355,1625],[2300,1585]],"56":[[1450,740],[1520,791],[1520,980],[1450,929]],"57":[[2080,1260],[2150,1311],[2150,1480],[2080,1429]],"58":[[1970,1170],[2040,1221],[2040,1380],[1970,1329]],"59":[[1770,980],[1830,1024],[1830,1220],[1770,1176]],"60":[[1240,560],[1310,611],[1310,820],[1240,769]],"61":[[1670,890],[1730,934],[1730,1140],[1670,1096]],"62":[[2185,1330],[2250,1377],[2250,1550],[2185,1503]],"63":[[1560,820],[1625,867],[1625,1055],[1560,1008]],"64":[[1350,650],[1410,694],[1410,890],[1350,846]],"65":[[1130,460],[1205,515],[1205,740],[1130,685]],"66":null,"67":[[1025,370],[1105,428],[1105,630],[1025,572]],"68":[[930,290],[990,334],[990,540],[930,496]],"69":null},"newBal":{"10":[[1872,1080],[1932,1124],[1932,1300],[1872,1256]],"16":[[2510,1550],[2645,1649],[2645,1835],[2510,1736]]}};
+POLY.saladin = {"51":[[158,275],[272,275],[272,385],[158,385]],"49":[[158,435],[272,435],[272,568],[158,568]],"46":[[158,600],[272,600],[272,735],[158,735]],"41":[[158,770],[272,770],[272,905],[158,905]],"34":[[158,945],[272,945],[272,1078],[158,1078]],"25":[[158,1115],[272,1115],[272,1233],[158,1233]],"14":[[158,1275],[272,1275],[272,1400],[158,1400]],"1":[[158,1430],[272,1430],[272,1475],[158,1475]],"47":[[340,610],[412,610],[412,665],[340,665]],"42":[[340,700],[412,700],[412,830],[340,830]],"35":[[340,865],[412,865],[412,995],[340,995]],"26":[[340,1032],[412,1032],[412,1165],[340,1165]],"15":[[340,1200],[412,1200],[412,1332],[340,1332]],"2":[[340,1365],[412,1365],[412,1475],[340,1475]],"48":[[452,608],[522,608],[522,720],[452,720]],"43":[[452,760],[522,760],[522,885],[452,885]],"36":[[452,920],[522,920],[522,1055],[452,1055]],"27":[[452,1095],[522,1095],[522,1225],[452,1225]],"16":[[452,1255],[522,1255],[522,1390],[452,1390]],"3":[[452,1422],[522,1422],[522,1475],[452,1475]],"44":[[590,680],[645,680],[645,805],[590,805]],"37":[[590,842],[645,842],[645,972],[590,972]],"28":[[590,1010],[645,1010],[645,1145],[590,1145]],"17":[[590,1185],[645,1185],[645,1315],[590,1315]],"4":[[590,1350],[645,1350],[645,1475],[590,1475]],"45":[[675,760],[748,760],[748,890],[675,890]],"38":[[675,925],[748,925],[748,1055],[675,1055]],"29":[[675,1090],[748,1090],[748,1225],[675,1225]],"18":[[675,1260],[748,1260],[748,1390],[675,1390]],"5":[[675,1428],[748,1428],[748,1475],[675,1475]],"39":[[783,840],[865,840],[865,952],[783,952]],"30":[[783,988],[865,988],[865,1130],[783,1130]],"19":[[783,1165],[865,1165],[865,1300],[783,1300]],"6":[[783,1340],[865,1340],[865,1475],[783,1475]],"40":[[925,915],[990,915],[990,1040],[925,1040]],"31":[[925,1070],[990,1070],[990,1200],[925,1200]],"20":[[925,1230],[990,1230],[990,1360],[925,1360]],"7":[[925,1400],[990,1400],[990,1445],[925,1445]],"32":[[1022,988],[1100,988],[1100,1108],[1022,1108]],"21":[[1022,1145],[1100,1145],[1100,1285],[1022,1285]],"8":[[1022,1322],[1100,1322],[1100,1445],[1022,1445]],"33":[[1135,1062],[1218,1062],[1218,1192],[1135,1192]],"22":[[1135,1230],[1218,1230],[1218,1362],[1135,1362]],"9":[[1135,1400],[1218,1400],[1218,1445],[1135,1445]],"23":[[1252,1143],[1335,1143],[1335,1285],[1252,1285]],"10":[[1252,1322],[1335,1322],[1335,1445],[1252,1445]],"24":[[1375,1225],[1460,1225],[1460,1360],[1375,1360]],"11":[[1375,1400],[1460,1400],[1460,1445],[1375,1445]],"12":[[1500,1305],[1585,1305],[1585,1445],[1500,1445]],"52":[[328,295],[402,295],[402,405],[328,405]],"50":[[328,442],[402,442],[402,565],[328,565]],"13":[[1622,1275],[1695,1325],[1695,1445],[1622,1445]],"70":[[452,535],[532,578],[452,578]],"71":[[560,585],[655,645],[560,645]],"72":[[675,660],[762,722],[675,722]],"73":[[785,735],[875,800],[785,800]],"74":[[900,800],[1015,878],[900,878]],"75":[[1022,888],[1105,948],[1022,948]],"76":[[1135,962],[1220,1025],[1135,1025]],"77":[[1250,1038],[1345,1105],[1250,1105]],"78":[[1375,1118],[1468,1190],[1375,1190]],"79":[[1500,1200],[1600,1268],[1500,1268]],"53":[[450,325],[478,345],[478,500],[450,480]],"54":[[498,350],[545,380],[545,540],[498,510]],"55":[[565,395],[612,430],[612,585],[565,552]],"56":[[632,442],[680,472],[680,627],[632,595]],"57":[[700,488],[752,525],[752,675],[700,638]],"58":[[772,538],[835,575],[835,728],[772,685]],"59":[[855,580],[908,615],[908,780],[855,745]],"60":[[938,635],[990,668],[990,832],[938,795]],"61":[[1015,685],[1072,722],[1072,885],[1015,848]],"62":[[1098,735],[1145,768],[1145,932],[1098,900]],"63":[[1170,785],[1225,822],[1225,985],[1170,948]],"64":[[1252,840],[1305,875],[1305,1040],[1252,1005]],"65":[[1328,890],[1388,930],[1388,1090],[1328,1045]],"66":[[1415,948],[1472,985],[1472,1145],[1415,1110]],"67":[[1498,1002],[1555,1038],[1555,1198],[1498,1162]],"68":[[1580,1055],[1638,1092],[1638,1255],[1580,1215]],"69":[[1660,1105],[1702,1125],[1702,1298],[1660,1268]]};
 const XY = {51:[975,494],49:[975,780],46:[975,1055],41:[975,1315],34:[975,1590],25:[975,1837],14:[975,2095],1:[975,2290],
 52:[1205,515],50:[1205,783],47:[1205,983],42:[1205,1187],35:[1205,1433],26:[1205,1700],15:[1205,1965],2:[1205,2216],
 48:[1394,1040],43:[1394,1301],36:[1394,1573],27:[1394,1833],16:[1394,2100],3:[1394,2290],
@@ -388,7 +402,33 @@ $("loadf").addEventListener("change", async e => {
 const VIEWS = {
   before: {img: "minbar.jpg", alt: "The minbar seen from its left side before 1907, Garrigues photograph no. 271", vw: 3600, vh: 2629},
   after: {img: "after.jpg", alt: "The minbar seen from its left side after the 1907 restoration, Creswell 1940, Pl. 89a", vw: 3000, vh: 2262},
+  saladin: {img: "saladin.jpg", alt: "Saladin's numbered diagram of the left face of the minbar, fig. 52, signed 1896", vw: 2000, vh: 1864},
 };
+const VW = Object.keys(VIEWS), zfs = {before: 1, after: 1, saladin: 1};
+const clampN = (x, a, b) => Math.max(a, Math.min(b, x));
+const setZf = (v, f) => { zfs[v] = f; $("stage-" + v).style.setProperty("--zf", f); };
+function focusView(v, p) {
+  const sc = $("scroll-" + v), st = $("stage-" + v), d = VIEWS[v], W = sc.clientWidth, H = sc.clientHeight;
+  if (!W || !H) return;
+  if (!p) { setZf(v, 1); sc.scrollLeft = 0; sc.scrollTop = 0; return; }
+  const xs = p.map(q => q[0]), ys = p.map(q => q[1]);
+  const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+  const base = Math.min(W, H * d.vw / d.vh) / d.vw;
+  setZf(v, clampN(Math.min(.5 * W / ((x1 - x0) * base), .5 * H / ((y1 - y0) * base)), 1, 8));
+  const s = st.offsetWidth / d.vw;
+  sc.scrollLeft = st.offsetLeft + (x0 + x1) / 2 * s - W / 2;
+  sc.scrollTop = st.offsetTop + (y0 + y1) / 2 * s - H / 2;
+}
+const polyFor = (v, n) => v === "before" ? POLY.before[outlineOf(n)] : v === "saladin" ? POLY.saladin[n] : (slotOf(n) ? SLOT[slotOf(n)] : null);
+let focusKey = "";
+function focusPanel(force) {
+  if (!editing || (!current && !currentSlot)) return;
+  const key = [current, currentSlot, current && outlineOf(current), current && slotOf(current), view, partner].join("|");
+  if (!force && key === focusKey) return;
+  focusKey = key;
+  VW.forEach(v => focusView(v, current ? polyFor(v, current) : (v === "after" ? SLOT[currentSlot] : null)));
+}
+const fitAll = () => { focusKey = ""; VW.forEach(v => focusView(v, null)); };
 for (const [v, d] of Object.entries(VIEWS)) {
   const st = $("stage-" + v), pane = $("pane-" + v);
   st.style.setProperty("--ar", d.vw / d.vh);
@@ -397,12 +437,20 @@ for (const [v, d] of Object.entries(VIEWS)) {
       <defs><mask id="m-${v}"><rect width="${d.vw}" height="${d.vh}" fill="#fff"/><g class="holes" fill="#000"></g></mask></defs>
       <rect class="shade" width="${d.vw}" height="${d.vh}" fill="rgba(6,5,3,.74)" mask="url(#m-${v})"/>
       <polygon class="outline" points=""/>
-    </svg><div class="marks"></div>`;
+    </svg><div class="marks"></div>${v === "saladin" ? `<svg class="hits" viewBox="0 0 ${d.vw} ${d.vh}" preserveAspectRatio="none"></svg>` : ""}`;
   const fit = () => { st.style.setProperty("--pw", pane.clientWidth + "px"); st.style.setProperty("--ph", pane.clientHeight + "px"); };
-  new ResizeObserver(fit).observe(pane); fit();
+  new ResizeObserver(() => { fit(); requestAnimationFrame(() => focusPanel(true)); }).observe(pane); fit();
 }
+const SVGNS = "http://www.w3.org/2000/svg", hits = {};
+NUMS.forEach(n => {
+  const g = document.createElementNS(SVGNS, "polygon");
+  g.setAttribute("points", pts(POLY.saladin[n])); g.setAttribute("tabindex", "0"); g.setAttribute("role", "button"); g.setAttribute("aria-label", "Panel " + n);
+  const go = () => { if (picking) stopPick(); select(n, false); };
+  g.addEventListener("click", go); g.addEventListener("keydown", e => { if (e.key === "Enter") go(); });
+  document.querySelector("#stage-saladin .hits").appendChild(g); hits[n] = g;
+});
 const card = $("card");
-let current = null, currentSlot = null, view = "before", editing = false, picking = false, filter = "";
+let current = null, currentSlot = null, view = "before", partner = "after", editing = false, picking = false, filter = "";
 const marks = {before: {}, after: {}};
 
 const flags = n => ({ geo: GEO.includes(n), ori: ORI.includes(n), rep: REP.includes(n), pl: PL26.includes(n) || PL27.includes(n),
@@ -431,6 +479,10 @@ function renderMarks() {
     const label = ns.length ? "Panel " + ns.join(" and ") + " on Creswell's photograph" : "Creswell position with no panel assigned";
     marks.after[id] = makeMark(ha, VIEWS.after, SLOT[id], text, label, cls, () => clickSlot(id));
   });
+  NUMS.forEach(n => {
+    const c = (P(n).sal ? 1 : 0) + (P(n).cre ? 1 : 0);
+    hits[n].setAttribute("class", [c ? "c" + c : "", n === current ? "sel" : ""].join(" ").trim());
+  });
   applyFilter(); paintSelection();
 }
 function clickSlot(id) {
@@ -443,15 +495,17 @@ function paintSelection() {
   const sid = current ? slotOf(current) : currentSlot;
   ob.setAttribute("points", current ? pts(POLY.before[outlineOf(current)]) : "");
   oa.setAttribute("points", sid ? pts(SLOT[sid]) : "");
+  document.querySelector("#stage-saladin .outline").setAttribute("points", current ? pts(POLY.saladin[current]) : "");
   if (current) marks.before[current]?.classList.add("sel");
   if (sid) marks.after[sid]?.classList.add("sel");
 }
 function applyFilter() {
-  $("stage-before").classList.toggle("filtering", !!filter); $("stage-after").classList.toggle("filtering", !!filter);
-  const hits = filter ? NUMS.filter(n => flags(n)[filter]) : [];
-  document.querySelector("#stage-before .holes").innerHTML = hits.map(n => `<polygon points="${pts(POLY.before[outlineOf(n)])}"/>`).join("");
-  document.querySelector("#stage-after .holes").innerHTML = hits.map(n => slotOf(n)).filter(Boolean).map(id => `<polygon points="${pts(SLOT[id])}"/>`).join("");
-  hits.forEach(n => { marks.before[n]?.classList.add("hit"); const s = slotOf(n); if (s) marks.after[s]?.classList.add("hit"); });
+  VW.forEach(v => $("stage-" + v).classList.toggle("filtering", !!filter));
+  const found = filter ? NUMS.filter(n => flags(n)[filter]) : [];
+  document.querySelector("#stage-before .holes").innerHTML = found.map(n => `<polygon points="${pts(POLY.before[outlineOf(n)])}"/>`).join("");
+  document.querySelector("#stage-saladin .holes").innerHTML = found.map(n => `<polygon points="${pts(POLY.saladin[n])}"/>`).join("");
+  document.querySelector("#stage-after .holes").innerHTML = found.map(n => slotOf(n)).filter(Boolean).map(id => `<polygon points="${pts(SLOT[id])}"/>`).join("");
+  found.forEach(n => { marks.before[n]?.classList.add("hit"); const s = slotOf(n); if (s) marks.after[s]?.classList.add("hit"); });
 }
 function renderProgress() {
   const a = NUMS.filter(n => P(n).sal).length, b = NUMS.filter(n => P(n).cre).length;
@@ -484,7 +538,7 @@ function bindForm(n) {
   $("e-numgo").onclick = () => renumber(n, +$("e-num").value);
   $("e-num").onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); renumber(n, +$("e-num").value); } };
   $("e-slot").onchange = e => { const v = e.target.value; setP(n, v ? {slot: v, exists: "yes"} : {slot: null}); changed(); };
-  $("e-pick").onclick = () => { picking = true; if (view === "before") setView("both"); select(n, false); };
+  $("e-pick").onclick = () => { picking = true; partner = "after"; setView("both"); select(n, false); };
   $("e-reset").onclick = () => { delete E.panels[n]; changed(); };
   f.querySelectorAll("[data-set]").forEach(b => b.onclick = () => {
     const val = b.dataset.val || undefined;
@@ -559,6 +613,7 @@ function showSlot(id) {
     ${id === "b16" ? `<div class="note"><span class="src">${S.PD}</span><p>The two original panels nos. 68 and 69 of the left face were replaced by a single one; p. 223.</p></div>` : ""}
     ${!ns.length && isNew !== "yes" && id[0] === "f" ? `<p class="empty">You took the panel that was here somewhere else or marked it as gone. Say whether this one is new, or which old panel it is.</p>` : ""}`;
   $("close").onclick = () => { card.hidden = true; };
+  requestAnimationFrame(() => focusPanel());
   if ($("edit")) {
     $("edit").querySelectorAll("[data-set]").forEach(b => b.onclick = () => { setSlotNew(id, b.dataset.val || undefined); changed(); });
     $("e-asgo").onclick = () => { const m = +$("e-as").value; if (m >= 1 && m <= 79) { delete E.slots[id]; setP(m, {slot: id, exists: "yes"}); currentSlot = null; current = m; changed(); } };
@@ -569,10 +624,11 @@ function select(n, scroll) {
   current = n; currentSlot = null;
   renderMarks(); renderProgress(); renderCard();
   if (location.hash !== "#panel-" + n) history.replaceState(null, "", "#panel-" + n);
-  if (scroll) { const ids = [marks.before[n], slotOf(n) && marks.after[slotOf(n)]].filter(Boolean);
+  requestAnimationFrame(() => focusPanel());
+  if (scroll && !editing) { const ids = [marks.before[n], slotOf(n) && marks.after[slotOf(n)], hits[n]].filter(Boolean);
     ids.forEach(b => b.scrollIntoView({block: "center", inline: "center", behavior: "smooth"})); }
 }
-function renderAll() { renderMarks(); renderProgress(); if (current || currentSlot) renderCard(); }
+function renderAll() { renderMarks(); renderProgress(); if (current || currentSlot) renderCard(); requestAnimationFrame(() => focusPanel()); }
 
 const sources = `<details><summary>Sources and caveats</summary><ul>
   <li>Saladin 1899: H. Saladin, <i>La Mosquée de Sidi Okba à Kairouan</i> (Paris, 1899), pp. 104–105, fig. 52, Pl. XXVI–XXVII. Panel numbers are his.</li>
@@ -582,14 +638,17 @@ const sources = `<details><summary>Sources and caveats</summary><ul>
   <li>Moraitou 2001: “Umayyad ornament on early Islamic woodwork,” <i>Benaki Museum journal</i> 1 (2001), pp. 168–169.</li>
   <li>Bloom 2012: “Strapwork Designs in Western Islamic Art,” p. 155.</li>
   <li>Picotin and Déléry 2018: “Fragments d'histoire du minbar de Kairouan,” in <i>The Aghlabids and their Neighbors</i> (Leiden, 2018), pp. 207–227.</li>
-  <li>Photographs: Garrigues, Tunis, no. 271 (via Wikimedia Commons); Creswell, Pl. 89a; Creswell prints, Victoria and Albert Museum. Reproduced for research and study.</li>
+  <li>Images: Saladin 1899, fig. 52; Garrigues, Tunis, no. 271 (via Wikimedia Commons); Creswell, Pl. 89a; Creswell prints, Victoria and Albert Museum. Reproduced for research and study.</li>
   </ul><p>Notes marked “Identification” are matches made by comparing photographs, not statements in the sources. Saladin's lists were read from screen captures; check them against the scan before citing. Outlines were traced separately on each photograph. For rectangles and triangles they mark the same position in the frame, which may now hold a replaced panel; for the balustrade they follow Creswell's table of moved panels.</p></details>`;
 
 function setView(v) {
   view = v;
+  const show = w => v === w || (v === "both" && (w === "before" || w === partner));
+  VW.forEach(w => { $("pane-" + w).hidden = !show(w); });
+  $("withseg").hidden = v !== "both";
+  document.querySelectorAll("#withseg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.w === partner));
+  requestAnimationFrame(() => focusPanel(true));
   document.querySelectorAll("#viewseg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === v));
-  $("pane-before").hidden = v === "after";
-  $("pane-after").hidden = v === "before";
   $("views").classList.toggle("both", v === "both");
 }
 document.querySelectorAll("#viewseg button").forEach(b => b.addEventListener("click", () => { setView(b.dataset.v); if (current) setTimeout(() => select(current, true), 50); }));
@@ -601,21 +660,28 @@ nums.addEventListener("click", () => {
   nums.setAttribute("aria-pressed", on); nums.textContent = on ? "Numbers on" : "Numbers off";
   document.querySelectorAll(".stage").forEach(s => s.classList.toggle("quiet", !on));
 });
-const ZF = [1, 1.5, 2.2, 3]; let z = 0;
-const zoom = d => { z = Math.max(0, Math.min(ZF.length - 1, z + d));
-  document.querySelectorAll(".stage").forEach(s => s.style.setProperty("--zf", ZF[z]));
-  if (current) setTimeout(() => select(current, true), 30); };
-$("zin").onclick = () => zoom(1);
-$("zout").onclick = () => zoom(-1);
+const zoom = k => VW.forEach(v => {
+  const sc = $("scroll-" + v), st = $("stage-" + v);
+  if (!sc.clientWidth) return;
+  const fx = (sc.scrollLeft + sc.clientWidth / 2 - st.offsetLeft) / st.offsetWidth, fy = (sc.scrollTop + sc.clientHeight / 2 - st.offsetTop) / st.offsetHeight;
+  setZf(v, clampN(zfs[v] * k, 1, 10));
+  sc.scrollLeft = st.offsetLeft + fx * st.offsetWidth - sc.clientWidth / 2;
+  sc.scrollTop = st.offsetTop + fy * st.offsetHeight - sc.clientHeight / 2;
+});
+$("zin").onclick = () => zoom(1.4);
+$("zout").onclick = () => zoom(1 / 1.4);
+$("fitb").onclick = fitAll;
+document.querySelectorAll("#withseg button").forEach(b => b.addEventListener("click", () => { partner = b.dataset.w; setView("both"); }));
 $("go").addEventListener("change", e => select(+e.target.value, true));
 $("editb").addEventListener("click", () => {
   editing = !editing;
   $("editb").setAttribute("aria-pressed", editing); $("editb").textContent = editing ? "Done editing" : "Edit";
   document.body.classList.toggle("editing", editing);
   document.querySelectorAll(".edit-only").forEach(x => { x.hidden = !editing; });
-  if (!editing) stopPick();
-  if (editing && view === "before") setView("both");
+  if (!editing) { stopPick(); fitAll(); }
+  if (editing && view !== "both") setView("both");
   renderAll();
+  if (editing) requestAnimationFrame(() => focusPanel(true));
 });
 $("savef").addEventListener("click", saveFile);
 document.addEventListener("keydown", e => {
@@ -635,7 +701,7 @@ const fromHash = () => { const m = location.hash.match(/^#panel-(\d+)$/); return
 window.addEventListener("hashchange", () => { const n = fromHash(); if (n) select(n, true); });
 if (fromHash()) select(fromHash(), true);
 else {
-  card.innerHTML = `<button class="close hint" id="close">Close</button><p class="empty">Click a number to read what the sources say about that panel. Use Compare to see the 1890s photograph beside Creswell's, taken after the 1907 restoration.</p>${sources}`;
+  card.innerHTML = `<button class="close hint" id="close">Close</button><p class="empty">Click a number to read what the sources say about that panel. Use Compare to see the 1890s photograph beside Creswell's, taken after the 1907 restoration, or beside Saladin's numbered diagram.</p>${sources}`;
   $("close").onclick = () => { card.hidden = true; };
 }
 loadEdits();
