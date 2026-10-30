@@ -8,4 +8,4 @@ Photographs: Garrigues, Tunis, no. 271 (Wikimedia Commons); K. A. C. Creswell, *
 
 ## Editing
 
-Press Edit on the site to record checks against Saladin and Creswell, change panel numbers and Creswell positions, and mark panels as gone or new. Edits stay in that browser until you press Save file and commit the result here as `edits.json`, which the site then loads for everyone.
+Press Edit on the site to answer three questions for each panel: is the Saladin number correct, does it exist in Creswell (yes, no, or yes in a different position), and is the Creswell panel at that position new. Edits stay in that browser until you press Save file and commit the result here as `edits.json`, which the site then loads for everyone.
