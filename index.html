@@ -49,14 +49,19 @@ body { background: var(--stage); color: var(--fg); font-family: var(--serif); fo
   font-family: var(--label); font-weight: 500; font-size: max(9px, .85cqw); line-height: 1; display: grid; place-items: center;
   font-variant-numeric: tabular-nums; transition: opacity .15s, background .15s; }
 .mark:hover { background: rgba(18, 14, 10, .9); }
-.mark.new { background: rgba(120, 40, 20, .75); }
+.mark.new { background: rgba(120, 40, 20, .8); }
+.mark.orphan { background: rgba(170, 130, 10, .9); }
+.mark.clash { background: rgba(170, 20, 20, .92); width: auto; padding: 0 .4cqw; border-radius: 1cqw; }
+.editing .mark.c1 { box-shadow: 0 0 0 2px #e3c34a; }
+.editing .mark.c2 { background: #2f8f4e; color: #fff; }
+.editing .mark.sel { background: var(--sel); box-shadow: 0 0 0 2px #fff; }
 .quiet .mark:not(.sel) { opacity: 0; }
 .quiet .mark:not(.sel):hover { opacity: 1; }
 .filtering .mark:not(.hit):not(.sel) { opacity: .25; }
 .mark.sel { background: var(--sel); color: #fff; box-shadow: 0 0 0 2px #fff; z-index: 2; }
 @media (prefers-reduced-motion: reduce) { .mark, .shade { transition: none; } }
 
-@media (min-width: 761px) { .views.docked { right: calc(min(380px, 38vw) + 20px); } }
+@media (min-width: 761px) { .views.docked { right: calc(min(380px, 38vw) + 20px); } .views.docked ~ .tools { max-width: calc(100vw - min(380px, 38vw) - 40px); } }
 .tools { position: fixed; z-index: 10; top: calc(env(safe-area-inset-top, 0px) + 10px); left: calc(env(safe-area-inset-left, 0px) + 10px);
   max-width: calc(100vw - 20px); display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px;
   background: var(--surface); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px;
@@ -69,6 +74,7 @@ body { background: var(--stage); color: var(--fg); font-family: var(--serif); fo
 .tools select, .tools input, .tools > button { font: inherit; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; }
 .tools > button { cursor: pointer; min-width: 30px; }
 .tools input { width: 4.8em; }
+.edit-only[hidden] { display: none !important; }
 :is(.tools button, .tools select, .tools input, .mark, .card button, summary):focus-visible { outline: 2px solid var(--sel); outline-offset: 2px; }
 
 .card { position: fixed; z-index: 11; top: calc(env(safe-area-inset-top, 0px) + 10px); max-height: calc(100vh - 20px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
@@ -94,6 +100,20 @@ body { background: var(--stage); color: var(--fg); font-family: var(--serif); fo
 .fig figcaption { font-family: var(--label); font-size: .8rem; color: var(--muted); }
 .nav { display: flex; gap: 8px; }
 .nav button { flex: 1; font-family: var(--label); font-size: .88rem; border: 1px solid var(--line); background: transparent; color: var(--muted); border-radius: 6px; padding: 6px; cursor: pointer; }
+.edit { display: flex; flex-direction: column; gap: 10px; padding: 12px; border: 1px solid var(--accent); border-radius: 6px; font-family: var(--label); font-size: .9rem; }
+.edit .row { display: flex; align-items: center; gap: 8px; }
+.edit .field { display: flex; flex-direction: column; gap: 4px; }
+.edit .lab, .edit .field > label { color: var(--muted); }
+.edit input[type=number] { width: 5em; }
+.edit input[type=number], .edit select, .edit button:not(.seg button) { font: inherit; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; }
+.edit select { max-width: 100%; }
+.edit button { cursor: pointer; }
+.edit .hint-t { color: var(--muted); font-size: .8rem; }
+.edit .warn { color: #b3261e; font-size: .85rem; }
+.edit .quiet-b { align-self: flex-start; color: var(--muted); }
+.seg.small { align-self: flex-start; font-size: .85rem; }
+.tools .saved { color: var(--muted); }
+.file-b { font: inherit; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; cursor: pointer; }
 details { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--line); padding-top: 10px; }
 summary { cursor: pointer; font-family: var(--label); }
 details ul { padding-left: 1.2em; display: flex; flex-direction: column; gap: 4px; }
@@ -108,7 +128,7 @@ details ul { padding-left: 1.2em; display: flex; flex-direction: column; gap: 4p
 
 <div class="tools">
   <h1>Kairouan Minbar Panels</h1>
-  <div class="seg" role="group" aria-label="View">
+  <div class="seg" id="viewseg" role="group" aria-label="View">
     <button data-v="before" aria-pressed="true">Before</button>
     <button data-v="after" aria-pressed="false">After</button>
     <button data-v="both" aria-pressed="false">Compare</button>
@@ -122,11 +142,18 @@ details ul { padding-left: 1.2em; display: flex; flex-direction: column; gap: 4p
     <option value="cre">In Creswell's plates</option>
     <option value="tri">Triangles</option>
     <option value="bal">Balustrade</option>
+    <option value="todo">Not fully checked yet</option>
+    <option value="gone">No longer on the minbar</option>
   </select>
   <button id="nums" aria-pressed="true">Numbers on</button>
   <button id="zout" aria-label="Zoom out">−</button>
   <button id="zin" aria-label="Zoom in">+</button>
   <input id="go" type="number" min="1" max="79" inputmode="numeric" placeholder="Panel" aria-label="Go to panel">
+  <button id="editb" aria-pressed="false">Edit</button>
+  <span class="edit-only" id="progress" hidden></span>
+  <button class="edit-only" id="savef" hidden>Save file</button>
+  <label class="edit-only file-b" hidden>Load file<input id="loadf" type="file" accept="application/json,.json" hidden></label>
+  <span class="edit-only saved" id="saved" hidden>Saved in this browser only</span>
 </div>
 
 <aside class="card" id="card" aria-live="polite"></aside>
@@ -247,109 +274,305 @@ add(51, "OBS", `The upper left of the panel is broken away in this photograph.`)
 add(53, "OBS", `The upper part of the panel is broken away in this photograph.`);
 
 function info(n) {
-  if (n >= 53) return {kind: "Balustrade panel", where: `${n - 52} of 17, counted from the top of the stair rail`};
+  if (n >= 53 && n <= 69) return {kind: "Balustrade panel", where: `${n - 52} of 17, counted from the top of the stair rail`};
   if (TRI[n]) return {kind: "Triangle", where: `under the stair string, above column ${TRI[n]}`};
   const r = ROWS.findIndex(a => a.includes(n)), i = ROWS[r].indexOf(n);
   return {kind: "Rectangular panel", where: `column ${r + 1}, ${ORD[i]} from the bottom (of ${ROWS[r].length})`};
 }
 
-const flags = n => ({ geo: GEO.includes(n), ori: ORI.includes(n), rep: REP.includes(n), pl: PL26.includes(n) || PL27.includes(n),
-  cre: CRE.includes(n), tri: !!TRI[n], bal: n >= 53 });
 const pts = p => p.map(q => q.join(",")).join(" ");
 const centroid = p => { const n = p.length; return [p.reduce((a, q) => a + q[0], 0) / n, p.reduce((a, q) => a + q[1], 0) / n]; };
+const $ = id => document.getElementById(id);
+const NUMS = Array.from({length: 79}, (_, i) => i + 1);
 
-const VIEWS = {
-  before: {img: "minbar.jpg", alt: "The minbar seen from its left side before 1907, Garrigues photograph no. 271", vw: 3600, vh: 2629, poly: POLY.before},
-  after: {img: "after.jpg", alt: "The minbar seen from its left side after the 1907 restoration, Creswell 1940, Pl. 89a", vw: 3000, vh: 2262, poly: POLY.after},
+// ---- Creswell positions: every outline traced on his photograph
+const SLOT = {};
+const isBal = n => n >= 53 && n <= 69;
+NUMS.filter(k => !isBal(k)).forEach(k => SLOT["f" + k] = POLY.after[k]);
+NUMS.filter(isBal).forEach(k => { if (BAL[k - 52]) SLOT["b" + BAL[k - 52]] = POLY.after[k]; });
+Object.entries(POLY.newBal).forEach(([j, p]) => SLOT["b" + j] = p);
+const defSlot = k => !isBal(k) ? "f" + k : (BAL[k - 52] ? "b" + BAL[k - 52] : null);
+const slotName = id => {
+  if (!id) return "Not on his photograph";
+  if (id[0] === "b") return `Balustrade, position ${id.slice(1)} from the top`;
+  const k = +id.slice(1), i = info(k);
+  return TRI[k] ? `Triangle ${i.where.replace("under the stair string, ", "")}` : `Column ${i.where.replace("column ", "")}`;
 };
-const marks = {before: {}, after: {}};
+const SLOT_ORDER = Object.keys(SLOT).sort((a, b) => (a[0] === b[0] ? +a.slice(1) - +b.slice(1) : a[0] < b[0] ? 1 : -1));
+
+// ---- your edits. Only differences from the defaults are stored.
+let E = {v: 1, numbers: {}, panels: {}, slots: {}};
+const clean = raw => {
+  const out = {v: 1, numbers: {}, panels: {}, slots: {}};
+  if (!raw || typeof raw !== "object") return out;
+  const isN = n => Number.isInteger(+n) && +n >= 1 && +n <= 79;
+  const seen = new Set();
+  Object.entries(raw.numbers || {}).forEach(([k, m]) => { if (isN(k) && isN(m) && !seen.has(+m)) { seen.add(+m); out.numbers[+k] = +m; } });
+  const taken = new Set(NUMS.map(k => out.numbers[k] ?? k));
+  if (taken.size !== 79) out.numbers = {};   // a broken numbering is ignored whole
+  Object.entries(raw.panels || {}).forEach(([n, p]) => {
+    if (!isN(n) || !p || typeof p !== "object") return;
+    const q = {};
+    if (p.sal === true) q.sal = true;
+    if (p.cre === true) q.cre = true;
+    if (p.exists === "yes" || p.exists === "no") q.exists = p.exists;
+    if (p.slot === null || SLOT[p.slot]) q.slot = p.slot;
+    if (Object.keys(q).length) out.panels[+n] = q;
+  });
+  Object.entries(raw.slots || {}).forEach(([id, s]) => {
+    if (SLOT[id] && s && (s.isNew === "yes" || s.isNew === "no")) out.slots[id] = {isNew: s.isNew};
+  });
+  return out;
+};
+const numberAt = k => E.numbers[k] ?? k;
+const outlineOf = n => { const k = NUMS.find(k => numberAt(k) === n); return k ?? n; };
+const P = n => E.panels[n] || {};
+const setP = (n, patch) => {
+  const q = {...P(n), ...patch};
+  Object.keys(q).forEach(key => q[key] === undefined && delete q[key]);
+  if (Object.keys(q).length) E.panels[n] = q; else delete E.panels[n];
+};
+const existsOf = n => P(n).exists ?? (isBal(n) ? (BAL[n - 52] ? "yes" : "no") : undefined);
+const slotOf = n => existsOf(n) === "no" ? null : ("slot" in P(n) ? P(n).slot : defSlot(outlineOf(n)));
+const numbersAt = id => NUMS.filter(n => slotOf(n) === id);
+const newOf = id => E.slots[id]?.isNew ?? ((id === "b10" || id === "b16") ? "yes" : undefined);
+
+// ---- saving: the page's database when it has one, this browser otherwise
+let db = null, editsDoc = null, saveTimer = null;
+const LS = "kairouan-minbar-edits";
+const lsGet = () => { try { const s = localStorage.getItem(LS); return s ? JSON.parse(s) : null; } catch (e) { return null; } };
+const lsSet = () => { try { localStorage.setItem(LS, JSON.stringify(E)); return true; } catch (e) { return false; } };
+const status = t => { $("saved").textContent = t; };
+function changed() {
+  renderAll();
+  const local = lsSet();
+  clearTimeout(saveTimer);
+  if (!editsDoc) { status(local ? "Saved in this browser only" : "Not saved: save a file"); return; }
+  status("Saving…");
+  saveTimer = setTimeout(() => editsDoc.set(E).then(() => status("Saved")).catch(() => status(local ? "Saved in this browser only" : "Not saved: save a file")), 500);
+}
+async function loadEdits() {
+  const local = lsGet();
+  if (local) { E = clean(local); renderAll(); }
+  try {
+    const r = await fetch("edits.json", {cache: "no-store"});
+    if (r.ok && !local) { E = clean(await r.json()); renderAll(); }
+  } catch (e) {}
+  if (!window.claude?.use) return;
+  db = await window.claude.use("db");
+  if (!db) return;
+  editsDoc = db.doc("edits/main");
+  try {
+    const snap = await editsDoc.get();
+    if (snap.exists) { E = clean(snap.data()); renderAll(); }
+    status("Saved");
+  } catch (e) { editsDoc = null; }
+}
+async function saveFile() {
+  const data = JSON.stringify(E, null, 1);
+  const dl = window.claude?.use ? await window.claude.use("downloads") : null;
+  if (dl) { try { await dl.save({filename: "edits.json", data}); status("File saved"); } catch (e) { status("File not saved"); } return; }
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([data], {type: "application/json"})); a.download = "edits.json";
+  document.body.appendChild(a); a.click(); a.remove();
+  status("File saved");
+}
+$("loadf").addEventListener("change", async e => {
+  const f = e.target.files[0]; e.target.value = "";
+  if (!f) return;
+  try { E = clean(JSON.parse(await f.text())); changed(); status("File loaded"); }
+  catch (err) { status("That file could not be read"); }
+});
+
+// ---- photographs
+const VIEWS = {
+  before: {img: "minbar.jpg", alt: "The minbar seen from its left side before 1907, Garrigues photograph no. 271", vw: 3600, vh: 2629},
+  after: {img: "after.jpg", alt: "The minbar seen from its left side after the 1907 restoration, Creswell 1940, Pl. 89a", vw: 3000, vh: 2262},
+};
 for (const [v, d] of Object.entries(VIEWS)) {
-  const st = document.getElementById("stage-" + v), pane = document.getElementById("pane-" + v);
+  const st = $("stage-" + v), pane = $("pane-" + v);
   st.style.setProperty("--ar", d.vw / d.vh);
   st.innerHTML = `<img src="${d.img}" alt="${d.alt}">
     <svg viewBox="0 0 ${d.vw} ${d.vh}" preserveAspectRatio="none" aria-hidden="true">
       <defs><mask id="m-${v}"><rect width="${d.vw}" height="${d.vh}" fill="#fff"/><g class="holes" fill="#000"></g></mask></defs>
       <rect class="shade" width="${d.vw}" height="${d.vh}" fill="rgba(6,5,3,.74)" mask="url(#m-${v})"/>
       <polygon class="outline" points=""/>
-    </svg>`;
-  for (let n = 1; n <= 79; n++) {
-    const b = document.createElement("button");
-    b.className = "mark"; b.textContent = n; b.setAttribute("aria-label", "Panel " + n);
-    if (d.poly[n]) { const [x, y] = centroid(d.poly[n]); b.style.left = (x / d.vw * 100) + "%"; b.style.top = (y / d.vh * 100) + "%"; }
-    else b.hidden = true;   // Creswell says this balustrade panel has disappeared
-    b.addEventListener("click", () => select(n, false));
-    st.appendChild(b); marks[v][n] = b;
-  }
-  if (v === "after") Object.entries(POLY.newBal).forEach(([j, p]) => {
-    const [x, y] = centroid(p), b = document.createElement("button");
-    b.className = "mark new"; b.textContent = "N"; b.setAttribute("aria-label", "New balustrade panel, Creswell's no. " + j);
-    b.style.left = (x / d.vw * 100) + "%"; b.style.top = (y / d.vh * 100) + "%";
-    b.addEventListener("click", () => showNew(j));
-    st.appendChild(b);
-  });
+    </svg><div class="marks"></div>`;
   const fit = () => { st.style.setProperty("--pw", pane.clientWidth + "px"); st.style.setProperty("--ph", pane.clientHeight + "px"); };
   new ResizeObserver(fit).observe(pane); fit();
 }
+const card = $("card");
+let current = null, currentSlot = null, view = "before", editing = false, picking = false, filter = "";
+const marks = {before: {}, after: {}};
 
-const card = document.getElementById("card");
-let current = null, view = "before";
+const flags = n => ({ geo: GEO.includes(n), ori: ORI.includes(n), rep: REP.includes(n), pl: PL26.includes(n) || PL27.includes(n),
+  cre: CRE.includes(n), tri: !!TRI[n], bal: isBal(n), todo: !(P(n).sal && P(n).cre), gone: existsOf(n) === "no" });
 
-function outline(n) {
-  for (const v in VIEWS) {
-    const o = document.querySelector(`#stage-${v} .outline`);
-    o.setAttribute("points", n && VIEWS[v].poly[n] ? pts(VIEWS[v].poly[n]) : "");
-  }
+function makeMark(host, d, poly, text, label, cls, onClick) {
+  const [x, y] = centroid(poly), b = document.createElement("button");
+  b.className = "mark " + cls; b.textContent = text; b.setAttribute("aria-label", label);
+  b.style.left = (x / d.vw * 100) + "%"; b.style.top = (y / d.vh * 100) + "%";
+  b.addEventListener("click", onClick); host.appendChild(b);
+  return b;
 }
+function renderMarks() {
+  marks.before = {}; marks.after = {};
+  const hb = document.querySelector("#stage-before .marks"), ha = document.querySelector("#stage-after .marks");
+  hb.innerHTML = ""; ha.innerHTML = "";
+  NUMS.forEach(k => {
+    const n = numberAt(k), c = (P(n).sal ? 1 : 0) + (P(n).cre ? 1 : 0);
+    marks.before[n] = makeMark(hb, VIEWS.before, POLY.before[k], n, "Panel " + n, c ? "c" + c : "", () => { if (picking) stopPick(); select(n, false); });
+  });
+  Object.keys(SLOT).forEach(id => {
+    const ns = numbersAt(id), isNew = newOf(id) === "yes";
+    const text = ns.length ? ns.join("/") : isNew ? "N" : "?";
+    const c = ns.length === 1 ? (P(ns[0]).sal ? 1 : 0) + (P(ns[0]).cre ? 1 : 0) : 0;
+    const cls = [isNew ? "new" : "", !ns.length && !isNew ? "orphan" : "", ns.length > 1 ? "clash" : "", c ? "c" + c : ""].join(" ");
+    const label = ns.length ? "Panel " + ns.join(" and ") + " on Creswell's photograph" : "Creswell position with no panel assigned";
+    marks.after[id] = makeMark(ha, VIEWS.after, SLOT[id], text, label, cls, () => clickSlot(id));
+  });
+  applyFilter(); paintSelection();
+}
+function clickSlot(id) {
+  if (picking) { setP(current, {slot: id, exists: "yes"}); stopPick(); changed(); return; }
+  const ns = numbersAt(id);
+  if (ns.length) select(ns[0], false); else showSlot(id);
+}
+function paintSelection() {
+  const ob = document.querySelector("#stage-before .outline"), oa = document.querySelector("#stage-after .outline");
+  const sid = current ? slotOf(current) : currentSlot;
+  ob.setAttribute("points", current ? pts(POLY.before[outlineOf(current)]) : "");
+  oa.setAttribute("points", sid ? pts(SLOT[sid]) : "");
+  if (current) marks.before[current]?.classList.add("sel");
+  if (sid) marks.after[sid]?.classList.add("sel");
+}
+function applyFilter() {
+  $("stage-before").classList.toggle("filtering", !!filter); $("stage-after").classList.toggle("filtering", !!filter);
+  const hits = filter ? NUMS.filter(n => flags(n)[filter]) : [];
+  document.querySelector("#stage-before .holes").innerHTML = hits.map(n => `<polygon points="${pts(POLY.before[outlineOf(n)])}"/>`).join("");
+  document.querySelector("#stage-after .holes").innerHTML = hits.map(n => slotOf(n)).filter(Boolean).map(id => `<polygon points="${pts(SLOT[id])}"/>`).join("");
+  hits.forEach(n => { marks.before[n]?.classList.add("hit"); const s = slotOf(n); if (s) marks.after[s]?.classList.add("hit"); });
+}
+function renderProgress() {
+  const a = NUMS.filter(n => P(n).sal).length, b = NUMS.filter(n => P(n).cre).length;
+  $("progress").textContent = `Saladin ${a}/79 · Creswell ${b}/79`;
+}
+const seg = (name, val, opts) => `<div class="seg small" role="group" aria-label="${name}">${opts.map(([v, t]) =>
+  `<button type="button" data-set="${name}" data-val="${v}" aria-pressed="${(val ?? "") === v}">${t}</button>`).join("")}</div>`;
+const NEW_OPTS = [["yes", "New"], ["no", "Old"], ["", "Not checked"]];
+
+function editForm(n) {
+  const s = slotOf(n), others = s ? numbersAt(s).filter(m => m !== n) : [];
+  return `<form class="edit" id="edit">
+    <label class="row"><input type="checkbox" id="e-sal" ${P(n).sal ? "checked" : ""}> Checked against Saladin</label>
+    <label class="row"><input type="checkbox" id="e-cre" ${P(n).cre ? "checked" : ""}> Checked against Creswell</label>
+    <div class="field"><label for="e-num">Saladin number</label><div class="row"><input id="e-num" type="number" min="1" max="79" value="${n}"><button type="button" id="e-numgo">Change</button></div>
+      <span class="hint-t">If the new number is already used, the two panels swap numbers.</span></div>
+    <div class="field"><span class="lab">Still on the minbar</span>${seg("exists", existsOf(n), [["yes", "Yes"], ["no", "No"], ["", "Not checked"]])}</div>
+    <div class="field"><label for="e-slot">Where it is in Creswell's photograph</label>
+      <select id="e-slot"><option value="">Not on his photograph</option>${SLOT_ORDER.map(id => `<option value="${id}" ${id === s ? "selected" : ""}>${slotName(id)}</option>`).join("")}</select>
+      <button type="button" id="e-pick">${picking ? "Now click a number on Creswell's photograph" : "Pick on the photograph"}</button>
+      ${others.length ? `<span class="warn">Panel ${others.join(", ")} is at this position too.</span>` : ""}</div>
+    ${s ? `<div class="field"><span class="lab">Is the panel at this Creswell position new?</span>${seg("isNew", newOf(s), NEW_OPTS)}</div>` : ""}
+    <button type="button" id="e-reset" class="quiet-b">Reset this panel</button>
+  </form>`;
+}
+function bindForm(n) {
+  const f = $("edit"); if (!f) return;
+  $("e-sal").onchange = e => { setP(n, {sal: e.target.checked || undefined}); changed(); };
+  $("e-cre").onchange = e => { setP(n, {cre: e.target.checked || undefined}); changed(); };
+  $("e-numgo").onclick = () => renumber(n, +$("e-num").value);
+  $("e-num").onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); renumber(n, +$("e-num").value); } };
+  $("e-slot").onchange = e => { const v = e.target.value; setP(n, v ? {slot: v, exists: "yes"} : {slot: null}); changed(); };
+  $("e-pick").onclick = () => { picking = true; if (view === "before") setView("both"); select(n, false); };
+  $("e-reset").onclick = () => { delete E.panels[n]; changed(); };
+  f.querySelectorAll("[data-set]").forEach(b => b.onclick = () => {
+    const val = b.dataset.val || undefined;
+    if (b.dataset.set === "exists") setP(n, val === "no" ? {exists: "no", slot: undefined} : {exists: val, slot: undefined});
+    else setSlotNew(slotOf(n), val);
+    changed();
+  });
+}
+function setSlotNew(id, val) {
+  if (val) E.slots[id] = {isNew: val}; else delete E.slots[id];
+  if (val === "yes") numbersAt(id).forEach(m => setP(m, {exists: "no", slot: undefined}));
+}
+function renumber(n, m) {
+  if (!Number.isInteger(m) || m < 1 || m > 79) { status("Use a number from 1 to 79"); return; }
+  if (m === n) return;
+  const a = outlineOf(n), b = outlineOf(m);
+  E.numbers[a] = m; E.numbers[b] = n;
+  [a, b].forEach(k => { if (E.numbers[k] === k) delete E.numbers[k]; });
+  current = m; changed(); status(`Panels ${n} and ${m} swapped numbers`);
+}
+function stopPick() { picking = false; }
 
 function afterNote(n) {
-  if (n < 53) return "";
-  const to = BAL[n - 52];
-  return to === null ? `Creswell says this panel <q>has disappeared</q>, so nothing is outlined on his photograph.`
-    : `The balustrade was rebuilt with sixteen panels. Following Creswell's table, this panel now stands at his position ${to} from the top, outlined on his photograph.`;
+  const s = slotOf(n), edited = "slot" in P(n) || P(n).exists;
+  if (!s) return edited ? `You marked this panel as no longer on the minbar, so nothing is outlined on Creswell's photograph.`
+    : `Creswell says this panel <q>has disappeared</q>, so nothing is outlined on his photograph.`;
+  if (edited) return `You placed this panel at this position on Creswell's photograph: ${slotName(s)}.`;
+  if (isBal(n)) return `The balustrade was rebuilt with sixteen panels. Following Creswell's table, this panel now stands at his position ${BAL[n - 52]} from the top, outlined on his photograph.`;
+  return "";
 }
-
-function showNew(j) {
-  for (const v in marks) if (current) marks[v][current].classList.remove("sel");
-  current = null; outline(null);
-  document.querySelector("#stage-after .outline").setAttribute("points", pts(POLY.newBal[j]));
-  card.hidden = false;
-  card.innerHTML = `<button class="close" id="close">Close</button>
-    <div class="head"><b>N</b><div><span class="kind">New balustrade panel</span><span class="sub">Creswell's position ${j} from the top, after 1907</span></div></div>
-    <div class="note"><span class="src">${S.CRE}</span><p>The balustrade <q>now consists of sixteen only, of which Nos. 10 and 16 are new, the latter being twice the width of the rest</q>; p. 317.</p></div>
-    ${j === "16" ? `<div class="note"><span class="src">${S.PD}</span><p>The two original panels nos. 68 and 69 of the left face were replaced by a single one; p. 223.</p></div>` : ""}`;
-  card.querySelector("#close").onclick = () => { card.hidden = true; };
-}
-
-function select(n, scroll) {
-  if (!VIEWS.before.poly[n]) return;
-  for (const v in marks) { if (current) marks[v][current].classList.remove("sel"); marks[v][n].classList.add("sel"); }
-  current = n; outline(n);
-  const i = info(n), notes = N[n] || [];
+function renderCard() {
+  if (!current && !currentSlot) return;
+  if (currentSlot) return showSlot(currentSlot);
+  const n = current, i = info(outlineOf(n)), notes = N[n] || [];
   const plates = [PL26.includes(n) && "XXVI", PL27.includes(n) && "XXVII"].filter(Boolean);
-  const cp = plateOf(n), va = vaOf(n);
+  const cp = plateOf(n), va = vaOf(n), an = afterNote(n);
   const figs = [cp && `<figure class="fig"><img src="cres-${cp}.jpg" alt="Creswell ${CP[cp].cap}" loading="lazy"><figcaption>Creswell 1940, ${CP[cp].cap}</figcaption></figure>`,
     va && `<figure class="fig"><img src="va-${va}.jpg" alt="Creswell photograph ${VA[va].cap}" loading="lazy"><figcaption>Creswell photograph, ${VA[va].cap}</figcaption></figure>`].filter(Boolean);
-  const an = afterNote(n);
+  const top = card.scrollTop;
   card.hidden = false;
-  card.innerHTML = `
-    <button class="close" id="close">Close</button>
+  card.innerHTML = `<button class="close" id="close">Close</button>
     <div class="head"><b>${n}</b><div>
       <span class="kind">${i.kind}</span>
       <span class="sub">${i.where[0].toUpperCase() + i.where.slice(1)}</span>
       ${plates.length ? `<span class="sub">Saladin Pl. ${plates.join(" and ")}</span>` : ""}
     </div></div>
+    ${editing ? editForm(n) : ""}
     ${figs.length ? `<div class="figs">${figs.join("")}</div>` : ""}
     ${an ? `<div class="note inf"><span class="src">After 1907</span><p>${an}</p></div>` : ""}
     ${notes.length ? notes.map(o => `<div class="note${o.inf ? " inf" : ""}"><span class="src">${S[o.src]}</span><p>${o.html}</p></div>`).join("")
       : `<p class="empty">No source read so far comments on this panel individually. Strzygowski (1907, col. 388) says only that each of the nearly eighty fields <q>zeigt ein anderes Muster</q> (shows a different pattern).</p>`}
     <div class="nav"><button id="prev">← ${n > 1 ? n - 1 : 79}</button><button id="next">${n < 79 ? n + 1 : 1} →</button></div>
     ${sources}`;
-  card.querySelector("#close").onclick = () => { card.hidden = true; };
-  card.querySelector("#prev").onclick = () => select(n > 1 ? n - 1 : 79, true);
-  card.querySelector("#next").onclick = () => select(n < 79 ? n + 1 : 1, true);
-  if (location.hash !== "#panel-" + n) history.replaceState(null, "", "#panel-" + n);
-  if (scroll) for (const v in marks) if (!marks[v][n].hidden) marks[v][n].scrollIntoView({block: "center", inline: "center", behavior: "smooth"});
+  card.scrollTop = top;
+  $("close").onclick = () => { card.hidden = true; };
+  $("prev").onclick = () => select(n > 1 ? n - 1 : 79, true);
+  $("next").onclick = () => select(n < 79 ? n + 1 : 1, true);
+  bindForm(n);
 }
+function showSlot(id) {
+  current = null; currentSlot = id;
+  renderMarks(); renderProgress();
+  const isNew = newOf(id), ns = numbersAt(id);
+  card.hidden = false; card.scrollTop = 0;
+  card.innerHTML = `<button class="close" id="close">Close</button>
+    <div class="head"><b>${isNew === "yes" ? "N" : "?"}</b><div><span class="kind">${isNew === "yes" ? "New panel" : "No panel assigned"}</span><span class="sub">${slotName(id)}, after 1907</span></div></div>
+    ${editing ? `<form class="edit" id="edit">
+      <div class="field"><span class="lab">Is the panel at this Creswell position new?</span>${seg("isNew", isNew, NEW_OPTS)}</div>
+      <div class="field"><label for="e-as">Or it is Saladin's panel number</label><div class="row"><input id="e-as" type="number" min="1" max="79"><button type="button" id="e-asgo">Assign</button></div></div>
+    </form>` : ""}
+    ${(id === "b10" || id === "b16") ? `<div class="note"><span class="src">${S.CRE}</span><p>The balustrade <q>now consists of sixteen only, of which Nos. 10 and 16 are new, the latter being twice the width of the rest</q>; p. 317.</p></div>` : ""}
+    ${id === "b16" ? `<div class="note"><span class="src">${S.PD}</span><p>The two original panels nos. 68 and 69 of the left face were replaced by a single one; p. 223.</p></div>` : ""}
+    ${!ns.length && isNew !== "yes" && id[0] === "f" ? `<p class="empty">You took the panel that was here somewhere else or marked it as gone. Say whether this one is new, or which old panel it is.</p>` : ""}`;
+  $("close").onclick = () => { card.hidden = true; };
+  if ($("edit")) {
+    $("edit").querySelectorAll("[data-set]").forEach(b => b.onclick = () => { setSlotNew(id, b.dataset.val || undefined); changed(); });
+    $("e-asgo").onclick = () => { const m = +$("e-as").value; if (m >= 1 && m <= 79) { delete E.slots[id]; setP(m, {slot: id, exists: "yes"}); currentSlot = null; current = m; changed(); } };
+  }
+}
+function select(n, scroll) {
+  if (!POLY.before[n]) return;
+  current = n; currentSlot = null;
+  renderMarks(); renderProgress(); renderCard();
+  if (location.hash !== "#panel-" + n) history.replaceState(null, "", "#panel-" + n);
+  if (scroll) { const ids = [marks.before[n], slotOf(n) && marks.after[slotOf(n)]].filter(Boolean);
+    ids.forEach(b => b.scrollIntoView({block: "center", inline: "center", behavior: "smooth"})); }
+}
+function renderAll() { renderMarks(); renderProgress(); if (current || currentSlot) renderCard(); }
 
 const sources = `<details><summary>Sources and caveats</summary><ul>
   <li>Saladin 1899: H. Saladin, <i>La Mosquée de Sidi Okba à Kairouan</i> (Paris, 1899), pp. 104–105, fig. 52, Pl. XXVI–XXVII. Panel numbers are his.</li>
@@ -358,31 +581,21 @@ const sources = `<details><summary>Sources and caveats</summary><ul>
   <li>Creswell 1940: <i>Early Muslim Architecture</i> II (Oxford, 1940), pp. 314–319, Pl. 89–90; his prints V&amp;A 720-1929 to 726-1929.</li>
   <li>Moraitou 2001: “Umayyad ornament on early Islamic woodwork,” <i>Benaki Museum journal</i> 1 (2001), pp. 168–169.</li>
   <li>Bloom 2012: “Strapwork Designs in Western Islamic Art,” p. 155.</li>
-  <li>Photographs: Garrigues, Tunis, no. 271 (via Wikimedia Commons); K. A. C. Creswell, <i>Early Muslim Architecture</i> II, Pl. 89–90; Creswell prints, Victoria and Albert Museum, 720-1929 to 726-1929. Reproduced for research and study.</li>
   <li>Picotin and Déléry 2018: “Fragments d'histoire du minbar de Kairouan,” in <i>The Aghlabids and their Neighbors</i> (Leiden, 2018), pp. 207–227.</li>
+  <li>Photographs: Garrigues, Tunis, no. 271 (via Wikimedia Commons); Creswell, Pl. 89a; Creswell prints, Victoria and Albert Museum. Reproduced for research and study.</li>
   </ul><p>Notes marked “Identification” are matches made by comparing photographs, not statements in the sources. Saladin's lists were read from screen captures; check them against the scan before citing. Outlines were traced separately on each photograph. For rectangles and triangles they mark the same position in the frame, which may now hold a replaced panel; for the balustrade they follow Creswell's table of moved panels.</p></details>`;
 
 function setView(v) {
   view = v;
-  document.querySelectorAll(".seg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === v));
-  document.getElementById("pane-before").hidden = v === "after";
-  document.getElementById("pane-after").hidden = v === "before";
-  document.getElementById("views").classList.toggle("both", v === "both");
-  if (current) setTimeout(() => select(current, true), 50);
+  document.querySelectorAll("#viewseg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === v));
+  $("pane-before").hidden = v === "after";
+  $("pane-after").hidden = v === "before";
+  $("views").classList.toggle("both", v === "both");
 }
-document.querySelectorAll(".seg button").forEach(b => b.addEventListener("click", () => setView(b.dataset.v)));
+document.querySelectorAll("#viewseg button").forEach(b => b.addEventListener("click", () => { setView(b.dataset.v); if (current) setTimeout(() => select(current, true), 50); }));
 
-document.getElementById("hl").addEventListener("change", e => {
-  const f = e.target.value;
-  for (const v in VIEWS) {
-    const st = document.getElementById("stage-" + v);
-    st.classList.toggle("filtering", !!f);
-    st.querySelector(".holes").innerHTML = f ? Object.keys(VIEWS[v].poly).filter(n => flags(+n)[f] && VIEWS[v].poly[n])
-      .map(n => `<polygon points="${pts(VIEWS[v].poly[n])}"/>`).join("") : "";
-    Object.entries(marks[v]).forEach(([n, b]) => b.classList.toggle("hit", !!f && flags(+n)[f]));
-  }
-});
-const nums = document.getElementById("nums");
+$("hl").addEventListener("change", e => { filter = e.target.value; renderMarks(); });
+const nums = $("nums");
 nums.addEventListener("click", () => {
   const on = nums.getAttribute("aria-pressed") !== "true";
   nums.setAttribute("aria-pressed", on); nums.textContent = on ? "Numbers on" : "Numbers off";
@@ -391,26 +604,41 @@ nums.addEventListener("click", () => {
 const ZF = [1, 1.5, 2.2, 3]; let z = 0;
 const zoom = d => { z = Math.max(0, Math.min(ZF.length - 1, z + d));
   document.querySelectorAll(".stage").forEach(s => s.style.setProperty("--zf", ZF[z]));
-  if (current) setTimeout(() => { for (const v in marks) if (!marks[v][current].hidden) marks[v][current].scrollIntoView({block: "center", inline: "center"}); }, 30); };
-document.getElementById("zin").onclick = () => zoom(1);
-document.getElementById("zout").onclick = () => zoom(-1);
-document.getElementById("go").addEventListener("change", e => select(+e.target.value, true));
+  if (current) setTimeout(() => select(current, true), 30); };
+$("zin").onclick = () => zoom(1);
+$("zout").onclick = () => zoom(-1);
+$("go").addEventListener("change", e => select(+e.target.value, true));
+$("editb").addEventListener("click", () => {
+  editing = !editing;
+  $("editb").setAttribute("aria-pressed", editing); $("editb").textContent = editing ? "Done editing" : "Edit";
+  document.body.classList.toggle("editing", editing);
+  document.querySelectorAll(".edit-only").forEach(x => { x.hidden = !editing; });
+  if (!editing) stopPick();
+  if (editing && view === "before") setView("both");
+  renderAll();
+});
+$("savef").addEventListener("click", saveFile);
 document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && picking) { stopPick(); renderCard(); return; }
   if (e.target.matches("input, select")) return;
   if (e.key === "ArrowRight" && current) select(current < 79 ? current + 1 : 1, true);
   if (e.key === "ArrowLeft" && current) select(current > 1 ? current - 1 : 79, true);
   if (e.key === "Escape") card.hidden = true;
 });
 
-setView("before");
-const dock = () => document.getElementById("views").classList.toggle("docked", !card.hidden && !card.querySelector(".hint"));
+const dock = () => $("views").classList.toggle("docked", !card.hidden && !card.querySelector(".hint"));
 new MutationObserver(dock).observe(card, {attributes: true, attributeFilter: ["hidden"], childList: true});
 
+setView("before");
+renderMarks(); renderProgress();
 const fromHash = () => { const m = location.hash.match(/^#panel-(\d+)$/); return m ? +m[1] : null; };
 window.addEventListener("hashchange", () => { const n = fromHash(); if (n) select(n, true); });
 if (fromHash()) select(fromHash(), true);
-else card.innerHTML = `<button class="close hint" id="close">Close</button><p class="empty">Click a number to read what the sources say about that panel. Use Compare to see the 1890s photograph beside Creswell's, taken after the 1907 restoration.</p>${sources}`;
-if (!fromHash()) card.querySelector("#close").onclick = () => { card.hidden = true; };
+else {
+  card.innerHTML = `<button class="close hint" id="close">Close</button><p class="empty">Click a number to read what the sources say about that panel. Use Compare to see the 1890s photograph beside Creswell's, taken after the 1907 restoration.</p>${sources}`;
+  $("close").onclick = () => { card.hidden = true; };
+}
+loadEdits();
 </script>
 
 </body>

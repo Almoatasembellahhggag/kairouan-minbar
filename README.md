@@ -5,3 +5,7 @@ An interactive comparison of the panels of the minbar of the Great Mosque of Kai
 Notes marked "Identification" on the site are matches made by comparing photographs, not statements in the sources. Check the sources before citing.
 
 Photographs: Garrigues, Tunis, no. 271 (Wikimedia Commons); K. A. C. Creswell, *Early Muslim Architecture* II (1940), Pl. 89–90; Creswell prints in the Victoria and Albert Museum, 720-1929 to 726-1929. They are reproduced for research and study and are not covered by any licence on this repository.
+
+## Editing
+
+Press Edit on the site to record checks against Saladin and Creswell, change panel numbers and Creswell positions, and mark panels as gone or new. Edits stay in that browser until you press Save file and commit the result here as `edits.json`, which the site then loads for everyone.
