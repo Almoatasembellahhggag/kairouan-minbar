@@ -329,8 +329,8 @@ const clean = raw => {
   Object.entries(raw.panels || {}).forEach(([n, p]) => {
     if (!isN(n) || !p || typeof p !== "object") return;
     const q = {};
-    if (p.sal === true) q.sal = true;
-    if (p.cre === true) q.cre = true;
+    if (typeof p.sal === "boolean") q.sal = p.sal;
+    if (typeof p.cre === "boolean") q.cre = p.cre;
     if (p.exists === "yes" || p.exists === "no") q.exists = p.exists;
     if (p.slot === null || SLOT[p.slot]) q.slot = p.slot;
     if (Object.keys(q).length) out.panels[+n] = q;
@@ -348,10 +348,20 @@ const setP = (n, patch) => {
   Object.keys(q).forEach(key => q[key] === undefined && delete q[key]);
   if (Object.keys(q).length) E.panels[n] = q; else delete E.panels[n];
 };
-const existsOf = n => P(n).exists ?? (isBal(n) ? (BAL[n - 52] ? "yes" : "no") : undefined);
+// a Creswell tick with the panel left where it is counts as: same panel, still there, not new
+const samePlace = n => P(n).cre === true && !("slot" in P(n));
+const existsOf = n => P(n).exists ?? (isBal(n) ? (BAL[n - 52] ? "yes" : "no") : samePlace(n) ? "yes" : undefined);
 const slotOf = n => existsOf(n) === "no" ? null : ("slot" in P(n) ? P(n).slot : defSlot(outlineOf(n)));
 const numbersAt = id => NUMS.filter(n => slotOf(n) === id);
-const newOf = id => E.slots[id]?.isNew ?? ((id === "b10" || id === "b16") ? "yes" : undefined);
+const newOf = id => E.slots[id]?.isNew ?? ((id === "b10" || id === "b16") ? "yes" : numbersAt(id).some(samePlace) ? "no" : undefined);
+// opening a panel in Edit ticks both boxes; an untick is remembered
+function autoCheck(n) {
+  const add = {};
+  if (P(n).sal === undefined) add.sal = true;
+  if (P(n).cre === undefined) add.cre = true;
+  if (!Object.keys(add).length) return;
+  setP(n, add); persist();
+}
 
 // ---- saving: the page's database when it has one, this browser otherwise
 let db = null, editsDoc = null, saveTimer = null;
@@ -359,8 +369,8 @@ const LS = "kairouan-minbar-edits";
 const lsGet = () => { try { const s = localStorage.getItem(LS); return s ? JSON.parse(s) : null; } catch (e) { return null; } };
 const lsSet = () => { try { localStorage.setItem(LS, JSON.stringify(E)); return true; } catch (e) { return false; } };
 const status = t => { $("saved").textContent = t; };
-function changed() {
-  renderAll();
+function changed() { renderAll(); persist(); }
+function persist() {
   const local = lsSet();
   clearTimeout(saveTimer);
   if (!editsDoc) { status(local ? "Saved in this browser only" : "Not saved: save a file"); return; }
@@ -478,6 +488,7 @@ function makeMark(host, d, poly, text, label, cls, onClick) {
   return b;
 }
 function renderMarks() {
+  if (editing && current) autoCheck(current);
   marks.before = {}; marks.after = {};
   const hb = document.querySelector("#stage-before .marks"), ha = document.querySelector("#stage-after .marks");
   hb.innerHTML = ""; ha.innerHTML = "";
@@ -534,6 +545,7 @@ function editForm(n) {
   return `<form class="edit" id="edit">
     <label class="row"><input type="checkbox" id="e-sal" ${P(n).sal ? "checked" : ""}> Checked against Saladin</label>
     <label class="row"><input type="checkbox" id="e-cre" ${P(n).cre ? "checked" : ""}> Checked against Creswell</label>
+    <span class="hint-t">Both are ticked when you open a panel. With Creswell ticked and the position unchanged, it counts as the same panel, still on the minbar. Change something only if it differs.</span>
     <div class="field"><label for="e-num">Saladin number</label><div class="row"><input id="e-num" type="number" min="1" max="79" value="${n}"><button type="button" id="e-numgo">Change</button></div>
       <span class="hint-t">If the new number is already used, the two panels swap numbers.</span></div>
     <div class="field"><span class="lab">Still on the minbar</span>${seg("exists", existsOf(n), [["yes", "Yes"], ["no", "No"], ["", "Not checked"]])}</div>
@@ -547,22 +559,26 @@ function editForm(n) {
 }
 function bindForm(n) {
   const f = $("edit"); if (!f) return;
-  $("e-sal").onchange = e => { setP(n, {sal: e.target.checked || undefined}); changed(); };
-  $("e-cre").onchange = e => { setP(n, {cre: e.target.checked || undefined}); changed(); };
+  $("e-sal").onchange = e => { setP(n, {sal: e.target.checked}); changed(); };
+  $("e-cre").onchange = e => { setP(n, {cre: e.target.checked}); changed(); };
   $("e-numgo").onclick = () => renumber(n, +$("e-num").value);
   $("e-num").onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); renumber(n, +$("e-num").value); } };
   $("e-slot").onchange = e => { const v = e.target.value; setP(n, v ? {slot: v, exists: "yes"} : {slot: null}); changed(); };
   $("e-pick").onclick = () => { picking = true; partner = "after"; setView("both"); select(n, false); };
-  $("e-reset").onclick = () => { delete E.panels[n]; changed(); };
+  $("e-reset").onclick = () => { delete E.panels[n]; delete E.slots[defSlot(outlineOf(n))]; changed(); };
   f.querySelectorAll("[data-set]").forEach(b => b.onclick = () => {
     const val = b.dataset.val || undefined;
-    if (b.dataset.set === "exists") setP(n, val === "no" ? {exists: "no", slot: undefined} : {exists: val, slot: undefined});
-    else setSlotNew(slotOf(n), val);
+    if (b.dataset.set === "exists") {
+      if (!val) setP(n, {cre: false});
+      setP(n, {exists: val, slot: undefined});
+      const s = val === "yes" && slotOf(n);
+      if (s && E.slots[s]?.isNew === "yes") delete E.slots[s];
+    } else setSlotNew(slotOf(n), val);
     changed();
   });
 }
 function setSlotNew(id, val) {
-  if (val) E.slots[id] = {isNew: val}; else delete E.slots[id];
+  if (val) E.slots[id] = {isNew: val}; else { delete E.slots[id]; numbersAt(id).forEach(m => setP(m, {cre: false})); }
   if (val === "yes") numbersAt(id).forEach(m => setP(m, {exists: "no", slot: undefined}));
 }
 function renumber(n, m) {
