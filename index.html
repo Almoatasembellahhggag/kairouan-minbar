@@ -119,6 +119,7 @@ body { background: var(--stage); color: var(--fg); font-family: var(--serif); fo
 .edit .quiet-b { align-self: flex-start; color: var(--muted); }
 .seg.small { align-self: flex-start; font-size: .85rem; }
 .tools .saved { color: var(--muted); }
+.tools > #saveb { background: var(--accent); border-color: var(--accent); color: var(--surface); font-weight: 600; }
 .file-b { font: inherit; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; cursor: pointer; }
 details { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--line); padding-top: 10px; }
 summary { cursor: pointer; font-family: var(--label); }
@@ -164,9 +165,10 @@ details ul { padding-left: 1.2em; display: flex; flex-direction: column; gap: 4p
   <input id="go" type="number" min="1" max="79" inputmode="numeric" placeholder="Panel" aria-label="Go to panel">
   <button id="editb" aria-pressed="false">Edit</button>
   <span class="edit-only" id="progress" hidden></span>
-  <button class="edit-only" id="savef" hidden>Save file</button>
+  <button id="saveb" hidden>Save</button>
+  <button id="savef" hidden>Save file</button>
   <label class="edit-only file-b" hidden>Load file<input id="loadf" type="file" accept="application/json,.json" hidden></label>
-  <span class="edit-only saved" id="saved" hidden>Saved in this browser only</span>
+  <span class="saved" id="saved" role="status" hidden>No changes yet</span>
 </div>
 
 <aside class="card" id="card" aria-live="polite"></aside>
@@ -363,7 +365,19 @@ function changed() {
   clearTimeout(saveTimer);
   if (!editsDoc) { status(local ? "Saved in this browser only" : "Not saved: save a file"); return; }
   status("Saving…");
-  saveTimer = setTimeout(() => editsDoc.set(E).then(() => status("Saved")).catch(() => status(local ? "Saved in this browser only" : "Not saved: save a file")), 500);
+  saveTimer = setTimeout(saveOnline, 500);
+}
+const stamp = () => new Date().toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"});
+async function saveOnline() {
+  try { await editsDoc.set(E); status("Saved online at " + stamp()); }
+  catch (e) { status(`Not saved online (${e?.code || "error"}); kept in this browser`); }
+}
+async function saveNow() {
+  clearTimeout(saveTimer);
+  const local = lsSet();
+  if (!editsDoc) { status(local ? "Saved in this browser only at " + stamp() : "Not saved: use Save file"); return; }
+  status("Saving…");
+  await saveOnline();
 }
 async function loadEdits() {
   const local = lsGet();
@@ -374,13 +388,13 @@ async function loadEdits() {
   } catch (e) {}
   if (!window.claude?.use) return;
   db = await window.claude.use("db");
-  if (!db) return;
+  if (!db) { status("Online saving unavailable; saving in this browser"); return; }
   editsDoc = db.doc("edits/main");
   try {
     const snap = await editsDoc.get();
     if (snap.exists) { E = clean(snap.data()); renderAll(); }
-    status("Saved");
-  } catch (e) { editsDoc = null; }
+    status("Online saving ready");
+  } catch (e) { editsDoc = null; status(`Online saving unavailable (${e?.code || "error"}); saving in this browser`); }
 }
 async function saveFile() {
   const data = JSON.stringify(E, null, 1);
@@ -641,11 +655,16 @@ const sources = `<details><summary>Sources and caveats</summary><ul>
   <li>Images: Saladin 1899, fig. 52; Garrigues, Tunis, no. 271 (via Wikimedia Commons); Creswell, Pl. 89a; Creswell prints, Victoria and Albert Museum. Reproduced for research and study.</li>
   </ul><p>Notes marked “Identification” are matches made by comparing photographs, not statements in the sources. Saladin's lists were read from screen captures; check them against the scan before citing. Outlines were traced separately on each photograph. For rectangles and triangles they mark the same position in the frame, which may now hold a replaced panel; for the balustrade they follow Creswell's table of moved panels.</p></details>`;
 
+function syncSave() {
+  const on = editing || view === "both";
+  ["saveb", "savef", "saved"].forEach(id => { $(id).hidden = !on; });
+}
 function setView(v) {
   view = v;
   const show = w => v === w || (v === "both" && (w === "before" || w === partner));
   VW.forEach(w => { $("pane-" + w).hidden = !show(w); });
   $("withseg").hidden = v !== "both";
+  syncSave();
   document.querySelectorAll("#withseg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.w === partner));
   requestAnimationFrame(() => focusPanel(true));
   document.querySelectorAll("#viewseg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === v));
@@ -678,12 +697,14 @@ $("editb").addEventListener("click", () => {
   $("editb").setAttribute("aria-pressed", editing); $("editb").textContent = editing ? "Done editing" : "Edit";
   document.body.classList.toggle("editing", editing);
   document.querySelectorAll(".edit-only").forEach(x => { x.hidden = !editing; });
+  syncSave();
   if (!editing) { stopPick(); fitAll(); }
   if (editing && view !== "both") setView("both");
   renderAll();
   if (editing) requestAnimationFrame(() => focusPanel(true));
 });
 $("savef").addEventListener("click", saveFile);
+$("saveb").addEventListener("click", saveNow);
 document.addEventListener("keydown", e => {
   if (e.key === "Escape" && picking) { stopPick(); renderCard(); return; }
   if (e.target.matches("input, select")) return;
