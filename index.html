@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="The panels of the ninth-century minbar of the Great Mosque of Kairouan, compared before and after the 1907 restoration, with what the sources say about each.">
+<style>*{box-sizing:border-box}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Kairouan Minbar Panels</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Sans+Condensed:wght@500;600&display=swap">
+<style>
+/* Layout: the photographs fill the window (one, or before and after side by side); tools float top-left, the panel record floats right or as a bottom sheet. */
+:root {
+  --bg: #f2f2ef;
+  --surface: #fbfbf9;
+  --fg: #24211c;
+  --muted: #6a645b;
+  --line: #dcdcd6;
+  --accent: #8a5a36;
+  --sel: #e8862f;
+  --stage: #0d0b09;
+  --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --label: "IBM Plex Sans Condensed", "Arial Narrow", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #141210; --surface: #1c1915; --fg: #ebe5db; --muted: #a39a8c; --line: #322c25; --accent: #d0a57a; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #141210; --surface: #1c1915; --fg: #ebe5db; --muted: #a39a8c; --line: #322c25; --accent: #d0a57a; color-scheme: dark }
+
+html, body { height: 100%; }
+body { background: var(--stage); color: var(--fg); font-family: var(--serif); font-size: 16px; line-height: 1.55; overflow: hidden; }
+
+.views { position: fixed; inset: 0; display: flex; gap: 2px; background: var(--stage); }
+@media (max-aspect-ratio: 1/1) { .views.both { flex-direction: column; } }
+.pane { position: relative; flex: 1 1 0; min-width: 0; min-height: 0; overflow: auto; display: flex; }
+.pane[hidden] { display: none !important; }
+.stage { position: relative; margin: auto; flex: none; container-type: inline-size;
+  width: calc(min(var(--pw), var(--ph) * var(--ar)) * var(--zf, 1)); }
+.stage img { display: block; width: 100%; max-width: none; height: auto; user-select: none; -webkit-user-drag: none; }
+.stage svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.shade { opacity: 0; transition: opacity .2s; }
+.filtering .shade { opacity: 1; }
+.outline { fill: none; stroke: var(--sel); stroke-width: 7; stroke-linejoin: round; filter: drop-shadow(0 0 6px rgba(0,0,0,.8)); }
+.tag { position: absolute; left: 10px; bottom: 10px; font-family: var(--label); font-size: .78rem; color: #f3ede3; background: rgba(0,0,0,.55); padding: 3px 8px; border-radius: 4px; pointer-events: none; }
+
+.mark { position: absolute; transform: translate(-50%, -50%); width: 1.7cqw; height: 1.7cqw; min-width: 18px; min-height: 18px;
+  border-radius: 50%; border: 0; background: rgba(18, 14, 10, .6); color: #f6f1e8; padding: 0; cursor: pointer;
+  font-family: var(--label); font-weight: 500; font-size: max(9px, .85cqw); line-height: 1; display: grid; place-items: center;
+  font-variant-numeric: tabular-nums; transition: opacity .15s, background .15s; }
+.mark:hover { background: rgba(18, 14, 10, .9); }
+.mark.new { background: rgba(120, 40, 20, .75); }
+.quiet .mark:not(.sel) { opacity: 0; }
+.quiet .mark:not(.sel):hover { opacity: 1; }
+.filtering .mark:not(.hit):not(.sel) { opacity: .25; }
+.mark.sel { background: var(--sel); color: #fff; box-shadow: 0 0 0 2px #fff; z-index: 2; }
+@media (prefers-reduced-motion: reduce) { .mark, .shade { transition: none; } }
+
+@media (min-width: 761px) { .views.docked { right: calc(min(380px, 38vw) + 20px); } }
+.tools { position: fixed; z-index: 10; top: calc(env(safe-area-inset-top, 0px) + 10px); left: calc(env(safe-area-inset-left, 0px) + 10px);
+  max-width: calc(100vw - 20px); display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px;
+  background: var(--surface); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px;
+  box-shadow: 0 4px 18px rgba(0,0,0,.35); font-family: var(--label); font-size: .88rem; }
+.tools h1 { font-family: var(--serif); font-size: 1rem; font-weight: 600; margin: 0 4px 0 2px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.seg button { font: inherit; border: 0; background: transparent; color: var(--fg); padding: 4px 9px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--surface); }
+.tools select, .tools input, .tools > button { font: inherit; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; }
+.tools > button { cursor: pointer; min-width: 30px; }
+.tools input { width: 4.8em; }
+:is(.tools button, .tools select, .tools input, .mark, .card button, summary):focus-visible { outline: 2px solid var(--sel); outline-offset: 2px; }
+
+.card { position: fixed; z-index: 11; top: calc(env(safe-area-inset-top, 0px) + 10px); max-height: calc(100vh - 20px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  right: calc(env(safe-area-inset-right, 0px) + 10px); width: min(380px, 38vw); overflow: auto;
+  display: flex; flex-direction: column; gap: 14px; background: var(--surface); color: var(--fg); border: 1px solid var(--line);
+  border-radius: 8px; padding: 14px 18px 18px; box-shadow: 0 6px 24px rgba(0,0,0,.4); }
+@media (max-width: 760px) { .card { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); left: calc(env(safe-area-inset-left, 0px) + 8px); right: calc(env(safe-area-inset-right, 0px) + 8px); width: auto; max-height: 50vh; } }
+.close { align-self: flex-end; font-family: var(--label); font-size: .85rem; border: 1px solid var(--line); background: transparent; color: var(--muted); border-radius: 6px; padding: 3px 10px; cursor: pointer; }
+.head { display: flex; align-items: center; gap: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.head b { font-family: var(--label); font-weight: 600; font-size: 2.4rem; line-height: 1; color: var(--accent); font-variant-numeric: tabular-nums; min-width: 1.6em; }
+.head div { display: flex; flex-direction: column; }
+.head .kind { font-weight: 600; }
+.head .sub { color: var(--muted); font-size: .9rem; }
+.note { display: flex; flex-direction: column; gap: 2px; }
+.note .src { font-family: var(--label); font-size: .78rem; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.note p { margin: 0; }
+.note q { font-style: italic; }
+.note.inf p { color: var(--muted); font-size: .93rem; }
+.empty { color: var(--muted); margin: 0; }
+.figs { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
+.fig { margin: 0; display: flex; flex-direction: column; gap: 4px; }
+.fig img { width: 100%; height: auto; max-height: 420px; object-fit: contain; background: var(--stage); border-radius: 3px; }
+.fig figcaption { font-family: var(--label); font-size: .8rem; color: var(--muted); }
+.nav { display: flex; gap: 8px; }
+.nav button { flex: 1; font-family: var(--label); font-size: .88rem; border: 1px solid var(--line); background: transparent; color: var(--muted); border-radius: 6px; padding: 6px; cursor: pointer; }
+details { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--line); padding-top: 10px; }
+summary { cursor: pointer; font-family: var(--label); }
+details ul { padding-left: 1.2em; display: flex; flex-direction: column; gap: 4px; }
+</style>
+
+</head>
+<body>
+<div class="views" id="views">
+  <div class="pane" id="pane-before"><div class="stage" id="stage-before"></div><span class="tag">Before 1907: Garrigues no. 271</span></div>
+  <div class="pane" id="pane-after"><div class="stage" id="stage-after"></div><span class="tag">After 1907: Creswell 1940, Pl. 89a</span></div>
+</div>
+
+<div class="tools">
+  <h1>Kairouan Minbar Panels</h1>
+  <div class="seg" role="group" aria-label="View">
+    <button data-v="before" aria-pressed="true">Before</button>
+    <button data-v="after" aria-pressed="false">After</button>
+    <button data-v="both" aria-pressed="false">Compare</button>
+  </div>
+  <select id="hl" aria-label="Highlight panels">
+    <option value="">Highlight…</option>
+    <option value="geo">Saladin: geometric</option>
+    <option value="ori">Saladin: “more oriental”</option>
+    <option value="rep">Repaired, moved or replaced</option>
+    <option value="pl">In Saladin's plates</option>
+    <option value="cre">In Creswell's plates</option>
+    <option value="tri">Triangles</option>
+    <option value="bal">Balustrade</option>
+  </select>
+  <button id="nums" aria-pressed="true">Numbers on</button>
+  <button id="zout" aria-label="Zoom out">−</button>
+  <button id="zin" aria-label="Zoom in">+</button>
+  <input id="go" type="number" min="1" max="79" inputmode="numeric" placeholder="Panel" aria-label="Go to panel">
+</div>
+
+<aside class="card" id="card" aria-live="polite"></aside>
+
+<script>
+const POLY = {"before":{"1":[[885,2248],[1058,2248],[1058,2340],[885,2340]],"2":[[1140,2125],[1272,2125],[1272,2340],[1140,2340]],"3":[[1332,2265],[1458,2265],[1458,2340],[1332,2340]],"4":[[1545,2140],[1640,2140],[1640,2335],[1545,2335]],"5":[[1682,2280],[1805,2280],[1805,2340],[1682,2340]],"6":[[1847,2150],[1985,2150],[1985,2340],[1847,2340]],"7":[[2060,2240],[2155,2240],[2155,2340],[2060,2340]],"8":[[2195,2110],[2330,2110],[2330,2340],[2195,2340]],"9":[[2378,2250],[2520,2250],[2520,2340],[2378,2340]],"10":[[2565,2110],[2712,2110],[2712,2340],[2565,2340]],"11":[[2750,2230],[2885,2230],[2885,2340],[2750,2340]],"12":[[2925,2010],[3075,2010],[3075,2345],[2925,2345]],"13":[[3110,2040],[3280,2040],[3280,2350],[3110,2350]],"14":[[885,1985],[1058,1985],[1058,2220],[885,2220]],"15":[[1140,1852],[1272,1852],[1272,2090],[1140,2090]],"16":[[1332,1980],[1458,1980],[1458,2232],[1332,2232]],"17":[[1545,1870],[1640,1870],[1640,2100],[1545,2100]],"18":[[1682,2020],[1805,2020],[1805,2235],[1682,2235]],"19":[[1847,1880],[1985,1880],[1985,2110],[1847,2110]],"20":[[2060,1980],[2155,1980],[2155,2210],[2060,2210]],"21":[[2195,1840],[2330,1840],[2330,2070],[2195,2070]],"22":[[2378,1970],[2520,1970],[2520,2230],[2378,2230]],"23":[[2565,1830],[2712,1830],[2712,2050],[2565,2050]],"24":[[2750,1960],[2885,1960],[2885,2210],[2750,2210]],"25":[[885,1730],[1058,1730],[1058,1950],[885,1950]],"26":[[1140,1590],[1272,1590],[1272,1825],[1140,1825]],"27":[[1332,1730],[1458,1730],[1458,1945],[1332,1945]],"28":[[1545,1640],[1640,1640],[1640,1820],[1545,1820]],"29":[[1682,1760],[1805,1760],[1805,1965],[1682,1965]],"30":[[1847,1600],[1985,1600],[1985,1820],[1847,1820]],"31":[[2060,1700],[2155,1700],[2155,1940],[2060,1940]],"32":[[2195,1560],[2330,1560],[2330,1800],[2195,1800]],"33":[[2378,1700],[2520,1700],[2520,1930],[2378,1930]],"34":[[885,1462],[1058,1462],[1058,1700],[885,1700]],"35":[[1140,1330],[1272,1330],[1272,1540],[1140,1540]],"36":[[1332,1462],[1458,1462],[1458,1690],[1332,1690]],"37":[[1545,1350],[1640,1350],[1640,1580],[1545,1580]],"38":[[1682,1480],[1805,1480],[1805,1700],[1682,1700]],"39":[[1847,1330],[1985,1330],[1985,1560],[1847,1560]],"40":[[2060,1420],[2155,1420],[2155,1660],[2060,1660]],"41":[[885,1192],[1058,1192],[1058,1432],[885,1432]],"42":[[1140,1052],[1272,1052],[1272,1282],[1140,1282]],"43":[[1332,1190],[1458,1190],[1458,1420],[1332,1420]],"44":[[1545,1075],[1640,1075],[1640,1300],[1545,1300]],"45":[[1682,1180],[1805,1180],[1805,1432],[1682,1432]],"46":[[885,935],[1058,935],[1058,1160],[885,1160]],"47":[[1140,938],[1272,938],[1272,1030],[1140,1030]],"48":[[1332,940],[1458,940],[1458,1155],[1332,1155]],"49":[[885,670],[1058,670],[1058,900],[885,900]],"50":[[1140,680],[1272,680],[1272,905],[1140,905]],"51":[[885,385],[1058,385],[1058,600],[885,600]],"52":[[1140,398],[1272,398],[1272,615],[1140,615]],"53":[[1330,470],[1388,506],[1388,760],[1330,724]],"54":[[1422,540],[1500,588],[1500,830],[1422,782]],"55":[[1535,610],[1610,656],[1610,900],[1535,854]],"56":[[1655,690],[1725,733],[1725,970],[1655,927]],"57":[[1760,770],[1840,820],[1840,1050],[1760,1000]],"58":[[1880,850],[1960,900],[1960,1150],[1880,1100]],"59":[[2010,940],[2080,983],[2080,1230],[2010,1187]],"60":[[2120,1020],[2195,1066],[2195,1310],[2120,1264]],"61":[[2245,1100],[2320,1146],[2320,1370],[2245,1324]],"62":[[2365,1190],[2440,1236],[2440,1460],[2365,1414]],"63":[[2480,1260],[2565,1313],[2565,1560],[2480,1507]],"64":[[2615,1345],[2690,1392],[2690,1640],[2615,1594]],"65":[[2735,1420],[2820,1473],[2820,1730],[2735,1677]],"66":[[2860,1500],[2950,1556],[2950,1830],[2860,1774]],"67":[[2980,1590],[3060,1640],[3060,1900],[2980,1850]],"68":[[3105,1675],[3185,1725],[3185,2010],[3105,1960]],"69":[[3220,1740],[3290,1783],[3290,2060],[3220,2017]],"70":[[1332,800],[1458,925],[1332,925]],"71":[[1520,935],[1650,1045],[1520,1045]],"72":[[1680,1045],[1832,1170],[1680,1170]],"73":[[1845,1170],[1990,1285],[1845,1285]],"74":[[2012,1290],[2190,1398],[2012,1398]],"75":[[2195,1385],[2362,1530],[2195,1530]],"76":[[2375,1520],[2540,1660],[2375,1660]],"77":[[2565,1655],[2730,1780],[2565,1780]],"78":[[2750,1790],[2910,1920],[2750,1920]],"79":[[2925,1910],[3080,2000],[2925,2000]]},"after":{"51":[[495,200],[640,200],[640,390],[495,390]],"49":[[490,460],[660,460],[660,680],[490,680]],"46":[[490,720],[655,720],[655,935],[490,935]],"41":[[490,975],[655,975],[655,1185],[490,1185]],"34":[[490,1235],[650,1235],[650,1425],[490,1425]],"25":[[490,1495],[650,1495],[650,1695],[490,1695]],"14":[[490,1740],[655,1740],[655,1940],[490,1940]],"1":[[490,1985],[655,1985],[655,2065],[490,2065]],"52":[[737,245],[848,245],[848,425],[737,425]],"50":[[740,460],[848,460],[848,660],[740,660]],"47":[[750,735],[870,735],[870,800],[750,800]],"42":[[755,855],[865,855],[865,1050],[755,1050]],"35":[[750,1105],[860,1105],[860,1310],[750,1310]],"26":[[750,1365],[860,1365],[860,1565],[750,1565]],"15":[[750,1620],[870,1620],[870,1820],[750,1820]],"2":[[750,1870],[860,1870],[860,2065],[750,2065]],"48":[[925,740],[1040,740],[1040,940],[925,940]],"43":[[925,990],[1038,990],[1038,1190],[925,1190]],"36":[[920,1245],[1035,1245],[1035,1450],[920,1450]],"27":[[915,1495],[1035,1495],[1035,1710],[915,1710]],"16":[[915,1760],[1035,1760],[1035,1960],[915,1960]],"3":[[915,2015],[1035,2015],[1035,2070],[915,2070]],"44":[[1125,878],[1200,878],[1200,1062],[1125,1062]],"37":[[1125,1105],[1200,1105],[1200,1315],[1125,1315]],"28":[[1122,1375],[1200,1375],[1200,1570],[1122,1570]],"17":[[1120,1620],[1205,1620],[1205,1820],[1120,1820]],"4":[[1120,1870],[1205,1870],[1205,2070],[1120,2070]],"45":[[1250,990],[1365,990],[1365,1195],[1250,1195]],"38":[[1250,1250],[1365,1250],[1365,1450],[1250,1450]],"29":[[1245,1505],[1355,1505],[1355,1705],[1245,1705]],"18":[[1240,1760],[1355,1760],[1355,1970],[1240,1970]],"5":[[1240,2010],[1355,2010],[1355,2085],[1240,2085]],"39":[[1410,1110],[1525,1110],[1525,1320],[1410,1320]],"30":[[1410,1370],[1525,1370],[1525,1575],[1410,1575]],"19":[[1405,1625],[1525,1625],[1525,1840],[1405,1840]],"6":[[1405,1880],[1520,1880],[1520,2090],[1405,2090]],"40":[[1595,1230],[1695,1230],[1695,1460],[1595,1460]],"31":[[1595,1495],[1685,1495],[1685,1705],[1595,1705]],"20":[[1595,1760],[1680,1760],[1680,1970],[1595,1970]],"7":[[1595,2015],[1680,2015],[1680,2090],[1595,2090]],"32":[[1735,1385],[1845,1385],[1845,1590],[1735,1590]],"21":[[1730,1635],[1835,1635],[1835,1835],[1730,1835]],"8":[[1730,1880],[1830,1880],[1830,2090],[1730,2090]],"33":[[1885,1490],[2005,1490],[2005,1700],[1885,1700]],"22":[[1885,1755],[2000,1755],[2000,1960],[1885,1960]],"9":[[1885,2005],[2000,2005],[2000,2085],[1885,2085]],"23":[[2050,1630],[2165,1630],[2165,1835],[2050,1835]],"10":[[2050,1885],[2165,1885],[2165,2085],[2050,2085]],"24":[[2205,1750],[2325,1750],[2325,1965],[2205,1965]],"11":[[2205,2005],[2320,2005],[2320,2075],[2205,2075]],"12":[[2370,1880],[2490,1880],[2490,2080],[2370,2080]],"13":[[2540,1870],[2650,1870],[2650,2070],[2540,2070]],"70":[[925,575],[1055,680],[925,680]],"71":[[1090,700],[1205,820],[1090,820]],"72":[[1248,850],[1375,940],[1248,940]],"73":[[1412,950],[1535,1060],[1412,1060]],"74":[[1580,1100],[1700,1195],[1580,1195]],"75":[[1735,1250],[1868,1335],[1735,1335]],"76":[[1900,1355],[2040,1450],[1900,1450]],"77":[[2055,1485],[2185,1582],[2055,1582]],"78":[[2210,1600],[2330,1698],[2210,1698]],"79":[[2375,1712],[2505,1832],[2375,1832]],"53":null,"54":[[2400,1500],[2458,1542],[2458,1720],[2400,1678]],"55":[[2300,1420],[2355,1460],[2355,1625],[2300,1585]],"56":[[1450,740],[1520,791],[1520,980],[1450,929]],"57":[[2080,1260],[2150,1311],[2150,1480],[2080,1429]],"58":[[1970,1170],[2040,1221],[2040,1380],[1970,1329]],"59":[[1770,980],[1830,1024],[1830,1220],[1770,1176]],"60":[[1240,560],[1310,611],[1310,820],[1240,769]],"61":[[1670,890],[1730,934],[1730,1140],[1670,1096]],"62":[[2185,1330],[2250,1377],[2250,1550],[2185,1503]],"63":[[1560,820],[1625,867],[1625,1055],[1560,1008]],"64":[[1350,650],[1410,694],[1410,890],[1350,846]],"65":[[1130,460],[1205,515],[1205,740],[1130,685]],"66":null,"67":[[1025,370],[1105,428],[1105,630],[1025,572]],"68":[[930,290],[990,334],[990,540],[930,496]],"69":null},"newBal":{"10":[[1872,1080],[1932,1124],[1932,1300],[1872,1256]],"16":[[2510,1550],[2645,1649],[2645,1835],[2510,1736]]}};
+const XY = {51:[975,494],49:[975,780],46:[975,1055],41:[975,1315],34:[975,1590],25:[975,1837],14:[975,2095],1:[975,2290],
+52:[1205,515],50:[1205,783],47:[1205,983],42:[1205,1187],35:[1205,1433],26:[1205,1700],15:[1205,1965],2:[1205,2216],
+48:[1394,1040],43:[1394,1301],36:[1394,1573],27:[1394,1833],16:[1394,2100],3:[1394,2290],
+44:[1592,1205],37:[1592,1465],28:[1592,1715],17:[1592,1980],4:[1592,2240],
+45:[1740,1315],38:[1740,1590],29:[1740,1855],18:[1740,2130],5:[1740,2305],
+39:[1910,1435],30:[1910,1715],19:[1910,1995],6:[1910,2240],
+40:[2100,1540],31:[2100,1820],20:[2100,2090],7:[2100,2285],
+32:[2270,1680],21:[2270,1955],8:[2270,2230],
+33:[2440,1810],22:[2440,2105],9:[2440,2295],
+23:[2625,1930],10:[2625,2205],24:[2820,2070],11:[2820,2280],12:[2980,2225],13:[3200,2220],
+70:[1395,875],71:[1560,1000],72:[1750,1120],73:[1925,1245],74:[2100,1350],75:[2270,1465],76:[2440,1590],77:[2625,1730],78:[2820,1855],79:[2980,1975],
+53:[1370,640],54:[1465,690],55:[1580,750],56:[1685,815],57:[1790,895],58:[1918,1000],59:[2040,1080],60:[2155,1170],61:[2280,1240],
+62:[2400,1325],63:[2520,1400],64:[2650,1495],65:[2775,1575],66:[2900,1660],67:[3025,1750],68:[3145,1840],69:[3240,1900]};
+const W = 3600, H = 2629;
+
+// rows of rectangular panels, bottom to top (Saladin fig. 52)
+const ROWS = [[1,14,25,34,41,46,49,51],[2,15,26,35,42,47,50,52],[3,16,27,36,43,48],[4,17,28,37,44],[5,18,29,38,45],
+  [6,19,30,39],[7,20,31,40],[8,21,32],[9,22,33],[10,23],[11,24],[12],[13]];
+const TRI = {70:3,71:4,72:5,73:6,74:7,75:8,76:9,77:10,78:11,79:12};
+const PL26 = [41,34,25,15,26,35,42,43,36,27,17,28,37,44,45,38,39];
+const PL27 = [19,30,39,73,31,40,79,76,32,21,77,23,78,24,60,61,62,63,64,65];
+const GEO = [41,32,25,42,35,45,36,37,38,73,31,40,79,33,22,23,77,24,60,61,62,63,64];
+const ORI = [19,44,28,30,39];
+const REP = [9,12,65,70,71,73,74,75,76,78,79,53,54,55,56,57,58,59,60,61,62,63,64,66,67,68,69];
+const CRE = [43,36,44,37,16,3,45,29,39,30,19];
+// Creswell's plates; captions count panels from the bottom of each column
+const CP = {
+  "89a": {cap: "Pl. 89a, “The pulpit”", panels: []},
+  "89b": {cap: "Pl. 89b, “Column 3, 5th panel”: nos. 43 and 36", panels: [43, 36]},
+  "89c": {cap: "Pl. 89c, “Column 3, bottom panel”: nos. 16 and 3", panels: [3, 16]},
+  "89d": {cap: "Pl. 89d, “Column 4, 3rd panel”: nos. 44 and 37", panels: [44, 37]},
+  "90a": {cap: "Pl. 90a, “Column 5, 5th panel”: no. 45", panels: [45]},
+  "90b": {cap: "Pl. 90b, “Column 5, 3rd panel”: no. 29", panels: [29]},
+  "90c": {cap: "Pl. 90c, “Column 6, panels 2–4”: nos. 39, 30, 19", panels: [39, 30, 19]},
+};
+// Creswell's own prints in the V&A (museum nos. 720-1929 to 726-1929), downloaded from collections.vam.ac.uk
+const VA = {
+  "720": {cap: "V&A 720-1929, the whole minbar", panels: []},
+  "721": {cap: "V&A 721-1929: no. 43", panels: [43]},
+  "722": {cap: "V&A 722-1929: no. 30", panels: [30]},
+  "723": {cap: "V&A 723-1929: no. 19", panels: [19]},
+  "724": {cap: "V&A 724-1929: no. 45", panels: [45]},
+  "725": {cap: "V&A 725-1929: no. 29", panels: [29]},
+  "726": {cap: "V&A 726-1929: no. 39", panels: [39]},
+};
+const vaOf = n => Object.keys(VA).find(k => VA[k].panels.includes(n));
+const plateOf = n => Object.keys(CP).find(k => CP[k].panels.includes(n));
+const ORD = ["first","second","third","fourth","fifth","sixth","seventh","eighth"];
+
+// Creswell's balustrade table (p. 317): original panel -> panel after 1907 (null = disappeared)
+const BAL = {1:null,2:15,3:14,4:6,5:12,6:11,7:9,8:4,9:8,10:13,11:7,12:5,13:3,14:null,15:2,16:1,17:null};
+
+const S = {
+  SAL: "Saladin 1899", STR: "Strzygowski 1907", DIM: "Dimand 1937", CRE: "Creswell 1940",
+  MOR: "Moraitou 2001", BLO: "Bloom 2012", PD: "Picotin and Déléry 2018", ID: "Identification", OBS: "This photograph"
+};
+
+const N = {}; const add = (n, src, html, inf) => (N[n] = N[n] || []).push({src, html, inf});
+
+// Saladin p. 104-105
+GEO.filter(n => n < 53).forEach(n => add(n, "SAL", `Listed among the panels with <q>tracés géométriques</q> (geometric layouts), p. 104.` + (n === 32 ? ` <span class="inf">The scan may read 34 here: the Pl. XXVI caption runs 41, 34, 25.</span>` : "")));
+[60,61,62,63,64].forEach(n => add(n, "SAL", `One of the stair-rail panels nos. 60–64 that <q>appartiennent à la même catégorie</q> (belong to the same category) as the geometric panels, p. 104.`));
+ORI.forEach(n => add(n, "SAL", `One of nos. 19, 44, 28, 30 and 39, which <q>présentent un caractère plus oriental encore que les autres</q> (have an even more oriental character than the others), p. 105.`));
+add(39, "SAL", `Its fleuron <q>peut être, je crois, rapproché du fleuron qui décore une des faces du chapiteau sassanide de Takt-i-Bostan</q> (can, I believe, be compared with the fleuron on one face of the Sasanian capital at Taq-i Bustan), citing de Morgan, <i>Mission en Perse</i> IV, figs. 184, 201; p. 105.`);
+add(65, "SAL", `<q>Le n° 65 à droite est renversé; il prouve à mon avis que le mimber a dû être démonté et remonté</q> (no. 65 is reversed; in my view it proves the minbar must have been taken apart and put back together), <q>peut-être après le sac de Kairouan</q> that followed the departure of al-Muʿizz; p. 104.`);
+add(76, "SAL", `Added during that old repair <q>pour remplacer un panneau détruit</q> (to replace a destroyed panel); it <q>seul comporte dans son tracé géométrique le caractère de l'ornementation arabe proprement dite</q> (alone has, in its geometric layout, the character of Arab ornament proper); p. 104.`);
+add(78, "SAL", `<q>Le n° 78 est neuf et a été refait pour remplacer un panneau enlevé au moment de l'occupation française</q> (no. 78 is new, remade to replace a panel removed at the time of the French occupation); p. 104.`);
+
+// Creswell
+add(43, "CRE", `Pl. 89b, <q>the fifth panel in column III</q>: <q>divided into fifteen compartments by four horizontal and two vertical bars, which pass over and under each other</q>; corner and central outer compartments hold circles with four-leaved whorls, the two largest hold vine-leaves and grapes; p. 319.`);
+add(43, "ID", `Creswell counts from the bottom: the fifth panel up in this column is no. 43.`, true);
+add(36, "ID", `The lower panel visible in Creswell's Pl. 89b, below no. 43. Creswell does not describe it.`, true);
+add(44, "CRE", `Pl. 89d, <q>the fifth panel in column IV</q>: <q>a charming arched frame in which rising and coiling tendrils form nine loops</q>, each with a five-lobed leaf or split palmette; spandrels with quatrefoils; <q>crowned by a row of stepped crenellations</q>; p. 319.`);
+add(44, "ID", `The plate caption says “Column 4, 3rd panel”. Counting from the bottom, as for Pl. 89b, the arched panel is the fifth: the text is right and the caption wrong.`, true);
+add(45, "CRE", `Pl. 90a: <q>the superposition of heterogenous motifs</q>. <q>At the bottom is a remarkably clear cut and well-preserved acanthus whorl, on which stands a tripod supporting a conical vase from which spring a pair of half-palmettes with a pine-cone between them</q>; p. 318.`);
+add(45, "ID", `Creswell's photograph shows a vegetal panel, yet no. 45 appears in Saladin's list of geometric panels as read from the scan. One of the two readings is probably wrong; check Saladin's p. 104.`, true);
+add(29, "CRE", `Pl. 90b: <q>we again find a similar superposition of motifs. Here we have a half star-shaped motif at the base of the panel, from the five points of which spring S-shaped motifs ending in half-palmettes</q>; p. 318.`);
+add(37, "ID", `The plaited chain-link panel below no. 44 in Creswell's Pl. 89d. Creswell does not describe it.`, true);
+add(37, "BLO", `Bloom notes that in some Kairouan panels <q>the strapwork designs of the field design actually become the frames</q> (p. 155). He names no panel; this one is a likely test case.`);
+add(3, "ID", `Creswell's Pl. 89c, <q>Column 3, bottom panel</q>, with no. 16 above it in the same plate.`, true);
+add(16, "ID", `The geometric grille at the top of Creswell's Pl. 89c, above no. 3. Its grille looks like the star-and-cross pattern that Bonner says occurs on the minbar; Bonner names no panel.`, true);
+add(39, "CRE", `Pl. 90c, top (the caption's <q>Column 6, panels 2–4</q>): a tree whose straight stem ends <q>in a double volute, like the horns of a ram</q>, with two half-palmettes and a pine-cone, <q>surmounted by a globe-like acanthus whorl composed of four pointed acanthus leaves</q>; p. 318. On the minbar <q>the wing palmettes have developed into the split palmette composition</q>.`);
+add(39, "DIM", `Fig. 10: a palmette tree <q>with a straight stem ending in a pair of volutes or horns and surmounted by a pine cone</q>, crowned by a globular motif he reads as a stylized pomegranate; compared with Mshatta triangle O, which he treats as the model; pp. 301–302.`);
+add(39, "MOR", `Probably her fig. 16: <q>a tree motif composed of a tall trunk with two volutes out of which springs a pine cone, two elaborate leaves and a stylised pomegranate</q>; p. 169.`);
+add(30, "CRE", `Pl. 90c, middle: <q>seven rows of motifs, mostly long tapering pine-cones, grouped in pairs</q>, with three- and five-lobed leaves. Dimand published it upside down; Creswell thinks the panel itself <q>has been placed upside-down, when the panels were assembled on their arrival at Qairawān</q>; p. 319.`);
+add(30, "DIM", `Fig. 13: <q>various motifs are arranged in seven rows, all of which, with the exception of the lowest one, are interconnected</q>; p. 307.`);
+add(19, "CRE", `Pl. 90c, the arched panel Creswell calls <q>perhaps the most beautiful</q>: a cusped outer frame, a palmette tree whose trunk is <q>formed by two twisted stems</q>, and narrow lateral panels with cornucopia motifs <q>similar to those frequently met with in the Sāmarrā style B</q>; p. 318.`);
+add(19, "ID", `Creswell calls it the lowest panel in column VI, but on this photograph no. 6 sits below it; he seems to mean the lowest of the three in his plate.`, true);
+add(9, "CRE", `<q>the bottom one of the ninth row on the east side</q> is one of only two panels that do not appear original; p. 317.`);
+add(9, "PD", `In the pre-1909 photographs <q>le numéro 9 présente au centre des fragments rapportés</q> (no. 9 has inserted fragments at its centre); p. 219 n. 32.`);
+add(12, "CRE", `<q>the panel forming the twelfth</q> row is the other panel that does not appear original; p. 317.`);
+
+// triangles
+[70,73,74,76,78].forEach(n => add(n, "CRE", `The ${["1st","4th","5th","7th","9th"][[70,73,74,76,78].indexOf(n)]} triangle: one of five that <q>on account of their style, must be many centuries later</q>. ` + (n === 78 ? `This one, after Saladin, replaced a stolen panel at the French occupation; p. 317.` : `They are missing from the old photograph Strzygowski published and <q>probably date from the restoration of 1907</q>; p. 317.`)));
+add(70, "PD", `The present no. 70 is one of the new triangles with interlace and cut eight-pointed stars; it <q>ne reprend pas le décor du triangle n° 70 originel</q> (does not repeat the decoration of the original no. 70); p. 223.`);
+add(71, "PD", `The original no. 71, with openwork crosses and squares, <q>apparait brisé sur les clichés anciens</q> (appears broken in the old photographs). New triangles copied its motif; today's no. 71 has a related but not identical design; p. 223.`);
+add(73, "PD", `This is the triangle now on deposit at the Louvre (inv. 74.1976.3.1): the Garrigues photograph shows it at <q>l'emplacement n° 73</q> of Saladin's diagram, and a later photograph shows it replaced; pp. 219–221. A wood analysis identified it as ash, not teak; p. 219 n. 32.`);
+add(74, "PD", `One of the two openwork triangles at the Bardo <q>correspond au n° 74 originel</q> (corresponds to the original no. 74), as Sadoux's photograph of about 1907 shows; p. 221.`);
+add(75, "PD", `A Poinssot archive photograph of the restoration shows an old triangle marked <q>vieux</q>: it is <q>le n° 75 du minbar avant restauration</q>; p. 223.`);
+add(76, "ID", `Saladin saw no. 76 in place by 1899, yet Creswell's seventh triangle is missing from Strzygowski's old photograph. Either it was replaced again or the counts differ; compare Saladin's Pl. XXVII.`, true);
+add(79, "PD", `In the pre-1909 photographs <q>le numéro 79 apparaît composé de deux fragments hétérogènes</q> (no. 79 appears made of two mismatched fragments); p. 219 n. 32. One of the new triangles seems to have been put in its place; p. 223.`);
+
+// balustrade
+for (let k = 1; k <= 17; k++) {
+  const n = 52 + k, to = BAL[k];
+  add(n, "CRE", `Creswell's balustrade panel ${k} (counted from the top). After the 1907 restoration it ` + (to === null ? `<q>has disappeared</q>` : `became panel ${to}`) + `; p. 317.`);
+}
+add(65, "CRE", `Creswell's panel 13 <q>was upside down before the restoration, from which we must conclude that the pulpit had already been taken to pieces at an earlier date</q>; p. 317 n. 9. Saladin reached the same conclusion in 1899.`);
+[68,69].forEach(n => add(n, "PD", `During the restoration <q>a-t-on choisi de remplacer les deux panneaux n° 68 et 69 primitifs de la joue gauche par un seul</q> (the two original panels 68 and 69 of the left face were replaced by a single one); p. 223. Creswell likewise reports a new panel twice the usual width.`));
+[53,54,55,56,57,58,59,60,61,62,63,64,66,67].forEach(n => add(n, "PD", `The new balustrade panels <q>ne reprennent pas le décor des panneaux qui occupaient originellement le même emplacement</q> (do not repeat the decoration of the panels originally in the same place); p. 223.`));
+add(51, "OBS", `The upper left of the panel is broken away in this photograph.`);
+add(53, "OBS", `The upper part of the panel is broken away in this photograph.`);
+
+function info(n) {
+  if (n >= 53) return {kind: "Balustrade panel", where: `${n - 52} of 17, counted from the top of the stair rail`};
+  if (TRI[n]) return {kind: "Triangle", where: `under the stair string, above column ${TRI[n]}`};
+  const r = ROWS.findIndex(a => a.includes(n)), i = ROWS[r].indexOf(n);
+  return {kind: "Rectangular panel", where: `column ${r + 1}, ${ORD[i]} from the bottom (of ${ROWS[r].length})`};
+}
+
+const flags = n => ({ geo: GEO.includes(n), ori: ORI.includes(n), rep: REP.includes(n), pl: PL26.includes(n) || PL27.includes(n),
+  cre: CRE.includes(n), tri: !!TRI[n], bal: n >= 53 });
+const pts = p => p.map(q => q.join(",")).join(" ");
+const centroid = p => { const n = p.length; return [p.reduce((a, q) => a + q[0], 0) / n, p.reduce((a, q) => a + q[1], 0) / n]; };
+
+const VIEWS = {
+  before: {img: "minbar.jpg", alt: "The minbar seen from its left side before 1907, Garrigues photograph no. 271", vw: 3600, vh: 2629, poly: POLY.before},
+  after: {img: "after.jpg", alt: "The minbar seen from its left side after the 1907 restoration, Creswell 1940, Pl. 89a", vw: 3000, vh: 2262, poly: POLY.after},
+};
+const marks = {before: {}, after: {}};
+for (const [v, d] of Object.entries(VIEWS)) {
+  const st = document.getElementById("stage-" + v), pane = document.getElementById("pane-" + v);
+  st.style.setProperty("--ar", d.vw / d.vh);
+  st.innerHTML = `<img src="${d.img}" alt="${d.alt}">
+    <svg viewBox="0 0 ${d.vw} ${d.vh}" preserveAspectRatio="none" aria-hidden="true">
+      <defs><mask id="m-${v}"><rect width="${d.vw}" height="${d.vh}" fill="#fff"/><g class="holes" fill="#000"></g></mask></defs>
+      <rect class="shade" width="${d.vw}" height="${d.vh}" fill="rgba(6,5,3,.74)" mask="url(#m-${v})"/>
+      <polygon class="outline" points=""/>
+    </svg>`;
+  for (let n = 1; n <= 79; n++) {
+    const b = document.createElement("button");
+    b.className = "mark"; b.textContent = n; b.setAttribute("aria-label", "Panel " + n);
+    if (d.poly[n]) { const [x, y] = centroid(d.poly[n]); b.style.left = (x / d.vw * 100) + "%"; b.style.top = (y / d.vh * 100) + "%"; }
+    else b.hidden = true;   // Creswell says this balustrade panel has disappeared
+    b.addEventListener("click", () => select(n, false));
+    st.appendChild(b); marks[v][n] = b;
+  }
+  if (v === "after") Object.entries(POLY.newBal).forEach(([j, p]) => {
+    const [x, y] = centroid(p), b = document.createElement("button");
+    b.className = "mark new"; b.textContent = "N"; b.setAttribute("aria-label", "New balustrade panel, Creswell's no. " + j);
+    b.style.left = (x / d.vw * 100) + "%"; b.style.top = (y / d.vh * 100) + "%";
+    b.addEventListener("click", () => showNew(j));
+    st.appendChild(b);
+  });
+  const fit = () => { st.style.setProperty("--pw", pane.clientWidth + "px"); st.style.setProperty("--ph", pane.clientHeight + "px"); };
+  new ResizeObserver(fit).observe(pane); fit();
+}
+
+const card = document.getElementById("card");
+let current = null, view = "before";
+
+function outline(n) {
+  for (const v in VIEWS) {
+    const o = document.querySelector(`#stage-${v} .outline`);
+    o.setAttribute("points", n && VIEWS[v].poly[n] ? pts(VIEWS[v].poly[n]) : "");
+  }
+}
+
+function afterNote(n) {
+  if (n < 53) return "";
+  const to = BAL[n - 52];
+  return to === null ? `Creswell says this panel <q>has disappeared</q>, so nothing is outlined on his photograph.`
+    : `The balustrade was rebuilt with sixteen panels. Following Creswell's table, this panel now stands at his position ${to} from the top, outlined on his photograph.`;
+}
+
+function showNew(j) {
+  for (const v in marks) if (current) marks[v][current].classList.remove("sel");
+  current = null; outline(null);
+  document.querySelector("#stage-after .outline").setAttribute("points", pts(POLY.newBal[j]));
+  card.hidden = false;
+  card.innerHTML = `<button class="close" id="close">Close</button>
+    <div class="head"><b>N</b><div><span class="kind">New balustrade panel</span><span class="sub">Creswell's position ${j} from the top, after 1907</span></div></div>
+    <div class="note"><span class="src">${S.CRE}</span><p>The balustrade <q>now consists of sixteen only, of which Nos. 10 and 16 are new, the latter being twice the width of the rest</q>; p. 317.</p></div>
+    ${j === "16" ? `<div class="note"><span class="src">${S.PD}</span><p>The two original panels nos. 68 and 69 of the left face were replaced by a single one; p. 223.</p></div>` : ""}`;
+  card.querySelector("#close").onclick = () => { card.hidden = true; };
+}
+
+function select(n, scroll) {
+  if (!VIEWS.before.poly[n]) return;
+  for (const v in marks) { if (current) marks[v][current].classList.remove("sel"); marks[v][n].classList.add("sel"); }
+  current = n; outline(n);
+  const i = info(n), notes = N[n] || [];
+  const plates = [PL26.includes(n) && "XXVI", PL27.includes(n) && "XXVII"].filter(Boolean);
+  const cp = plateOf(n), va = vaOf(n);
+  const figs = [cp && `<figure class="fig"><img src="cres-${cp}.jpg" alt="Creswell ${CP[cp].cap}" loading="lazy"><figcaption>Creswell 1940, ${CP[cp].cap}</figcaption></figure>`,
+    va && `<figure class="fig"><img src="va-${va}.jpg" alt="Creswell photograph ${VA[va].cap}" loading="lazy"><figcaption>Creswell photograph, ${VA[va].cap}</figcaption></figure>`].filter(Boolean);
+  const an = afterNote(n);
+  card.hidden = false;
+  card.innerHTML = `
+    <button class="close" id="close">Close</button>
+    <div class="head"><b>${n}</b><div>
+      <span class="kind">${i.kind}</span>
+      <span class="sub">${i.where[0].toUpperCase() + i.where.slice(1)}</span>
+      ${plates.length ? `<span class="sub">Saladin Pl. ${plates.join(" and ")}</span>` : ""}
+    </div></div>
+    ${figs.length ? `<div class="figs">${figs.join("")}</div>` : ""}
+    ${an ? `<div class="note inf"><span class="src">After 1907</span><p>${an}</p></div>` : ""}
+    ${notes.length ? notes.map(o => `<div class="note${o.inf ? " inf" : ""}"><span class="src">${S[o.src]}</span><p>${o.html}</p></div>`).join("")
+      : `<p class="empty">No source read so far comments on this panel individually. Strzygowski (1907, col. 388) says only that each of the nearly eighty fields <q>zeigt ein anderes Muster</q> (shows a different pattern).</p>`}
+    <div class="nav"><button id="prev">← ${n > 1 ? n - 1 : 79}</button><button id="next">${n < 79 ? n + 1 : 1} →</button></div>
+    ${sources}`;
+  card.querySelector("#close").onclick = () => { card.hidden = true; };
+  card.querySelector("#prev").onclick = () => select(n > 1 ? n - 1 : 79, true);
+  card.querySelector("#next").onclick = () => select(n < 79 ? n + 1 : 1, true);
+  if (location.hash !== "#panel-" + n) history.replaceState(null, "", "#panel-" + n);
+  if (scroll) for (const v in marks) if (!marks[v][n].hidden) marks[v][n].scrollIntoView({block: "center", inline: "center", behavior: "smooth"});
+}
+
+const sources = `<details><summary>Sources and caveats</summary><ul>
+  <li>Saladin 1899: H. Saladin, <i>La Mosquée de Sidi Okba à Kairouan</i> (Paris, 1899), pp. 104–105, fig. 52, Pl. XXVI–XXVII. Panel numbers are his.</li>
+  <li>Strzygowski 1907: “Die Kanzel von Kairuan,” <i>Kunstchronik</i> N.F. 18 (1907), cols. 386–389.</li>
+  <li>Dimand 1937: “Studies in Islamic Ornament I,” <i>Ars Islamica</i> 4 (1937), pp. 293–337.</li>
+  <li>Creswell 1940: <i>Early Muslim Architecture</i> II (Oxford, 1940), pp. 314–319, Pl. 89–90; his prints V&amp;A 720-1929 to 726-1929.</li>
+  <li>Moraitou 2001: “Umayyad ornament on early Islamic woodwork,” <i>Benaki Museum journal</i> 1 (2001), pp. 168–169.</li>
+  <li>Bloom 2012: “Strapwork Designs in Western Islamic Art,” p. 155.</li>
+  <li>Photographs: Garrigues, Tunis, no. 271 (via Wikimedia Commons); K. A. C. Creswell, <i>Early Muslim Architecture</i> II, Pl. 89–90; Creswell prints, Victoria and Albert Museum, 720-1929 to 726-1929. Reproduced for research and study.</li>
+  <li>Picotin and Déléry 2018: “Fragments d'histoire du minbar de Kairouan,” in <i>The Aghlabids and their Neighbors</i> (Leiden, 2018), pp. 207–227.</li>
+  </ul><p>Notes marked “Identification” are matches made by comparing photographs, not statements in the sources. Saladin's lists were read from screen captures; check them against the scan before citing. Outlines were traced separately on each photograph. For rectangles and triangles they mark the same position in the frame, which may now hold a replaced panel; for the balustrade they follow Creswell's table of moved panels.</p></details>`;
+
+function setView(v) {
+  view = v;
+  document.querySelectorAll(".seg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === v));
+  document.getElementById("pane-before").hidden = v === "after";
+  document.getElementById("pane-after").hidden = v === "before";
+  document.getElementById("views").classList.toggle("both", v === "both");
+  if (current) setTimeout(() => select(current, true), 50);
+}
+document.querySelectorAll(".seg button").forEach(b => b.addEventListener("click", () => setView(b.dataset.v)));
+
+document.getElementById("hl").addEventListener("change", e => {
+  const f = e.target.value;
+  for (const v in VIEWS) {
+    const st = document.getElementById("stage-" + v);
+    st.classList.toggle("filtering", !!f);
+    st.querySelector(".holes").innerHTML = f ? Object.keys(VIEWS[v].poly).filter(n => flags(+n)[f] && VIEWS[v].poly[n])
+      .map(n => `<polygon points="${pts(VIEWS[v].poly[n])}"/>`).join("") : "";
+    Object.entries(marks[v]).forEach(([n, b]) => b.classList.toggle("hit", !!f && flags(+n)[f]));
+  }
+});
+const nums = document.getElementById("nums");
+nums.addEventListener("click", () => {
+  const on = nums.getAttribute("aria-pressed") !== "true";
+  nums.setAttribute("aria-pressed", on); nums.textContent = on ? "Numbers on" : "Numbers off";
+  document.querySelectorAll(".stage").forEach(s => s.classList.toggle("quiet", !on));
+});
+const ZF = [1, 1.5, 2.2, 3]; let z = 0;
+const zoom = d => { z = Math.max(0, Math.min(ZF.length - 1, z + d));
+  document.querySelectorAll(".stage").forEach(s => s.style.setProperty("--zf", ZF[z]));
+  if (current) setTimeout(() => { for (const v in marks) if (!marks[v][current].hidden) marks[v][current].scrollIntoView({block: "center", inline: "center"}); }, 30); };
+document.getElementById("zin").onclick = () => zoom(1);
+document.getElementById("zout").onclick = () => zoom(-1);
+document.getElementById("go").addEventListener("change", e => select(+e.target.value, true));
+document.addEventListener("keydown", e => {
+  if (e.target.matches("input, select")) return;
+  if (e.key === "ArrowRight" && current) select(current < 79 ? current + 1 : 1, true);
+  if (e.key === "ArrowLeft" && current) select(current > 1 ? current - 1 : 79, true);
+  if (e.key === "Escape") card.hidden = true;
+});
+
+setView("before");
+const dock = () => document.getElementById("views").classList.toggle("docked", !card.hidden && !card.querySelector(".hint"));
+new MutationObserver(dock).observe(card, {attributes: true, attributeFilter: ["hidden"], childList: true});
+
+const fromHash = () => { const m = location.hash.match(/^#panel-(\d+)$/); return m ? +m[1] : null; };
+window.addEventListener("hashchange", () => { const n = fromHash(); if (n) select(n, true); });
+if (fromHash()) select(fromHash(), true);
+else card.innerHTML = `<button class="close hint" id="close">Close</button><p class="empty">Click a number to read what the sources say about that panel. Use Compare to see the 1890s photograph beside Creswell's, taken after the 1907 restoration.</p>${sources}`;
+if (!fromHash()) card.querySelector("#close").onclick = () => { card.hidden = true; };
+</script>
+
+</body>
+</html>
