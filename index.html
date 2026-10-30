@@ -127,6 +127,14 @@ body { background: var(--stage); color: var(--fg); font-family: var(--serif); fo
 .thumb .n { position: absolute; right: 2px; bottom: 2px; font-family: var(--label); font-size: .72rem; line-height: 1.3; padding: 0 4px; border-radius: 3px; background: rgba(0,0,0,.72); color: #fff; }
 .thumb .n.zero { background: #b3261e; }
 .fig img { cursor: zoom-in; }
+.geomode .filtering .shade { opacity: .55; }
+.geomode .mark.hit { background: var(--sel); color: #fff; box-shadow: 0 0 0 2px #fff; }
+.geomode .mark:not(.hit):not(.new) { background: rgba(18, 14, 10, .6); box-shadow: none; }
+.geomode .filtering .mark:not(.hit) { opacity: .85; }
+.counts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; font-family: var(--label); }
+.counts div { display: flex; flex-direction: column; gap: 1px; }
+.counts b { font-size: 2rem; line-height: 1.1; color: var(--accent); font-variant-numeric: tabular-nums; }
+.counts span { font-size: .8rem; color: var(--muted); }
 .photomode .filtering .shade { opacity: .55; }
 .photomode .filtering .mark:not(.hit):not(.sel) { opacity: .8; }
 .photomode .mark.hit { background: var(--sel); color: #fff; box-shadow: 0 0 0 2px #fff; }
@@ -196,7 +204,7 @@ details ul { padding-left: 1.2em; display: flex; flex-direction: column; gap: 4p
   <input id="go" class="edit-only" type="number" min="1" max="79" inputmode="numeric" placeholder="Panel" aria-label="Go to panel" hidden>
   <button id="allb" class="view-only">All photos</button>
   <a id="pagelink" class="linkb" href="edit.html">Edit</a>
-  <div class="seg edit-only" id="modeseg" role="group" aria-label="What to edit" hidden><button data-m="panels" aria-pressed="true">Panels</button><button data-m="photos" aria-pressed="false">Photos</button></div>
+  <div class="seg edit-only" id="modeseg" role="group" aria-label="What to edit" hidden><button data-m="panels" aria-pressed="true">Panels</button><button data-m="photos" aria-pressed="false">Photos</button><button data-m="geo" aria-pressed="false">Geometric</button></div>
   <button id="saveb" class="edit-only" hidden>Save</button>
   <button id="savef" class="edit-only" hidden>Save file</button>
   <label class="edit-only file-b" hidden>Load file<input id="loadf" type="file" accept="application/json,.json" hidden></label>
@@ -399,9 +407,9 @@ const slotName = id => {
 const SLOT_ORDER = Object.keys(SLOT).sort((a, b) => (a[0] === b[0] ? +a.slice(1) - +b.slice(1) : a[0] < b[0] ? 1 : -1));
 
 // ---- your edits. Only differences from the defaults are stored.
-let E = {v: 2, numbers: {}, panels: {}, slots: {}, photos: {}};
+let E = {v: 2, numbers: {}, panels: {}, slots: {}, photos: {}, geo: {panels: [], slots: []}};
 const clean = raw => {
-  const out = {v: 2, numbers: {}, panels: {}, slots: {}, photos: {}};
+  const out = {v: 2, numbers: {}, panels: {}, slots: {}, photos: {}, geo: {panels: [], slots: []}};
   if (!raw || typeof raw !== "object" || raw.v !== 2) return out;   // earlier formats are dropped
   const isN = n => Number.isInteger(+n) && +n >= 1 && +n <= 79;
   const seen = new Set();
@@ -419,6 +427,10 @@ const clean = raw => {
   Object.entries(raw.slots || {}).forEach(([id, s]) => {
     if (SLOT[id] && s && (s.isNew === "yes" || s.isNew === "no")) out.slots[id] = {isNew: s.isNew};
   });
+  if (raw.geo && typeof raw.geo === "object") {
+    out.geo.panels = [...new Set((raw.geo.panels || []).map(Number).filter(isN))].sort((a, b) => a - b);
+    out.geo.slots = [...new Set((raw.geo.slots || []).filter(s => SLOT[s]))];
+  }
   Object.entries(raw.photos || {}).forEach(([id, p]) => {
     if (!/^[a-z0-9]{1,8}$/.test(id) || !p || !Array.isArray(p.panels)) return;
     out.photos[id] = {panels: [...new Set(p.panels.map(Number).filter(isN))].sort((a, b) => a - b), whole: p.whole === true};
@@ -457,7 +469,18 @@ const setPhoto = (id, panels, whole, news = newsOf(id)) => {
 const photosOfSlot = id => PHOTOS.filter(p => newsOf(p.id).includes(id));
 const photosOf = n => PHOTOS.filter(p => assignedOf(p.id).includes(n));
 const placed = id => assignedOf(id).length > 0 || newsOf(id).length > 0 || wholeOf(id);
-const savedLabel = () => `${savedCount()}/79, photos ${PHOTOS.filter(p => placed(p.id)).length}/${PHOTOS.length}`;
+// geometric panels: a Creswell position holding an old panel shares that panel's mark; a new panel has its own
+const isGeoPanel = n => E.geo.panels.includes(n);
+const isGeoSlot = id => { const ns = numbersAt(id); return ns.length ? ns.some(isGeoPanel) : E.geo.slots.includes(id); };
+const geoSlots = () => Object.keys(SLOT).filter(isGeoSlot);
+const slotKind = id => id[0] === "b" ? "bal" : TRI[+id.slice(1)] ? "tri" : "rect";
+const panelKind = n => { const k = outlineOf(n); return isBal(k) ? "bal" : TRI[k] ? "tri" : "rect"; };
+function geoCounts() {
+  const tally = (list, kind) => { const t = {rect: 0, tri: 0, bal: 0}; list.forEach(x => t[kind(x)]++); return t; };
+  const a = E.geo.panels, b = geoSlots();
+  return {before: a.length, after: b.length, afterTotal: Object.keys(SLOT).length, bt: tally(a, panelKind), at: tally(b, slotKind)};
+}
+const savedLabel = () => `${savedCount()}/79, photos ${PHOTOS.filter(p => placed(p.id)).length}/${PHOTOS.length}${E.geo.panels.length || E.geo.slots.length ? `, geometric ${E.geo.panels.length}` : ""}`;
 
 // ---- saving: the page's database when it has one, this browser otherwise
 let db = null, editsDoc = null, saveTimer = null;
@@ -589,11 +612,11 @@ NUMS.forEach(k => photoHit("before", POLY.before[k], "data-k", k));
 Object.keys(SLOT).forEach(id => photoHit("after", SLOT[id], "data-slot", id));
 const card = $("card");
 let current = null, currentSlot = null, view = "before", partner = "after", editing = false, picking = false, filter = "";
-let photoMode = false, curPhoto = null, photoFilter = "all";
+let photoMode = false, geoMode = false, curPhoto = null, photoFilter = "all";
 const marks = {before: {}, after: {}};
 
 const flags = n => ({ geo: GEO.includes(n), ori: ORI.includes(n), rep: REP.includes(n), pl: assignedOf("s26").includes(n) || assignedOf("s27").includes(n),
-  cre: PHOTOS.some(p => p.group === G_C && assignedOf(p.id).includes(n)), tri: !!TRI[n], bal: isBal(n), todo: !done(n), gone: P(n).cre === "no" || (!homeOf(n) && P(n).cre !== "moved"), newp: !!homeOf(n) && newOf(homeOf(n)) === "yes" });
+  cre: PHOTOS.some(p => p.group === G_C && assignedOf(p.id).includes(n)), tri: !!TRI[n], bal: isBal(n), todo: !done(n), mygeo: isGeoPanel(n), gone: P(n).cre === "no" || (!homeOf(n) && P(n).cre !== "moved"), newp: !!homeOf(n) && newOf(homeOf(n)) === "yes" });
 
 function makeMark(host, d, poly, text, label, cls, onClick) {
   const [x, y] = centroid(poly), b = document.createElement("button");
@@ -639,11 +662,12 @@ function paintSelection() {
   if (sid) marks.after[sid]?.classList.add("sel");
 }
 function applyFilter() {
-  const shown = photoMode && curPhoto ? assignedOf(curPhoto) : null, shownNew = shown ? newsOf(curPhoto) : [];
+  const geoView = geoMode || filter === "mygeo";
+  const shown = photoMode && curPhoto ? assignedOf(curPhoto) : geoMode ? E.geo.panels : null, shownNew = geoMode ? E.geo.slots : shown ? newsOf(curPhoto) : [];
   VW.forEach(v => $("stage-" + v).classList.toggle("filtering", shown ? shown.length + shownNew.length > 0 : !!filter));
   const found = shown ?? (filter ? NUMS.filter(n => flags(n)[filter]) : []);
   document.querySelector("#stage-before .holes").innerHTML = found.map(n => `<polygon points="${pts(POLY.before[outlineOf(n)])}"/>`).join("");
-  const afterIds = !shown && filter === "newp" ? Object.keys(SLOT).filter(id => newOf(id) === "yes") : [...found.map(n => slotOf(n)).filter(Boolean), ...shownNew];
+  const afterIds = geoView ? geoSlots() : !shown && filter === "newp" ? Object.keys(SLOT).filter(id => newOf(id) === "yes") : [...found.map(n => slotOf(n)).filter(Boolean), ...shownNew];
   document.querySelector("#stage-saladin .holes").innerHTML = found.map(n => `<polygon points="${pts(POLY.saladin[n])}"/>`).join("");
   document.querySelector("#stage-after .holes").innerHTML = afterIds.map(id => `<polygon points="${pts(SLOT[id])}"/>`).join("");
   found.forEach(n => marks.before[n]?.classList.add("hit"));
@@ -713,6 +737,8 @@ function renumber(n, m) {
   if (pa) E.panels[m] = pa;
   if (pb) E.panels[n] = pb;
   setP(n, {num: undefined}); setP(m, {num: "yes"});
+  const hasN = isGeoPanel(n), hasM = isGeoPanel(m);
+  E.geo.panels = [...E.geo.panels.filter(x => x !== n && x !== m), ...(hasN ? [m] : []), ...(hasM ? [n] : [])].sort((x, y) => x - y);
   current = m; changed();
 }
 function stopPick() { picking = false; }
@@ -738,7 +764,7 @@ function renderCard() {
   card.hidden = false;
   card.innerHTML = `<button class="close" id="close">Close</button>
     <div class="head"><b>${n}</b><div>
-      <span class="kind">${i.kind}</span>
+      <span class="kind">${i.kind}${isGeoPanel(n) ? ", geometric" : ""}</span>
       <span class="sub">${i.where[0].toUpperCase() + i.where.slice(1)}</span>
       ${plates.length ? `<span class="sub">Saladin Pl. ${plates.join(" and ")}</span>` : ""}
     </div></div>
@@ -778,7 +804,7 @@ function showSlot(id) {
   }
 }
 function select(n, scroll) {
-  if (photoMode) return;
+  if (photoMode || geoMode) return;
   if (!POLY.before[n]) return;
   current = n; currentSlot = null;
   renderMarks(); renderCard();
@@ -787,7 +813,7 @@ function select(n, scroll) {
   if (scroll && !editing) { const ids = [marks.before[n], slotOf(n) && marks.after[slotOf(n)], hits[n]].filter(Boolean);
     ids.forEach(b => b.scrollIntoView({block: "center", inline: "center", behavior: "smooth"})); }
 }
-function renderAll() { renderMarks(); if (photoMode) renderPhotoCard(); else if (current || currentSlot) renderCard(); soon(() => focusPanel()); }
+function renderAll() { renderMarks(); if (photoMode) renderPhotoCard(); else if (geoMode) renderGeoCard(); else if (current || currentSlot) renderCard(); else idleCard(); soon(() => focusPanel()); }
 
 const sources = `<details><summary>Sources and caveats</summary><ul>
   <li>Saladin 1899: H. Saladin, <i>La Mosquée de Sidi Okba à Kairouan</i> (Paris, 1899), pp. 104–105, fig. 52, Pl. XXVI–XXVII. Panel numbers are his.</li>
@@ -873,12 +899,13 @@ $("fitb").onclick = fitAll;
 document.querySelectorAll("#withseg button").forEach(b => b.addEventListener("click", () => { partner = b.dataset.w; setView("both"); }));
 $("go").addEventListener("change", e => {
   if (photoMode) { const n = +e.target.value; if (n >= 1 && n <= 79) togglePanel(n); e.target.value = ""; return; }
+  if (geoMode) { const n = +e.target.value; if (n >= 1 && n <= 79) toggleGeoPanel(n); e.target.value = ""; return; }
   select(+e.target.value, true);
 });
 // the reading page and the edit page are the same code in two states
 const SEPARATE_PAGES = true;
-const HL_VIEW = [["", "Highlight…"], ["geo", "Saladin: geometric"], ["ori", "Saladin: “more oriental”"], ["rep", "Repaired, moved or replaced"], ["pl", "In Saladin's plates"], ["cre", "In Creswell's plates"], ["tri", "Triangles"], ["bal", "Balustrade"], ["gone", "Not in Creswell"], ["newp", "New in Creswell"]];
-const HL_EDIT = [["", "Highlight…"], ["todo", "Not answered yet"], ["gone", "Not in Creswell"], ["newp", "New in Creswell"]];
+const HL_VIEW = [["", "Highlight…"], ["mygeo", "Geometric panels"], ["geo", "Saladin: geometric"], ["ori", "Saladin: “more oriental”"], ["rep", "Repaired, moved or replaced"], ["pl", "In Saladin's plates"], ["cre", "In Creswell's plates"], ["tri", "Triangles"], ["bal", "Balustrade"], ["gone", "Not in Creswell"], ["newp", "New in Creswell"]];
+const HL_EDIT = [["", "Highlight…"], ["mygeo", "Geometric panels"], ["todo", "Not answered yet"], ["gone", "Not in Creswell"], ["newp", "New in Creswell"]];
 let pageReady = false;
 function setPage(edit) {
   if (pageReady && edit === editing) return;
@@ -892,7 +919,7 @@ function setPage(edit) {
   pl.textContent = edit ? "Back to the panels" : "Edit";
   pl.href = SEPARATE_PAGES ? (edit ? "index.html" : "edit.html") : (edit ? "#view" : "#edit");
   filter = ""; $("hl").innerHTML = (edit ? HL_EDIT : HL_VIEW).map(([v, t]) => `<option value="${v}">${t}</option>`).join("");
-  if (!edit) { stopPick(); setPhotoMode(false); fitAll(); setView("before"); }
+  if (!edit) { stopPick(); setMode("panels"); fitAll(); setView("before"); }
   else setView("both");
   if (current || currentSlot) renderAll(); else { renderMarks(); idleCard(); }
   if (edit) soon(() => focusPanel(true));
@@ -908,6 +935,7 @@ function idleCard() {
     const groups = [...new Set(PHOTOS.map(q => q.group))];
     card.innerHTML = `<button class="close" id="close">Close</button>
       <p class="empty">Click a number to read about a panel. Double-click a panel to zoom to it. Click a photo below to enlarge it.</p>
+      ${E.geo.panels.length || E.geo.slots.length ? (c => `<p class="empty">Geometric panels on this face: ${c.before} of 79 before 1907, ${c.after} of ${c.afterTotal} in Creswell's photograph.</p>`)(geoCounts()) : ""}
       ${groups.map(g => `<div class="field"><span class="glabel">${g}</span><div class="thumbs">${PHOTOS.filter(q => q.group === g).map(q => `<button type="button" class="thumb" data-open="${q.id}" title="${q.title}" aria-label="${q.title}"><img src="${q.thumb}" alt="" loading="lazy"></button>`).join("")}</div></div>`).join("")}
       ${sources}`;
   }
@@ -931,7 +959,6 @@ function setPhotoMode(on) {
   if (photoMode === on) return;
   photoMode = on;
   document.body.classList.toggle("photomode", on);
-  document.querySelectorAll("#modeseg button").forEach(b => b.setAttribute("aria-pressed", (b.dataset.m === "photos") === on));
   if (on) {
     current = null; currentSlot = null; follow = null; stopPick();
     curPhoto = curPhoto || (PHOTOS.find(p => !placed(p.id)) || PHOTOS[0]).id;
@@ -940,7 +967,48 @@ function setPhotoMode(on) {
     renderAll();
   } else { curPhoto = null; clearSelection(); }
 }
-document.querySelectorAll("#modeseg button").forEach(b => b.addEventListener("click", () => setPhotoMode(b.dataset.m === "photos")));
+function setGeoMode(on) {
+  if (geoMode === on) return;
+  geoMode = on;
+  document.body.classList.toggle("geomode", on);
+  if (on) {
+    current = null; currentSlot = null; follow = null; stopPick();
+    if (view !== "both") setView("both");
+    card.hidden = false; card.scrollTop = 0;
+    fitAll(); renderAll();
+  } else clearSelection();
+}
+function setMode(m) {
+  setPhotoMode(false); setGeoMode(false);
+  if (m === "photos") setPhotoMode(true);
+  if (m === "geo") setGeoMode(true);
+  document.querySelectorAll("#modeseg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.m === m));
+}
+document.querySelectorAll("#modeseg button").forEach(b => b.addEventListener("click", () => setMode(b.dataset.m)));
+function toggleGeoPanel(n) {
+  E.geo.panels = isGeoPanel(n) ? E.geo.panels.filter(x => x !== n) : [...E.geo.panels, n].sort((a, b) => a - b);
+  changed();
+}
+function toggleGeoSlot(id) {
+  const ns = numbersAt(id);
+  if (ns.length) { toggleGeoPanel(ns[0]); return; }
+  E.geo.slots = E.geo.slots.includes(id) ? E.geo.slots.filter(s => s !== id) : [...E.geo.slots, id];
+  changed();
+}
+function renderGeoCard() {
+  const c = geoCounts(), top = card.scrollTop, a = E.geo.panels, nw = E.geo.slots.filter(id => !numbersAt(id).length);
+  const free = new Set(NUMS.filter(n => isGeoPanel(n) && !slotOf(n)));
+  card.innerHTML = `<div class="counts">
+      <div><b>${c.before}</b><span>of 79 before 1907</span><span>${c.bt.rect}/52 rectangles</span><span>${c.bt.tri}/10 triangles</span><span>${c.bt.bal}/17 balustrade</span></div>
+      <div><b>${c.after}</b><span>of ${c.afterTotal} in Creswell</span><span>${c.at.rect}/52 rectangles</span><span>${c.at.tri}/10 triangles</span><span>${c.at.bal}/16 balustrade</span></div>
+    </div>
+    <p class="empty">Click a panel on any image to mark it geometric, and click again to unmark it. A panel still on the minbar counts in both totals. A new panel marked N counts only in Creswell's.</p>
+    <div class="edit">
+      <div class="field"><span class="lab">Marked panels</span><div class="chips">${a.length ? a.map(n => `<button type="button" class="chip" data-gp="${n}" aria-label="Unmark panel ${n}">${n}${free.has(n) ? " (gone)" : ""} ×</button>`).join("") : `<span class="hint-t">None yet</span>`}</div></div>
+      ${nw.length ? `<div class="field"><span class="lab">Marked new panels</span><div class="chips">${nw.map(id => `<button type="button" class="chip" data-gs="${id}" aria-label="Unmark new panel, ${slotName(id)}">N: ${slotName(id)} ×</button>`).join("")}</div></div>` : ""}
+    </div>`;
+  card.scrollTop = top;
+}
 function togglePanel(n) {
   const a = assignedOf(curPhoto);
   setPhoto(curPhoto, a.includes(n) ? a.filter(m => m !== n) : [...a, n], wholeOf(curPhoto));
@@ -996,6 +1064,9 @@ function renderPhotoCard() {
 }
 card.addEventListener("click", e => {
   const el = e.target;
+  const gp = el.closest?.("[data-gp]"), gs = el.closest?.("[data-gs]");
+  if (gp) { toggleGeoPanel(+gp.dataset.gp); return; }
+  if (gs) { toggleGeoSlot(gs.dataset.gs); return; }
   const pick = el.closest?.("[data-ph]"), rm = el.closest?.("[data-rm]"), pf = el.closest?.("[data-pf]"), rmn = el.closest?.("[data-rmn]");
   if (pick) { curPhoto = pick.dataset.ph; card.scrollTop = 0; renderAll(); return; }
   if (rm) { togglePanel(+rm.dataset.rm); return; }
@@ -1022,11 +1093,12 @@ $("lb").addEventListener("click", e => {
 });
 // in photo mode a click on a number or panel changes the photo's list instead of selecting
 document.querySelectorAll(".scroll").forEach(sc => sc.addEventListener("click", e => {
-  if (!photoMode) return;
+  if (!photoMode && !geoMode) return;
   e.stopImmediatePropagation();
   const a = e.target.closest?.("[data-n], [data-k], [data-slot]");
   if (!a) return;
   const nAttr = a.getAttribute("data-n"), k = a.getAttribute("data-k"), slot = a.getAttribute("data-slot");
+  if (geoMode) { if (slot) toggleGeoSlot(slot); else toggleGeoPanel(nAttr ? +nAttr : numberAt(+k)); return; }
   const n = nAttr ? +nAttr : k ? numberAt(+k) : numbersAt(slot)[0];
   if (n) togglePanel(n); else toggleNew(slot);
 }, true));
