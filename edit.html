@@ -1,0 +1,1081 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="The panels of the ninth-century minbar of the Great Mosque of Kairouan, compared before and after the 1907 restoration, with what the sources say about each.">
+<style>*{box-sizing:border-box}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Kairouan Minbar Panels</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Sans+Condensed:wght@500;600&display=swap">
+<style>
+/* Layout: the photographs fill the window (one, or before and after side by side); tools float top-left, the panel record floats right or as a bottom sheet. */
+:root {
+  --bg: #f2f2ef;
+  --surface: #fbfbf9;
+  --fg: #24211c;
+  --muted: #6a645b;
+  --line: #dcdcd6;
+  --accent: #8a5a36;
+  --sel: #e8862f;
+  --stage: #0d0b09;
+  --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --label: "IBM Plex Sans Condensed", "Arial Narrow", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #141210; --surface: #1c1915; --fg: #ebe5db; --muted: #a39a8c; --line: #322c25; --accent: #d0a57a; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #141210; --surface: #1c1915; --fg: #ebe5db; --muted: #a39a8c; --line: #322c25; --accent: #d0a57a; color-scheme: dark }
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
+body { background: var(--stage); color: var(--fg); font-family: var(--serif); font-size: 16px; line-height: 1.55; overflow: hidden; }
+
+.views { position: fixed; inset: 0; display: flex; gap: 2px; background: var(--stage); }
+@media (max-aspect-ratio: 1/1) { .views.both { flex-direction: column; } }
+.pane { position: relative; flex: 1 1 0; min-width: 0; min-height: 0; }
+.scroll { position: absolute; inset: 0; overflow: auto; display: flex; }
+.pane[hidden] { display: none !important; }
+.stage { position: relative; margin: auto; flex: none; container-type: inline-size;
+  width: calc(min(var(--pw), var(--ph) * var(--ar)) * var(--zf, 1)); }
+.stage img { display: block; width: 100%; max-width: none; height: auto; user-select: none; -webkit-user-drag: none; }
+.stage svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.shade { opacity: 0; transition: opacity .2s; }
+.filtering .shade { opacity: 1; }
+.hits polygon { fill: transparent; pointer-events: all; cursor: pointer; outline: none; }
+.hits polygon:hover, .hits polygon:focus-visible { fill: rgba(232, 134, 47, .14); }
+#stage-saladin .hits polygon:hover, #stage-saladin .hits polygon:focus-visible { fill: rgba(232, 134, 47, .28); }
+.editing:not(.photomode) #stage-saladin .hits polygon.c1 { fill: rgba(227, 195, 74, .32); }
+.editing:not(.photomode) #stage-saladin .hits polygon.c2 { fill: rgba(47, 143, 78, .32); }
+#stage-saladin .hits polygon.sel { fill: rgba(232, 134, 47, .25); }
+.outline { fill: none; stroke: var(--sel); stroke-width: 3; vector-effect: non-scaling-stroke; stroke-linejoin: round; filter: drop-shadow(0 0 6px rgba(0,0,0,.8)); }
+.pzoom { position: absolute; z-index: 5; right: 10px; bottom: 10px; display: flex; align-items: center; gap: 2px; padding: 2px; border-radius: 6px; background: rgba(0,0,0,.62); font-family: var(--label); font-size: .82rem; color: #f3ede3; font-variant-numeric: tabular-nums; }
+.pzoom button { font: inherit; color: inherit; background: transparent; border: 0; border-radius: 4px; min-width: 28px; padding: 3px 7px; cursor: pointer; }
+.pzoom button:hover { background: rgba(255,255,255,.18); }
+.pzoom button:focus-visible { outline: 2px solid var(--sel); outline-offset: 1px; }
+.pzoom span { min-width: 3em; text-align: center; }
+.scroll.zoomed { cursor: grab; }
+.scroll.panning, .scroll.panning * { cursor: grabbing !important; }
+.tag { position: absolute; left: 10px; bottom: 10px; font-family: var(--label); font-size: .78rem; color: #f3ede3; background: rgba(0,0,0,.55); padding: 3px 8px; border-radius: 4px; pointer-events: none; }
+
+.mark { position: absolute; transform: translate(-50%, -50%); width: clamp(18px, 1.7cqw, 30px); height: clamp(18px, 1.7cqw, 30px);
+  border-radius: 50%; border: 0; background: rgba(18, 14, 10, .6); color: #f6f1e8; padding: 0; cursor: pointer;
+  font-family: var(--label); font-weight: 500; font-size: clamp(9px, .85cqw, 14px); line-height: 1; display: grid; place-items: center;
+  font-variant-numeric: tabular-nums; transition: opacity .15s, background .15s; }
+.mark:hover { background: rgba(18, 14, 10, .9); }
+.mark.new { background: rgba(120, 40, 20, .8); }
+.mark.orphan { background: rgba(170, 130, 10, .9); }
+.mark.clash { background: rgba(170, 20, 20, .92); width: auto; padding: 0 6px; border-radius: 12px; }
+.editing .mark.c1 { box-shadow: 0 0 0 2px #e3c34a; }
+.editing .mark.c2 { background: #2f8f4e; color: #fff; }
+.editing .mark.sel { background: var(--sel); box-shadow: 0 0 0 2px #fff; }
+.quiet .mark:not(.sel) { opacity: 0; }
+.quiet .mark:not(.sel):hover { opacity: 1; }
+.filtering .mark:not(.hit):not(.sel) { opacity: .25; }
+.mark.sel { background: var(--sel); color: #fff; box-shadow: 0 0 0 2px #fff; z-index: 2; }
+@media (prefers-reduced-motion: reduce) { .mark, .shade { transition: none; } }
+
+@media (min-width: 761px) { .views.docked { right: calc(min(380px, 38vw) + 20px); } .views.docked ~ .tools { max-width: calc(100vw - min(380px, 38vw) - 40px); } }
+.tools { position: fixed; z-index: 10; top: calc(env(safe-area-inset-top, 0px) + 10px); left: calc(env(safe-area-inset-left, 0px) + 10px);
+  max-width: calc(100vw - 20px); display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px;
+  background: var(--surface); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px;
+  box-shadow: 0 4px 18px rgba(0,0,0,.35); font-family: var(--label); font-size: .88rem; }
+.tools h1 { font-family: var(--serif); font-size: 1rem; font-weight: 600; margin: 0 4px 0 2px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.seg button { font: inherit; border: 0; background: transparent; color: var(--fg); padding: 4px 9px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--surface); }
+.tools select, .tools input, .tools > button { font: inherit; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; }
+.tools > button { cursor: pointer; min-width: 30px; }
+.tools input { width: 4.8em; }
+.edit-only[hidden], .view-only[hidden] { display: none !important; }
+:is(.tools button, .tools select, .tools input, .mark, .card button, summary):focus-visible { outline: 2px solid var(--sel); outline-offset: 2px; }
+
+.card { position: fixed; z-index: 11; top: calc(env(safe-area-inset-top, 0px) + 10px); max-height: calc(100vh - 20px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  right: calc(env(safe-area-inset-right, 0px) + 10px); width: min(380px, 38vw); overflow: auto;
+  display: flex; flex-direction: column; gap: 14px; background: var(--surface); color: var(--fg); border: 1px solid var(--line);
+  border-radius: 8px; padding: 14px 18px 18px; box-shadow: 0 6px 24px rgba(0,0,0,.4); }
+@media (max-width: 760px) { .card { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); left: calc(env(safe-area-inset-left, 0px) + 8px); right: calc(env(safe-area-inset-right, 0px) + 8px); width: auto; max-height: 50vh; } }
+.card > * { flex: none; }
+.close { align-self: flex-end; font-family: var(--label); font-size: .85rem; border: 1px solid var(--line); background: transparent; color: var(--muted); border-radius: 6px; padding: 3px 10px; cursor: pointer; }
+.head { display: flex; align-items: center; gap: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.head b { font-family: var(--label); font-weight: 600; font-size: 2.4rem; line-height: 1; color: var(--accent); font-variant-numeric: tabular-nums; min-width: 1.6em; }
+.head div { display: flex; flex-direction: column; }
+.head .kind { font-weight: 600; }
+.head .sub { color: var(--muted); font-size: .9rem; }
+.note { display: flex; flex-direction: column; gap: 2px; }
+.note .src { font-family: var(--label); font-size: .78rem; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.note p { margin: 0; }
+.note q { font-style: italic; }
+.note.inf p { color: var(--muted); font-size: .93rem; }
+.empty { color: var(--muted); margin: 0; }
+.figs { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
+.fig { margin: 0; display: flex; flex-direction: column; gap: 4px; }
+.fig img { width: 100%; height: auto; max-height: 420px; object-fit: contain; background: var(--stage); border-radius: 3px; }
+.fig figcaption { font-family: var(--label); font-size: .8rem; color: var(--muted); }
+.nav { display: flex; gap: 8px; }
+.nav button { flex: 1; font-family: var(--label); font-size: .88rem; border: 1px solid var(--line); background: transparent; color: var(--muted); border-radius: 6px; padding: 6px; cursor: pointer; }
+.field { display: flex; flex-direction: column; gap: 4px; }
+.glabel { font-family: var(--label); font-size: .78rem; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.chip { font-family: var(--label); font-size: .85rem; font-variant-numeric: tabular-nums; border: 1px solid var(--accent); background: transparent; color: var(--fg); border-radius: 12px; padding: 1px 8px; cursor: pointer; }
+.thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(62px, 1fr)); gap: 5px; }
+.thumb { position: relative; padding: 0; border: 0; background: var(--stage); border-radius: 3px; cursor: pointer; aspect-ratio: 1; overflow: hidden; }
+.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.thumb.on { outline: 3px solid var(--sel); outline-offset: 1px; }
+.thumb .n { position: absolute; right: 2px; bottom: 2px; font-family: var(--label); font-size: .72rem; line-height: 1.3; padding: 0 4px; border-radius: 3px; background: rgba(0,0,0,.72); color: #fff; }
+.thumb .n.zero { background: #b3261e; }
+.fig img { cursor: zoom-in; }
+.photomode .filtering .shade { opacity: .55; }
+.photomode .filtering .mark:not(.hit):not(.sel) { opacity: .8; }
+.photomode .mark.hit { background: var(--sel); color: #fff; box-shadow: 0 0 0 2px #fff; }
+#lb { position: fixed; inset: 0; z-index: 30; display: flex; flex-direction: column; align-items: center; overflow: auto; background: rgba(0,0,0,.93); padding: 12px; }
+#lb img { max-width: 100%; max-height: calc(100vh - 70px); margin: auto; cursor: zoom-in; }
+#lb.big img { max-width: none; max-height: none; margin: 0; cursor: zoom-out; }
+#lb .chips { justify-content: center; margin-top: 6px; }
+#lb .chip { color: #f3ede3; }
+.tools > a.linkb { color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px; text-decoration: none; }
+.tools > a.linkb:focus-visible { outline: 2px solid var(--sel); outline-offset: 2px; }
+#lb p { color: #f3ede3; font-family: var(--label); font-size: .85rem; margin: 6px 0 0; text-align: center; }
+.edit { display: flex; flex-direction: column; gap: 10px; padding: 12px; border: 1px solid var(--accent); border-radius: 6px; font-family: var(--label); font-size: .9rem; }
+.edit .row { display: flex; align-items: center; gap: 8px; }
+.edit .field { display: flex; flex-direction: column; gap: 4px; }
+.edit .lab, .edit .field > label { color: var(--muted); }
+.edit input[type=number] { width: 5em; }
+.edit input[type=number], .edit select, .edit button:not(.seg button) { font: inherit; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; }
+.edit select { max-width: 100%; }
+.edit button { cursor: pointer; }
+.edit .hint-t { color: var(--muted); font-size: .8rem; }
+.edit .warn { color: #b3261e; font-size: .85rem; }
+.edit .quiet-b { align-self: flex-start; color: var(--muted); }
+.seg.small { align-self: flex-start; font-size: .85rem; }
+.tools .saved { color: var(--muted); }
+.tools > #saveb { background: var(--accent); border-color: var(--accent); color: var(--surface); font-weight: 600; }
+.file-b { font: inherit; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; cursor: pointer; }
+details { color: var(--muted); font-size: .88rem; border-top: 1px solid var(--line); padding-top: 10px; }
+summary { cursor: pointer; font-family: var(--label); }
+details ul { padding-left: 1.2em; display: flex; flex-direction: column; gap: 4px; }
+</style>
+
+</head>
+<body>
+<div class="views" id="views">
+  <div class="pane" id="pane-before"><div class="scroll" id="scroll-before"><div class="stage" id="stage-before"></div></div><div class="pzoom" role="group" aria-label="Zoom this image"><button data-pz="out" aria-label="Zoom this image out">−</button><span id="zl-before">1×</span><button data-pz="in" aria-label="Zoom this image in">+</button><button data-pz="fit">Fit</button></div><span class="tag">Before 1907: Garrigues no. 271</span></div>
+  <div class="pane" id="pane-after"><div class="scroll" id="scroll-after"><div class="stage" id="stage-after"></div></div><div class="pzoom" role="group" aria-label="Zoom this image"><button data-pz="out" aria-label="Zoom this image out">−</button><span id="zl-after">1×</span><button data-pz="in" aria-label="Zoom this image in">+</button><button data-pz="fit">Fit</button></div><span class="tag">After 1907: Creswell 1940, Pl. 89a</span></div>
+  <div class="pane" id="pane-saladin"><div class="scroll" id="scroll-saladin"><div class="stage" id="stage-saladin"></div></div><div class="pzoom" role="group" aria-label="Zoom this image"><button data-pz="out" aria-label="Zoom this image out">−</button><span id="zl-saladin">1×</span><button data-pz="in" aria-label="Zoom this image in">+</button><button data-pz="fit">Fit</button></div><span class="tag">Saladin 1899, fig. 52, drawn 1896</span></div>
+</div>
+
+<div class="tools">
+  <h1 id="ttl">Kairouan Minbar Panels</h1>
+  <div class="seg" id="viewseg" role="group" aria-label="View">
+    <button data-v="before" aria-pressed="true">Before</button>
+    <button data-v="after" aria-pressed="false">Creswell</button>
+    <button data-v="saladin" aria-pressed="false">Saladin</button>
+    <button data-v="both" aria-pressed="false">Compare</button>
+  </div>
+  <div class="seg" id="withseg" role="group" aria-label="Compare the 1890s photograph with" hidden>
+    <button data-w="after" aria-pressed="true">with Creswell</button>
+    <button data-w="saladin" aria-pressed="false">with Saladin</button>
+  </div>
+  <select id="hl" aria-label="Highlight panels">
+    <option value="">Highlight…</option>
+    <option value="geo">Saladin: geometric</option>
+    <option value="ori">Saladin: “more oriental”</option>
+    <option value="rep">Repaired, moved or replaced</option>
+    <option value="pl">In Saladin's plates</option>
+    <option value="cre">In Creswell's plates</option>
+    <option value="tri">Triangles</option>
+    <option value="bal">Balustrade</option>
+    <option value="todo">Not answered yet</option>
+    <option value="gone">Not in Creswell</option>
+    <option value="newp">New in Creswell</option>
+  </select>
+  <button id="nums" class="view-only" aria-pressed="true">Numbers on</button>
+  <button id="fitb">Whole minbar</button>
+  <input id="go" class="edit-only" type="number" min="1" max="79" inputmode="numeric" placeholder="Panel" aria-label="Go to panel" hidden>
+  <button id="allb" class="view-only">All photos</button>
+  <a id="pagelink" class="linkb" href="edit.html">Edit</a>
+  <div class="seg edit-only" id="modeseg" role="group" aria-label="What to edit" hidden><button data-m="panels" aria-pressed="true">Panels</button><button data-m="photos" aria-pressed="false">Photos</button></div>
+  <button id="saveb" class="edit-only" hidden>Save</button>
+  <button id="savef" class="edit-only" hidden>Save file</button>
+  <label class="edit-only file-b" hidden>Load file<input id="loadf" type="file" accept="application/json,.json" hidden></label>
+  <span class="edit-only saved" id="saved" role="status" hidden>Saved 0/79</span>
+</div>
+
+<aside class="card" id="card" aria-live="polite"></aside>
+<div id="lb" role="dialog" aria-label="Enlarged photograph" hidden><img alt=""><p></p><div class="chips" id="lbchips"></div></div>
+
+<script>
+const diag = {errors: [], db: "not started", save: ""};
+let diagDoc = null, diagTimer = null;
+function sendDiag() {
+  if (!diagDoc) return;
+  clearTimeout(diagTimer);
+  diagTimer = setTimeout(() => diagDoc.set({at: new Date().toISOString(), ua: navigator.userAgent, framed: window !== window.top, size: innerWidth + "x" + innerHeight, ...diag}).catch(e => showErr("diag write failed: " + (e?.code || e))), 300);
+}
+function showErr(t) {
+  diag.errors.push(String(t).slice(0, 200)); if (diag.errors.length > 10) diag.errors.shift();
+  let b = document.getElementById("errbar");
+  if (!b) { b = document.createElement("div"); b.id = "errbar"; b.setAttribute("role", "alert");
+    b.style.cssText = "position:fixed;z-index:50;left:10px;bottom:44px;max-width:60vw;background:#b3261e;color:#fff;font:13px/1.4 sans-serif;padding:6px 10px;border-radius:6px"; document.body.appendChild(b); }
+  b.textContent = "Page error: " + t;
+  sendDiag();
+}
+window.addEventListener("error", e => showErr(e.message + " (line " + e.lineno + ")"));
+window.addEventListener("unhandledrejection", e => showErr("rejected: " + (e.reason?.code || e.reason?.message || e.reason)));
+// animation frames can stall in a hidden or throttled frame, so a timer backs them up
+function soon(f) { let ran = false; const go = () => { if (!ran) { ran = true; f(); } }; requestAnimationFrame(go); setTimeout(go, 120); }
+const POLY = {"before":{"1":[[885,2248],[1058,2248],[1058,2340],[885,2340]],"2":[[1140,2125],[1272,2125],[1272,2340],[1140,2340]],"3":[[1332,2265],[1458,2265],[1458,2340],[1332,2340]],"4":[[1545,2140],[1640,2140],[1640,2335],[1545,2335]],"5":[[1682,2280],[1805,2280],[1805,2340],[1682,2340]],"6":[[1847,2150],[1985,2150],[1985,2340],[1847,2340]],"7":[[2060,2240],[2155,2240],[2155,2340],[2060,2340]],"8":[[2195,2110],[2330,2110],[2330,2340],[2195,2340]],"9":[[2378,2250],[2520,2250],[2520,2340],[2378,2340]],"10":[[2565,2110],[2712,2110],[2712,2340],[2565,2340]],"11":[[2750,2230],[2885,2230],[2885,2340],[2750,2340]],"12":[[2925,2010],[3075,2010],[3075,2345],[2925,2345]],"13":[[3110,2040],[3280,2040],[3280,2350],[3110,2350]],"14":[[885,1985],[1058,1985],[1058,2220],[885,2220]],"15":[[1140,1852],[1272,1852],[1272,2090],[1140,2090]],"16":[[1332,1980],[1458,1980],[1458,2232],[1332,2232]],"17":[[1545,1870],[1640,1870],[1640,2100],[1545,2100]],"18":[[1682,2020],[1805,2020],[1805,2235],[1682,2235]],"19":[[1847,1880],[1985,1880],[1985,2110],[1847,2110]],"20":[[2060,1980],[2155,1980],[2155,2210],[2060,2210]],"21":[[2195,1840],[2330,1840],[2330,2070],[2195,2070]],"22":[[2378,1970],[2520,1970],[2520,2230],[2378,2230]],"23":[[2565,1830],[2712,1830],[2712,2050],[2565,2050]],"24":[[2750,1960],[2885,1960],[2885,2210],[2750,2210]],"25":[[885,1730],[1058,1730],[1058,1950],[885,1950]],"26":[[1140,1590],[1272,1590],[1272,1825],[1140,1825]],"27":[[1332,1730],[1458,1730],[1458,1945],[1332,1945]],"28":[[1545,1640],[1640,1640],[1640,1820],[1545,1820]],"29":[[1682,1760],[1805,1760],[1805,1965],[1682,1965]],"30":[[1847,1600],[1985,1600],[1985,1820],[1847,1820]],"31":[[2060,1700],[2155,1700],[2155,1940],[2060,1940]],"32":[[2195,1560],[2330,1560],[2330,1800],[2195,1800]],"33":[[2378,1700],[2520,1700],[2520,1930],[2378,1930]],"34":[[885,1462],[1058,1462],[1058,1700],[885,1700]],"35":[[1140,1330],[1272,1330],[1272,1540],[1140,1540]],"36":[[1332,1462],[1458,1462],[1458,1690],[1332,1690]],"37":[[1545,1350],[1640,1350],[1640,1580],[1545,1580]],"38":[[1682,1480],[1805,1480],[1805,1700],[1682,1700]],"39":[[1847,1330],[1985,1330],[1985,1560],[1847,1560]],"40":[[2060,1420],[2155,1420],[2155,1660],[2060,1660]],"41":[[885,1192],[1058,1192],[1058,1432],[885,1432]],"42":[[1140,1052],[1272,1052],[1272,1282],[1140,1282]],"43":[[1332,1190],[1458,1190],[1458,1420],[1332,1420]],"44":[[1545,1075],[1640,1075],[1640,1300],[1545,1300]],"45":[[1682,1180],[1805,1180],[1805,1432],[1682,1432]],"46":[[885,935],[1058,935],[1058,1160],[885,1160]],"47":[[1140,938],[1272,938],[1272,1030],[1140,1030]],"48":[[1332,940],[1458,940],[1458,1155],[1332,1155]],"49":[[885,670],[1058,670],[1058,900],[885,900]],"50":[[1140,680],[1272,680],[1272,905],[1140,905]],"51":[[885,385],[1058,385],[1058,600],[885,600]],"52":[[1140,398],[1272,398],[1272,615],[1140,615]],"53":[[1330,470],[1388,506],[1388,760],[1330,724]],"54":[[1422,540],[1500,588],[1500,830],[1422,782]],"55":[[1535,610],[1610,656],[1610,900],[1535,854]],"56":[[1655,690],[1725,733],[1725,970],[1655,927]],"57":[[1760,770],[1840,820],[1840,1050],[1760,1000]],"58":[[1880,850],[1960,900],[1960,1150],[1880,1100]],"59":[[2010,940],[2080,983],[2080,1230],[2010,1187]],"60":[[2120,1020],[2195,1066],[2195,1310],[2120,1264]],"61":[[2245,1100],[2320,1146],[2320,1370],[2245,1324]],"62":[[2365,1190],[2440,1236],[2440,1460],[2365,1414]],"63":[[2480,1260],[2565,1313],[2565,1560],[2480,1507]],"64":[[2615,1345],[2690,1392],[2690,1640],[2615,1594]],"65":[[2735,1420],[2820,1473],[2820,1730],[2735,1677]],"66":[[2860,1500],[2950,1556],[2950,1830],[2860,1774]],"67":[[2980,1590],[3060,1640],[3060,1900],[2980,1850]],"68":[[3105,1675],[3185,1725],[3185,2010],[3105,1960]],"69":[[3220,1740],[3290,1783],[3290,2060],[3220,2017]],"70":[[1332,800],[1458,925],[1332,925]],"71":[[1520,935],[1650,1045],[1520,1045]],"72":[[1680,1045],[1832,1170],[1680,1170]],"73":[[1845,1170],[1990,1285],[1845,1285]],"74":[[2012,1290],[2190,1398],[2012,1398]],"75":[[2195,1385],[2362,1530],[2195,1530]],"76":[[2375,1520],[2540,1660],[2375,1660]],"77":[[2565,1655],[2730,1780],[2565,1780]],"78":[[2750,1790],[2910,1920],[2750,1920]],"79":[[2925,1910],[3080,2000],[2925,2000]]},"after":{"51":[[495,200],[640,200],[640,390],[495,390]],"49":[[490,460],[660,460],[660,680],[490,680]],"46":[[490,720],[655,720],[655,935],[490,935]],"41":[[490,975],[655,975],[655,1185],[490,1185]],"34":[[490,1235],[650,1235],[650,1425],[490,1425]],"25":[[490,1495],[650,1495],[650,1695],[490,1695]],"14":[[490,1740],[655,1740],[655,1940],[490,1940]],"1":[[490,1985],[655,1985],[655,2065],[490,2065]],"52":[[737,245],[848,245],[848,425],[737,425]],"50":[[740,460],[848,460],[848,660],[740,660]],"47":[[750,735],[870,735],[870,800],[750,800]],"42":[[755,855],[865,855],[865,1050],[755,1050]],"35":[[750,1105],[860,1105],[860,1310],[750,1310]],"26":[[750,1365],[860,1365],[860,1565],[750,1565]],"15":[[750,1620],[870,1620],[870,1820],[750,1820]],"2":[[750,1870],[860,1870],[860,2065],[750,2065]],"48":[[925,740],[1040,740],[1040,940],[925,940]],"43":[[925,990],[1038,990],[1038,1190],[925,1190]],"36":[[920,1245],[1035,1245],[1035,1450],[920,1450]],"27":[[915,1495],[1035,1495],[1035,1710],[915,1710]],"16":[[915,1760],[1035,1760],[1035,1960],[915,1960]],"3":[[915,2015],[1035,2015],[1035,2070],[915,2070]],"44":[[1125,878],[1200,878],[1200,1062],[1125,1062]],"37":[[1125,1105],[1200,1105],[1200,1315],[1125,1315]],"28":[[1122,1375],[1200,1375],[1200,1570],[1122,1570]],"17":[[1120,1620],[1205,1620],[1205,1820],[1120,1820]],"4":[[1120,1870],[1205,1870],[1205,2070],[1120,2070]],"45":[[1250,990],[1365,990],[1365,1195],[1250,1195]],"38":[[1250,1250],[1365,1250],[1365,1450],[1250,1450]],"29":[[1245,1505],[1355,1505],[1355,1705],[1245,1705]],"18":[[1240,1760],[1355,1760],[1355,1970],[1240,1970]],"5":[[1240,2010],[1355,2010],[1355,2085],[1240,2085]],"39":[[1410,1110],[1525,1110],[1525,1320],[1410,1320]],"30":[[1410,1370],[1525,1370],[1525,1575],[1410,1575]],"19":[[1405,1625],[1525,1625],[1525,1840],[1405,1840]],"6":[[1405,1880],[1520,1880],[1520,2090],[1405,2090]],"40":[[1595,1230],[1695,1230],[1695,1460],[1595,1460]],"31":[[1595,1495],[1685,1495],[1685,1705],[1595,1705]],"20":[[1595,1760],[1680,1760],[1680,1970],[1595,1970]],"7":[[1595,2015],[1680,2015],[1680,2090],[1595,2090]],"32":[[1735,1385],[1845,1385],[1845,1590],[1735,1590]],"21":[[1730,1635],[1835,1635],[1835,1835],[1730,1835]],"8":[[1730,1880],[1830,1880],[1830,2090],[1730,2090]],"33":[[1885,1490],[2005,1490],[2005,1700],[1885,1700]],"22":[[1885,1755],[2000,1755],[2000,1960],[1885,1960]],"9":[[1885,2005],[2000,2005],[2000,2085],[1885,2085]],"23":[[2050,1630],[2165,1630],[2165,1835],[2050,1835]],"10":[[2050,1885],[2165,1885],[2165,2085],[2050,2085]],"24":[[2205,1750],[2325,1750],[2325,1965],[2205,1965]],"11":[[2205,2005],[2320,2005],[2320,2075],[2205,2075]],"12":[[2370,1880],[2490,1880],[2490,2080],[2370,2080]],"13":[[2540,1870],[2650,1870],[2650,2070],[2540,2070]],"70":[[925,575],[1055,680],[925,680]],"71":[[1090,700],[1205,820],[1090,820]],"72":[[1248,850],[1375,940],[1248,940]],"73":[[1412,950],[1535,1060],[1412,1060]],"74":[[1580,1100],[1700,1195],[1580,1195]],"75":[[1735,1250],[1868,1335],[1735,1335]],"76":[[1900,1355],[2040,1450],[1900,1450]],"77":[[2055,1485],[2185,1582],[2055,1582]],"78":[[2210,1600],[2330,1698],[2210,1698]],"79":[[2375,1712],[2505,1832],[2375,1832]],"53":null,"54":[[2400,1500],[2458,1542],[2458,1720],[2400,1678]],"55":[[2300,1420],[2355,1460],[2355,1625],[2300,1585]],"56":[[1450,740],[1520,791],[1520,980],[1450,929]],"57":[[2080,1260],[2150,1311],[2150,1480],[2080,1429]],"58":[[1970,1170],[2040,1221],[2040,1380],[1970,1329]],"59":[[1770,980],[1830,1024],[1830,1220],[1770,1176]],"60":[[1240,560],[1310,611],[1310,820],[1240,769]],"61":[[1670,890],[1730,934],[1730,1140],[1670,1096]],"62":[[2185,1330],[2250,1377],[2250,1550],[2185,1503]],"63":[[1560,820],[1625,867],[1625,1055],[1560,1008]],"64":[[1350,650],[1410,694],[1410,890],[1350,846]],"65":[[1130,460],[1205,515],[1205,740],[1130,685]],"66":null,"67":[[1025,370],[1105,428],[1105,630],[1025,572]],"68":[[930,290],[990,334],[990,540],[930,496]],"69":null},"newBal":{"10":[[1872,1080],[1932,1124],[1932,1300],[1872,1256]],"16":[[2510,1550],[2645,1649],[2645,1835],[2510,1736]]}};
+POLY.saladin = {"51":[[158,275],[272,275],[272,385],[158,385]],"49":[[158,435],[272,435],[272,568],[158,568]],"46":[[158,600],[272,600],[272,735],[158,735]],"41":[[158,770],[272,770],[272,905],[158,905]],"34":[[158,945],[272,945],[272,1078],[158,1078]],"25":[[158,1115],[272,1115],[272,1233],[158,1233]],"14":[[158,1275],[272,1275],[272,1400],[158,1400]],"1":[[158,1430],[272,1430],[272,1475],[158,1475]],"47":[[340,610],[412,610],[412,665],[340,665]],"42":[[340,700],[412,700],[412,830],[340,830]],"35":[[340,865],[412,865],[412,995],[340,995]],"26":[[340,1032],[412,1032],[412,1165],[340,1165]],"15":[[340,1200],[412,1200],[412,1332],[340,1332]],"2":[[340,1365],[412,1365],[412,1475],[340,1475]],"48":[[452,608],[522,608],[522,720],[452,720]],"43":[[452,760],[522,760],[522,885],[452,885]],"36":[[452,920],[522,920],[522,1055],[452,1055]],"27":[[452,1095],[522,1095],[522,1225],[452,1225]],"16":[[452,1255],[522,1255],[522,1390],[452,1390]],"3":[[452,1422],[522,1422],[522,1475],[452,1475]],"44":[[590,680],[645,680],[645,805],[590,805]],"37":[[590,842],[645,842],[645,972],[590,972]],"28":[[590,1010],[645,1010],[645,1145],[590,1145]],"17":[[590,1185],[645,1185],[645,1315],[590,1315]],"4":[[590,1350],[645,1350],[645,1475],[590,1475]],"45":[[675,760],[748,760],[748,890],[675,890]],"38":[[675,925],[748,925],[748,1055],[675,1055]],"29":[[675,1090],[748,1090],[748,1225],[675,1225]],"18":[[675,1260],[748,1260],[748,1390],[675,1390]],"5":[[675,1428],[748,1428],[748,1475],[675,1475]],"39":[[783,840],[865,840],[865,952],[783,952]],"30":[[783,988],[865,988],[865,1130],[783,1130]],"19":[[783,1165],[865,1165],[865,1300],[783,1300]],"6":[[783,1340],[865,1340],[865,1475],[783,1475]],"40":[[925,915],[990,915],[990,1040],[925,1040]],"31":[[925,1070],[990,1070],[990,1200],[925,1200]],"20":[[925,1230],[990,1230],[990,1360],[925,1360]],"7":[[925,1400],[990,1400],[990,1445],[925,1445]],"32":[[1022,988],[1100,988],[1100,1108],[1022,1108]],"21":[[1022,1145],[1100,1145],[1100,1285],[1022,1285]],"8":[[1022,1322],[1100,1322],[1100,1445],[1022,1445]],"33":[[1135,1062],[1218,1062],[1218,1192],[1135,1192]],"22":[[1135,1230],[1218,1230],[1218,1362],[1135,1362]],"9":[[1135,1400],[1218,1400],[1218,1445],[1135,1445]],"23":[[1252,1143],[1335,1143],[1335,1285],[1252,1285]],"10":[[1252,1322],[1335,1322],[1335,1445],[1252,1445]],"24":[[1375,1225],[1460,1225],[1460,1360],[1375,1360]],"11":[[1375,1400],[1460,1400],[1460,1445],[1375,1445]],"12":[[1500,1305],[1585,1305],[1585,1445],[1500,1445]],"52":[[328,295],[402,295],[402,405],[328,405]],"50":[[328,442],[402,442],[402,565],[328,565]],"13":[[1622,1275],[1695,1325],[1695,1445],[1622,1445]],"70":[[452,535],[532,578],[452,578]],"71":[[560,585],[655,645],[560,645]],"72":[[675,660],[762,722],[675,722]],"73":[[785,735],[875,800],[785,800]],"74":[[900,800],[1015,878],[900,878]],"75":[[1022,888],[1105,948],[1022,948]],"76":[[1135,962],[1220,1025],[1135,1025]],"77":[[1250,1038],[1345,1105],[1250,1105]],"78":[[1375,1118],[1468,1190],[1375,1190]],"79":[[1500,1200],[1600,1268],[1500,1268]],"53":[[450,325],[478,345],[478,500],[450,480]],"54":[[498,350],[545,380],[545,540],[498,510]],"55":[[565,395],[612,430],[612,585],[565,552]],"56":[[632,442],[680,472],[680,627],[632,595]],"57":[[700,488],[752,525],[752,675],[700,638]],"58":[[772,538],[835,575],[835,728],[772,685]],"59":[[855,580],[908,615],[908,780],[855,745]],"60":[[938,635],[990,668],[990,832],[938,795]],"61":[[1015,685],[1072,722],[1072,885],[1015,848]],"62":[[1098,735],[1145,768],[1145,932],[1098,900]],"63":[[1170,785],[1225,822],[1225,985],[1170,948]],"64":[[1252,840],[1305,875],[1305,1040],[1252,1005]],"65":[[1328,890],[1388,930],[1388,1090],[1328,1045]],"66":[[1415,948],[1472,985],[1472,1145],[1415,1110]],"67":[[1498,1002],[1555,1038],[1555,1198],[1498,1162]],"68":[[1580,1055],[1638,1092],[1638,1255],[1580,1215]],"69":[[1660,1105],[1702,1125],[1702,1298],[1660,1268]]};
+const XY = {51:[975,494],49:[975,780],46:[975,1055],41:[975,1315],34:[975,1590],25:[975,1837],14:[975,2095],1:[975,2290],
+52:[1205,515],50:[1205,783],47:[1205,983],42:[1205,1187],35:[1205,1433],26:[1205,1700],15:[1205,1965],2:[1205,2216],
+48:[1394,1040],43:[1394,1301],36:[1394,1573],27:[1394,1833],16:[1394,2100],3:[1394,2290],
+44:[1592,1205],37:[1592,1465],28:[1592,1715],17:[1592,1980],4:[1592,2240],
+45:[1740,1315],38:[1740,1590],29:[1740,1855],18:[1740,2130],5:[1740,2305],
+39:[1910,1435],30:[1910,1715],19:[1910,1995],6:[1910,2240],
+40:[2100,1540],31:[2100,1820],20:[2100,2090],7:[2100,2285],
+32:[2270,1680],21:[2270,1955],8:[2270,2230],
+33:[2440,1810],22:[2440,2105],9:[2440,2295],
+23:[2625,1930],10:[2625,2205],24:[2820,2070],11:[2820,2280],12:[2980,2225],13:[3200,2220],
+70:[1395,875],71:[1560,1000],72:[1750,1120],73:[1925,1245],74:[2100,1350],75:[2270,1465],76:[2440,1590],77:[2625,1730],78:[2820,1855],79:[2980,1975],
+53:[1370,640],54:[1465,690],55:[1580,750],56:[1685,815],57:[1790,895],58:[1918,1000],59:[2040,1080],60:[2155,1170],61:[2280,1240],
+62:[2400,1325],63:[2520,1400],64:[2650,1495],65:[2775,1575],66:[2900,1660],67:[3025,1750],68:[3145,1840],69:[3240,1900]};
+const W = 3600, H = 2629;
+
+// rows of rectangular panels, bottom to top (Saladin fig. 52)
+const ROWS = [[1,14,25,34,41,46,49,51],[2,15,26,35,42,47,50,52],[3,16,27,36,43,48],[4,17,28,37,44],[5,18,29,38,45],
+  [6,19,30,39],[7,20,31,40],[8,21,32],[9,22,33],[10,23],[11,24],[12],[13]];
+const TRI = {70:3,71:4,72:5,73:6,74:7,75:8,76:9,77:10,78:11,79:12};
+const PL26 = [41,34,25,15,26,35,42,43,36,27,17,28,37,44,45,38,39];
+const PL27 = [19,30,39,73,31,40,79,76,32,21,77,23,78,24,60,61,62,63,64,65];
+const GEO = [41,32,25,42,35,15,36,37,38,73,31,40,79,33,22,23,77,24,60,61,62,63,64];
+const ORI = [19,44,28,30,39];
+const REP = [9,12,65,70,71,73,74,75,76,78,79,53,54,55,56,57,58,59,60,61,62,63,64,66,67,68,69];
+const CRE = [43,36,44,37,16,3,45,29,39,30,19];
+// Creswell's plates; captions count panels from the bottom of each column
+const CP = {
+  "89a": {cap: "Pl. 89a, “The pulpit”", panels: []},
+  "89b": {cap: "Pl. 89b, “Column 3, 5th panel”: nos. 43 and 36", panels: [43, 36]},
+  "89c": {cap: "Pl. 89c, “Column 3, bottom panel”: nos. 16 and 3", panels: [3, 16]},
+  "89d": {cap: "Pl. 89d, “Column 4, 3rd panel”: nos. 44 and 37", panels: [44, 37]},
+  "90a": {cap: "Pl. 90a, “Column 5, 5th panel”: no. 45", panels: [45]},
+  "90b": {cap: "Pl. 90b, “Column 5, 3rd panel”: no. 29", panels: [29]},
+  "90c": {cap: "Pl. 90c, “Column 6, panels 2–4”: nos. 39, 30, 19", panels: [39, 30, 19]},
+};
+// Creswell's own prints in the V&A (museum nos. 720-1929 to 726-1929), downloaded from collections.vam.ac.uk
+const VA = {
+  "720": {cap: "V&A 720-1929, the whole minbar", panels: []},
+  "721": {cap: "V&A 721-1929: no. 43", panels: [43]},
+  "722": {cap: "V&A 722-1929: no. 30", panels: [30]},
+  "723": {cap: "V&A 723-1929: no. 19", panels: [19]},
+  "724": {cap: "V&A 724-1929: no. 45", panels: [45]},
+  "725": {cap: "V&A 725-1929: no. 29", panels: [29]},
+  "726": {cap: "V&A 726-1929: no. 39", panels: [39]},
+};
+const vaOf = n => Object.keys(VA).find(k => VA[k].panels.includes(n));
+const plateOf = n => Object.keys(CP).find(k => CP[k].panels.includes(n));
+const ORD = ["first","second","third","fourth","fifth","sixth","seventh","eighth"];
+
+// Creswell's balustrade table (p. 317): original panel -> panel after 1907 (null = disappeared)
+const BAL = {1:null,2:15,3:14,4:6,5:12,6:11,7:9,8:4,9:8,10:13,11:7,12:5,13:3,14:null,15:2,16:1,17:null};
+
+const S = {
+  SAL: "Saladin 1899", STR: "Strzygowski 1907", DIM: "Dimand 1937", CRE: "Creswell 1940",
+  MOR: "Moraitou 2001", BLO: "Bloom 2012", PD: "Picotin and Déléry 2018", ID: "Identification", OBS: "This photograph"
+};
+
+const N = {}; const add = (n, src, html, inf) => (N[n] = N[n] || []).push({src, html, inf});
+
+// Saladin p. 104-105
+GEO.filter(n => n < 53).forEach(n => add(n, "SAL", `Listed among the panels with <q>tracés géométriques</q> (geometric layouts), p. 104.` + (n === 32 ? ` <span class="inf">The list prints 32 here, but the Pl. XXVI caption runs 41, 34, 25 at the same point.</span>` : "")));
+[60,61,62,63,64].forEach(n => add(n, "SAL", `One of the stair-rail panels nos. 60–64 that <q>appartiennent à la même catégorie</q> (belong to the same category) as the geometric panels, p. 104.`));
+ORI.forEach(n => add(n, "SAL", `One of nos. 19, 44, 28, 30 and 39, which <q>présentent un caractère plus oriental encore que les autres</q> (have an even more oriental character than the others), p. 105.`));
+add(39, "SAL", `Its fleuron <q>peut être, je crois, rapproché du fleuron qui décore une des faces du chapiteau sassanide de Takt-i-Bostan</q> (can, I believe, be compared with the fleuron on one face of the Sasanian capital at Taq-i Bustan), citing de Morgan, <i>Mission en Perse</i> IV, figs. 184, 201; p. 105.`);
+add(65, "SAL", `<q>Le n° 65 à droite est renversé; il prouve à mon avis que le mimber a dû être démonté et remonté</q> (no. 65 is reversed; in my view it proves the minbar must have been taken apart and put back together), <q>peut-être après le sac de Kairouan</q> that followed the departure of al-Muʿizz; p. 104.`);
+add(76, "SAL", `Added during that old repair <q>pour remplacer un panneau détruit</q> (to replace a destroyed panel); it <q>seul comporte dans son tracé géométrique le caractère de l'ornementation arabe proprement dite</q> (alone has, in its geometric layout, the character of Arab ornament proper); p. 104.`);
+add(78, "SAL", `<q>Le n° 78 est neuf et a été refait pour remplacer un panneau enlevé au moment de l'occupation française</q> (no. 78 is new, remade to replace a panel removed at the time of the French occupation); p. 104.`);
+
+// Creswell
+add(43, "CRE", `Pl. 89b, <q>the fifth panel in column III</q>: <q>divided into fifteen compartments by four horizontal and two vertical bars, which pass over and under each other</q>; corner and central outer compartments hold circles with four-leaved whorls, the two largest hold vine-leaves and grapes; p. 319.`);
+add(43, "ID", `Creswell counts from the bottom: the fifth panel up in this column is no. 43.`, true);
+add(48, "ID", `The panel above no. 43 in Creswell's Pl. 89b and V&A 721-1929. Creswell does not describe it.`, true);
+add(44, "CRE", `Pl. 89d, <q>the fifth panel in column IV</q>: <q>a charming arched frame in which rising and coiling tendrils form nine loops</q>, each with a five-lobed leaf or split palmette; spandrels with quatrefoils; <q>crowned by a row of stepped crenellations</q>; p. 319.`);
+add(44, "ID", `The plate caption says “Column 4, 3rd panel”. Counting from the bottom, as for Pl. 89b, the arched panel is the fifth: the text is right and the caption wrong.`, true);
+add(45, "CRE", `Pl. 90a: <q>the superposition of heterogenous motifs</q>. <q>At the bottom is a remarkably clear cut and well-preserved acanthus whorl, on which stands a tripod supporting a conical vase from which spring a pair of half-palmettes with a pine-cone between them</q>; p. 318.`);
+add(29, "CRE", `Pl. 90b: <q>we again find a similar superposition of motifs. Here we have a half star-shaped motif at the base of the panel, from the five points of which spring S-shaped motifs ending in half-palmettes</q>; p. 318.`);
+add(37, "ID", `The plaited chain-link panel below no. 44 in Creswell's Pl. 89d. Creswell does not describe it.`, true);
+add(37, "BLO", `Bloom notes that in some Kairouan panels <q>the strapwork designs of the field design actually become the frames</q> (p. 155). He names no panel; this one is a likely test case.`);
+add(3, "ID", `Creswell's Pl. 89c, <q>Column 3, bottom panel</q>, with no. 16 above it in the same plate.`, true);
+add(16, "ID", `The geometric grille at the top of Creswell's Pl. 89c, above no. 3. Its grille looks like the star-and-cross pattern that Bonner says occurs on the minbar; Bonner names no panel.`, true);
+add(39, "CRE", `Pl. 90c, top (the caption's <q>Column 6, panels 2–4</q>): a tree whose straight stem ends <q>in a double volute, like the horns of a ram</q>, with two half-palmettes and a pine-cone, <q>surmounted by a globe-like acanthus whorl composed of four pointed acanthus leaves</q>; p. 318. On the minbar <q>the wing palmettes have developed into the split palmette composition</q>.`);
+add(39, "DIM", `Fig. 10: a palmette tree <q>with a straight stem ending in a pair of volutes or horns and surmounted by a pine cone</q>, crowned by a globular motif he reads as a stylized pomegranate; compared with Mshatta triangle O, which he treats as the model; pp. 301–302.`);
+add(39, "MOR", `Probably her fig. 16: <q>a tree motif composed of a tall trunk with two volutes out of which springs a pine cone, two elaborate leaves and a stylised pomegranate</q>; p. 169.`);
+add(30, "CRE", `Pl. 90c, middle: <q>seven rows of motifs, mostly long tapering pine-cones, grouped in pairs</q>, with three- and five-lobed leaves. Dimand published it upside down; Creswell thinks the panel itself <q>has been placed upside-down, when the panels were assembled on their arrival at Qairawān</q>; p. 319.`);
+add(30, "DIM", `Fig. 13: <q>various motifs are arranged in seven rows, all of which, with the exception of the lowest one, are interconnected</q>; p. 307.`);
+add(19, "CRE", `Pl. 90c, the arched panel Creswell calls <q>perhaps the most beautiful</q>: a cusped outer frame, a palmette tree whose trunk is <q>formed by two twisted stems</q>, and narrow lateral panels with cornucopia motifs <q>similar to those frequently met with in the Sāmarrā style B</q>; p. 318.`);
+add(19, "ID", `Creswell calls it the lowest panel in column VI, but on this photograph no. 6 sits below it; he seems to mean the lowest of the three in his plate.`, true);
+add(9, "CRE", `<q>the bottom one of the ninth row on the east side</q> is one of only two panels that do not appear original; p. 317.`);
+add(9, "PD", `In the pre-1909 photographs <q>le numéro 9 présente au centre des fragments rapportés</q> (no. 9 has inserted fragments at its centre); p. 219 n. 32.`);
+add(12, "CRE", `<q>the panel forming the twelfth</q> row is the other panel that does not appear original; p. 317.`);
+
+// triangles
+[70,73,74,76,78].forEach(n => add(n, "CRE", `The ${["1st","4th","5th","7th","9th"][[70,73,74,76,78].indexOf(n)]} triangle: one of five that <q>on account of their style, must be many centuries later</q>. ` + (n === 78 ? `This one, after Saladin, replaced a stolen panel at the French occupation; p. 317.` : `They are missing from the old photograph Strzygowski published and <q>probably date from the restoration of 1907</q>; p. 317.`)));
+add(70, "PD", `The present no. 70 is one of the new triangles with interlace and cut eight-pointed stars; it <q>ne reprend pas le décor du triangle n° 70 originel</q> (does not repeat the decoration of the original no. 70); p. 223.`);
+add(71, "PD", `The original no. 71, with openwork crosses and squares, <q>apparait brisé sur les clichés anciens</q> (appears broken in the old photographs). New triangles copied its motif; today's no. 71 has a related but not identical design; p. 223.`);
+add(73, "PD", `This is the triangle now on deposit at the Louvre (inv. 74.1976.3.1): the Garrigues photograph shows it at <q>l'emplacement n° 73</q> of Saladin's diagram, and a later photograph shows it replaced; pp. 219–221. A wood analysis identified it as ash, not teak; p. 219 n. 32.`);
+add(74, "PD", `One of the two openwork triangles at the Bardo <q>correspond au n° 74 originel</q> (corresponds to the original no. 74), as Sadoux's photograph of about 1907 shows; p. 221.`);
+add(75, "PD", `A Poinssot archive photograph of the restoration shows an old triangle marked <q>vieux</q>: it is <q>le n° 75 du minbar avant restauration</q>; p. 223.`);
+add(76, "ID", `Saladin saw no. 76 in place by 1899, yet Creswell's seventh triangle is missing from Strzygowski's old photograph. Either it was replaced again or the counts differ; compare Saladin's Pl. XXVII.`, true);
+add(79, "PD", `In the pre-1909 photographs <q>le numéro 79 apparaît composé de deux fragments hétérogènes</q> (no. 79 appears made of two mismatched fragments); p. 219 n. 32. One of the new triangles seems to have been put in its place; p. 223.`);
+
+// balustrade
+for (let k = 1; k <= 17; k++) {
+  const n = 52 + k, to = BAL[k];
+  add(n, "CRE", `Creswell's balustrade panel ${k} (counted from the top). After the 1907 restoration it ` + (to === null ? `<q>has disappeared</q>` : `became panel ${to}`) + `; p. 317.`);
+}
+add(65, "CRE", `Creswell's panel 13 <q>was upside down before the restoration, from which we must conclude that the pulpit had already been taken to pieces at an earlier date</q>; p. 317 n. 9. Saladin reached the same conclusion in 1899.`);
+[68,69].forEach(n => add(n, "PD", `During the restoration <q>a-t-on choisi de remplacer les deux panneaux n° 68 et 69 primitifs de la joue gauche par un seul</q> (the two original panels 68 and 69 of the left face were replaced by a single one); p. 223. Creswell likewise reports a new panel twice the usual width.`));
+[53,54,55,56,57,58,59,60,61,62,63,64,66,67].forEach(n => add(n, "PD", `The new balustrade panels <q>ne reprennent pas le décor des panneaux qui occupaient originellement le même emplacement</q> (do not repeat the decoration of the panels originally in the same place); p. 223.`));
+add(51, "OBS", `The upper left of the panel is broken away in this photograph.`);
+add(53, "OBS", `The upper part of the panel is broken away in this photograph.`);
+
+function info(n) {
+  if (n >= 53 && n <= 69) return {kind: "Balustrade panel", where: `${n - 52} of 17, counted from the top of the stair rail`};
+  if (TRI[n]) return {kind: "Triangle", where: `under the stair string, above column ${TRI[n]}`};
+  const r = ROWS.findIndex(a => a.includes(n)), i = ROWS[r].indexOf(n);
+  return {kind: "Rectangular panel", where: `column ${r + 1}, ${ORD[i]} from the bottom (of ${ROWS[r].length})`};
+}
+// every photograph of the minbar, with the panels its source caption names
+const HIDE_PRIVATE = true;
+const ph = (id, file, group, title, def = [], whole = false, priv = false) => ({id, file, thumb: `th/${id}.jpg`, group, title, def, whole, priv});
+const G_S = "Saladin 1899", G_C = "Creswell 1940", G_V = "Creswell's prints, V&A", G_Q = "Qayrawan folder";
+const WM = "Wikimedia Commons, Grande Mosquée de Kairouan, détails du minbar ";
+const PHOTOS = [
+  ph("s52", "saladin.jpg", G_S, "Fig. 52, Saladin's numbered diagram, signed 1896", [], true),
+  ph("s21", "ph/s21.jpg", G_S, "Pl. XXI, mihrab, minbar and maqsūra", [], true),
+  ph("s26", "ph/s26.jpg", G_S, "Pl. XXVI, detail of the minbar", PL26),
+  ph("s27", "ph/s27.jpg", G_S, "Pl. XXVII, detail of the minbar", PL27),
+  ph("c83c", "ph/c83c.jpg", G_C, "Pl. 83c, central aisle with mihrab, pulpit and maqsūra", [], true),
+  ph("c89a", "cres-89a.jpg", G_C, "Pl. 89a, the pulpit", [], true),
+  ph("c89b", "cres-89b.jpg", G_C, "Pl. 89b, “Column 3, 5th panel”", CP["89b"].panels),
+  ph("c89c", "cres-89c.jpg", G_C, "Pl. 89c, “Column 3, bottom panel”", CP["89c"].panels),
+  ph("c89d", "cres-89d.jpg", G_C, "Pl. 89d, “Column 4, 3rd panel”", CP["89d"].panels),
+  ph("c90a", "cres-90a.jpg", G_C, "Pl. 90a, “Column 5, 5th panel”", CP["90a"].panels),
+  ph("c90b", "cres-90b.jpg", G_C, "Pl. 90b, “Column 5, 3rd panel”", CP["90b"].panels),
+  ph("c90c", "cres-90c.jpg", G_C, "Pl. 90c, “Column 6, panels 2–4”", CP["90c"].panels),
+  ph("v720", "va-720.jpg", G_V, "V&A 720-1929, the whole minbar", [], true),
+  ...["721", "722", "723", "724", "725", "726"].map(k => ph("v" + k, `va-${k}.jpg`, G_V, `V&A ${k}-1929`, VA[k].panels)),
+  ph("q01", "ph/q01.jpg", G_Q, "Triangular fragment, Bridgeman Images (watermarked)", [], false, true),
+  ...["02", "03", "04", "05", "06", "07", "08", "09"].map(k => ph("q" + k, `ph/q${k}.jpg`, G_Q, WM + k)),
+  ph("q10", "ph/q10.jpg", G_Q, "Un panneau sculpté du minbar (Wikimedia Commons)"),
+  ph("q11", "ph/q11.jpg", G_Q, "Museum case with fragments, 9 Aug 2026, 15.14.30"),
+  ph("q12", "ph/q12.jpg", G_Q, "Museum case with fragments, 9 Aug 2026, 15.14.36"),
+  ph("q13", "ph/q13.jpg", G_Q, "Museum display, 9 Aug 2026, 15.15.29; does not look like the minbar"),
+  ph("q14", "ph/q14.jpg", G_Q, "Openwork triangle in a museum case, 9 Aug 2026, 15.33.12"),
+  ph("q15", "ph/q15.jpg", G_Q, "Scanned catalogue page with three fragments, 10 Aug 2026"),
+  ph("q16", "ph/q16.jpg", G_Q, "Stair detail of the minbar, Alamy (watermarked)", [], false, true),
+].filter(p => !(HIDE_PRIVATE && p.priv));
+const PHOTO = Object.fromEntries(PHOTOS.map(p => [p.id, p]));
+
+const pts = p => p.map(q => q.join(",")).join(" ");
+const centroid = p => { const n = p.length; return [p.reduce((a, q) => a + q[0], 0) / n, p.reduce((a, q) => a + q[1], 0) / n]; };
+const $ = id => document.getElementById(id);
+const NUMS = Array.from({length: 79}, (_, i) => i + 1);
+
+// ---- Creswell positions: every outline traced on his photograph
+const SLOT = {};
+const isBal = n => n >= 53 && n <= 69;
+NUMS.filter(k => !isBal(k)).forEach(k => SLOT["f" + k] = POLY.after[k]);
+NUMS.filter(isBal).forEach(k => { if (BAL[k - 52]) SLOT["b" + BAL[k - 52]] = POLY.after[k]; });
+Object.entries(POLY.newBal).forEach(([j, p]) => SLOT["b" + j] = p);
+const defSlot = k => !isBal(k) ? "f" + k : (BAL[k - 52] ? "b" + BAL[k - 52] : null);
+const slotName = id => {
+  if (!id) return "Not on his photograph";
+  if (id[0] === "b") return `Balustrade, position ${id.slice(1)} from the top`;
+  const k = +id.slice(1), i = info(k);
+  return TRI[k] ? `Triangle ${i.where.replace("under the stair string, ", "")}` : `Column ${i.where.replace("column ", "")}`;
+};
+const SLOT_ORDER = Object.keys(SLOT).sort((a, b) => (a[0] === b[0] ? +a.slice(1) - +b.slice(1) : a[0] < b[0] ? 1 : -1));
+
+// ---- your edits. Only differences from the defaults are stored.
+let E = {v: 2, numbers: {}, panels: {}, slots: {}, photos: {}};
+const clean = raw => {
+  const out = {v: 2, numbers: {}, panels: {}, slots: {}, photos: {}};
+  if (!raw || typeof raw !== "object" || raw.v !== 2) return out;   // earlier formats are dropped
+  const isN = n => Number.isInteger(+n) && +n >= 1 && +n <= 79;
+  const seen = new Set();
+  Object.entries(raw.numbers || {}).forEach(([k, m]) => { if (isN(k) && isN(m) && !seen.has(+m)) { seen.add(+m); out.numbers[+k] = +m; } });
+  const taken = new Set(NUMS.map(k => out.numbers[k] ?? k));
+  if (taken.size !== 79) out.numbers = {};   // a broken numbering is ignored whole
+  Object.entries(raw.panels || {}).forEach(([n, p]) => {
+    if (!isN(n) || !p || typeof p !== "object") return;
+    const q = {};
+    if (p.num === "yes" || p.num === "no") q.num = p.num;
+    if (p.cre === "yes" || p.cre === "no" || p.cre === "moved") q.cre = p.cre;
+    if (p.cre === "moved" && SLOT[p.slot]) q.slot = p.slot;
+    if (Object.keys(q).length) out.panels[+n] = q;
+  });
+  Object.entries(raw.slots || {}).forEach(([id, s]) => {
+    if (SLOT[id] && s && (s.isNew === "yes" || s.isNew === "no")) out.slots[id] = {isNew: s.isNew};
+  });
+  Object.entries(raw.photos || {}).forEach(([id, p]) => {
+    if (!/^[a-z0-9]{1,8}$/.test(id) || !p || !Array.isArray(p.panels)) return;
+    out.photos[id] = {panels: [...new Set(p.panels.map(Number).filter(isN))].sort((a, b) => a - b), whole: p.whole === true};
+    const news = (Array.isArray(p.news) ? p.news : []).filter(s => SLOT[s]);
+    if (news.length) out.photos[id].news = [...new Set(news)];
+  });
+  return out;
+};
+const numberAt = k => E.numbers[k] ?? k;
+const outlineOf = n => { const k = NUMS.find(k => numberAt(k) === n); return k ?? n; };
+const P = n => E.panels[n] || {};
+const setP = (n, patch) => {
+  const q = {...P(n), ...patch};
+  Object.keys(q).forEach(key => q[key] === undefined && delete q[key]);
+  if (Object.keys(q).length) E.panels[n] = q; else delete E.panels[n];
+};
+const homeOf = n => defSlot(outlineOf(n));
+const slotOf = n => { const c = P(n).cre; return c === "no" ? null : c === "moved" ? (P(n).slot || null) : homeOf(n); };
+const numbersAt = id => NUMS.filter(n => slotOf(n) === id);
+// "Yes" to Creswell means the same panel at the same place, so that position is not new
+const newOf = id => E.slots[id]?.isNew ?? ((id === "b10" || id === "b16") ? "yes" : NUMS.some(n => P(n).cre === "yes" && homeOf(n) === id) ? "no" : undefined);
+const shownSlot = n => P(n).cre === "moved" ? (P(n).slot || null) : homeOf(n);
+const touched = n => Object.keys(P(n)).length > 0 || !!E.slots[homeOf(n)];
+const done = n => { const p = P(n), h = homeOf(n);
+  return !!p.num && !!p.cre && (p.cre !== "moved" || !!p.slot) && (p.cre === "yes" || !h || !!newOf(h)); };
+const stateClass = n => done(n) ? "c2" : touched(n) ? "c1" : "";
+const savedCount = () => NUMS.filter(touched).length;
+// photographs: the panels each shows, starting from what its source caption names
+const assignedOf = id => E.photos[id]?.panels ?? PHOTO[id].def;
+const wholeOf = id => E.photos[id]?.whole ?? PHOTO[id].whole;
+const newsOf = id => E.photos[id]?.news ?? [];
+const setPhoto = (id, panels, whole, news = newsOf(id)) => {
+  E.photos[id] = {panels: [...new Set(panels)].sort((a, b) => a - b), whole: !!whole};
+  if (news.length) E.photos[id].news = [...new Set(news)];
+};
+const photosOfSlot = id => PHOTOS.filter(p => newsOf(p.id).includes(id));
+const photosOf = n => PHOTOS.filter(p => assignedOf(p.id).includes(n));
+const placed = id => assignedOf(id).length > 0 || newsOf(id).length > 0 || wholeOf(id);
+const savedLabel = () => `${savedCount()}/79, photos ${PHOTOS.filter(p => placed(p.id)).length}/${PHOTOS.length}`;
+
+// ---- saving: the page's database when it has one, this browser otherwise
+let db = null, editsDoc = null, saveTimer = null;
+const LS = "kairouan-minbar-edits";
+const lsGet = () => { try { const s = localStorage.getItem(LS); return s ? JSON.parse(s) : null; } catch (e) { return null; } };
+const lsSet = () => { try { localStorage.setItem(LS, JSON.stringify(E)); return true; } catch (e) { return false; } };
+const status = t => { $("saved").textContent = t; };
+function changed() { renderAll(); persist(); }
+function persist() {
+  const local = lsSet();
+  clearTimeout(saveTimer);
+  if (!editsDoc) { status(local ? `Saved ${savedLabel()} in this browser only` : "Not saved: use Save file"); return; }
+  status("Saving…");
+  saveTimer = setTimeout(saveOnline, 500);
+}
+async function saveOnline() {
+  try { await editsDoc.set(E); status(`Saved ${savedLabel()} online`); diag.save = "ok " + savedCount(); }
+  catch (e) { status(`Not saved online (${e?.code || "error"}); ${savedLabel()} kept in this browser`); diag.save = "failed " + (e?.code || e); }
+  sendDiag();
+}
+async function saveNow() {
+  clearTimeout(saveTimer);
+  const local = lsSet();
+  if (!editsDoc) { status(local ? `Saved ${savedLabel()} in this browser only` : "Not saved: use Save file"); return; }
+  status("Saving…");
+  await saveOnline();
+}
+async function loadEdits() {
+  const local = lsGet();
+  if (local) { E = clean(local); renderAll(); status(`Saved ${savedLabel()} in this browser only`); }
+  try {
+    const r = await fetch("edits.json", {cache: "no-store"});
+    if (r.ok && !local) { E = clean(await r.json()); renderAll(); status(`Saved ${savedLabel()} on the site`); }
+  } catch (e) {}
+  if (!window.claude?.use) return;
+  db = await window.claude.use("db");
+  diag.db = db ? "connected" : "unavailable";
+  if (!db) { status("Online saving unavailable; saving in this browser"); return; }
+  diagDoc = db.doc("edits/diag");
+  editsDoc = db.doc("edits/main");
+  try {
+    const snap = await editsDoc.get();
+    if (snap.exists) { E = clean(snap.data()); renderAll(); }
+    status(`Saved ${savedLabel()} online`);
+    diag.db = "ready"; sendDiag();
+  } catch (e) { editsDoc = null; diag.db = "read failed " + (e?.code || e); sendDiag(); status(`Online saving unavailable (${e?.code || "error"}); saving in this browser`); }
+}
+async function saveFile() {
+  const data = JSON.stringify(E, null, 1);
+  const dl = window.claude?.use ? await window.claude.use("downloads") : null;
+  if (dl) { try { await dl.save({filename: "edits.json", data}); status("File saved"); } catch (e) { status("File not saved"); } return; }
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([data], {type: "application/json"})); a.download = "edits.json";
+  document.body.appendChild(a); a.click(); a.remove();
+  status("File saved");
+}
+$("loadf").addEventListener("change", async e => {
+  const f = e.target.files[0]; e.target.value = "";
+  if (!f) return;
+  try { E = clean(JSON.parse(await f.text())); changed(); status("File loaded"); }
+  catch (err) { status("That file could not be read"); }
+});
+
+// ---- photographs
+const VIEWS = {
+  before: {img: "minbar.jpg", alt: "The minbar seen from its left side before 1907, Garrigues photograph no. 271", vw: 3600, vh: 2629},
+  after: {img: "after.jpg", alt: "The minbar seen from its left side after the 1907 restoration, Creswell 1940, Pl. 89a", vw: 3000, vh: 2262},
+  saladin: {img: "saladin.jpg", alt: "Saladin's numbered diagram of the left face of the minbar, fig. 52, signed 1896", vw: 2000, vh: 1864},
+};
+const VW = Object.keys(VIEWS), zfs = {before: 1, after: 1, saladin: 1};
+const clampN = (x, a, b) => Math.max(a, Math.min(b, x));
+const setZf = (v, f) => {
+  zfs[v] = f; $("stage-" + v).style.setProperty("--zf", f);
+  $("zl-" + v).textContent = (Math.round(f * 10) / 10) + "×";
+  $("scroll-" + v).classList.toggle("zoomed", f > 1);
+};
+function focusView(v, p) {
+  const sc = $("scroll-" + v), st = $("stage-" + v), d = VIEWS[v], W = sc.clientWidth, H = sc.clientHeight;
+  if (!W || !H) return;
+  if (!p) { setZf(v, 1); sc.scrollLeft = 0; sc.scrollTop = 0; return; }
+  const xs = p.map(q => q[0]), ys = p.map(q => q[1]);
+  const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+  const base = Math.min(W, H * d.vw / d.vh) / d.vw;
+  setZf(v, clampN(Math.min(.5 * W / ((x1 - x0) * base), .5 * H / ((y1 - y0) * base)), 1, 8));
+  const s = st.offsetWidth / d.vw;
+  sc.scrollLeft = st.offsetLeft + (x0 + x1) / 2 * s - W / 2;
+  sc.scrollTop = st.offsetTop + (y0 + y1) / 2 * s - H / 2;
+}
+const polyFor = (v, n) => v === "before" ? POLY.before[outlineOf(n)] : v === "saladin" ? POLY.saladin[n] : (shownSlot(n) ? SLOT[shownSlot(n)] : null);
+let focusKey = "";
+let follow = null;   // the panel a double-click zoomed to, kept in view when the layout changes
+function focusPanel(force) {
+  if (!current && !currentSlot) return;
+  if (!editing && follow !== (current ?? currentSlot)) return;
+  const key = [current, currentSlot, current && outlineOf(current), current && slotOf(current), view, partner].join("|");
+  if (!force && key === focusKey) return;
+  focusKey = key;
+  VW.forEach(v => focusView(v, current ? polyFor(v, current) : (v === "after" ? SLOT[currentSlot] : null)));
+}
+const fitAll = () => { follow = null; focusKey = ""; VW.forEach(v => focusView(v, null)); };
+function zoomSelected() { follow = current ?? currentSlot; soon(() => focusPanel(true)); }
+for (const [v, d] of Object.entries(VIEWS)) {
+  const st = $("stage-" + v), pane = $("pane-" + v);
+  st.style.setProperty("--ar", d.vw / d.vh);
+  st.innerHTML = `<img src="${d.img}" alt="${d.alt}">
+    <svg viewBox="0 0 ${d.vw} ${d.vh}" preserveAspectRatio="none" aria-hidden="true">
+      <defs><mask id="m-${v}"><rect width="${d.vw}" height="${d.vh}" fill="#fff"/><g class="holes" fill="#000"></g></mask></defs>
+      <rect class="shade" width="${d.vw}" height="${d.vh}" fill="rgba(6,5,3,.74)" mask="url(#m-${v})"/>
+      <polygon class="outline" points=""/>
+    </svg><svg class="hits" viewBox="0 0 ${d.vw} ${d.vh}" preserveAspectRatio="none"></svg><div class="marks"></div>`;
+  const fit = () => { st.style.setProperty("--pw", pane.clientWidth + "px"); st.style.setProperty("--ph", pane.clientHeight + "px"); };
+  new ResizeObserver(() => { fit(); soon(() => focusPanel(true)); }).observe(pane); fit();
+}
+const SVGNS = "http://www.w3.org/2000/svg", hits = {};
+NUMS.forEach(n => {
+  const g = document.createElementNS(SVGNS, "polygon");
+  g.setAttribute("points", pts(POLY.saladin[n])); g.setAttribute("data-n", n); g.setAttribute("tabindex", "0"); g.setAttribute("role", "button"); g.setAttribute("aria-label", "Panel " + n);
+  const go = () => { if (picking) stopPick(); select(n, false); };
+  g.addEventListener("click", go); g.addEventListener("keydown", e => { if (e.key === "Enter") go(); });
+  document.querySelector("#stage-saladin .hits").appendChild(g); hits[n] = g;
+});
+// the panels on the photographs answer a double-click; one click there counts as outside the numbers
+const photoHit = (v, poly, attr, val) => {
+  const g = document.createElementNS(SVGNS, "polygon");
+  g.setAttribute("points", pts(poly)); g.setAttribute(attr, val);
+  document.querySelector(`#stage-${v} .hits`).appendChild(g);
+};
+NUMS.forEach(k => photoHit("before", POLY.before[k], "data-k", k));
+Object.keys(SLOT).forEach(id => photoHit("after", SLOT[id], "data-slot", id));
+const card = $("card");
+let current = null, currentSlot = null, view = "before", partner = "after", editing = false, picking = false, filter = "";
+let photoMode = false, curPhoto = null, photoFilter = "all";
+const marks = {before: {}, after: {}};
+
+const flags = n => ({ geo: GEO.includes(n), ori: ORI.includes(n), rep: REP.includes(n), pl: assignedOf("s26").includes(n) || assignedOf("s27").includes(n),
+  cre: PHOTOS.some(p => p.group === G_C && assignedOf(p.id).includes(n)), tri: !!TRI[n], bal: isBal(n), todo: !done(n), gone: P(n).cre === "no" || (!homeOf(n) && P(n).cre !== "moved"), newp: !!homeOf(n) && newOf(homeOf(n)) === "yes" });
+
+function makeMark(host, d, poly, text, label, cls, onClick) {
+  const [x, y] = centroid(poly), b = document.createElement("button");
+  b.className = "mark " + cls; b.textContent = text; b.setAttribute("aria-label", label);
+  b.style.left = (x / d.vw * 100) + "%"; b.style.top = (y / d.vh * 100) + "%";
+  b.addEventListener("click", onClick); host.appendChild(b);
+  return b;
+}
+function renderMarks() {
+  marks.before = {}; marks.after = {};
+  const hb = document.querySelector("#stage-before .marks"), ha = document.querySelector("#stage-after .marks");
+  hb.innerHTML = ""; ha.innerHTML = "";
+  NUMS.forEach(k => {
+    const n = numberAt(k);
+    marks.before[n] = makeMark(hb, VIEWS.before, POLY.before[k], n, "Panel " + n, stateClass(n), () => { if (picking) stopPick(); select(n, false); });
+    marks.before[n].dataset.n = n;
+  });
+  Object.keys(SLOT).forEach(id => {
+    const ns = numbersAt(id), isNew = newOf(id) === "yes";
+    const text = ns.length ? ns.join("/") : isNew ? "N" : "?";
+    const cls = [isNew ? "new" : "", !ns.length && !isNew ? "orphan" : "", ns.length > 1 ? "clash" : "", ns.length === 1 ? stateClass(ns[0]) : ""].join(" ");
+    const label = ns.length ? "Panel " + ns.join(" and ") + " on Creswell's photograph" : "Creswell position with no panel assigned";
+    marks.after[id] = makeMark(ha, VIEWS.after, SLOT[id], text, label, cls, () => clickSlot(id));
+    marks.after[id].dataset.slot = id;
+  });
+  NUMS.forEach(n => {
+    hits[n].setAttribute("class", [stateClass(n), n === current ? "sel" : ""].join(" ").trim());
+  });
+  applyFilter(); paintSelection();
+}
+function clickSlot(id) {
+  if (picking) { assign(current, id); stopPick(); changed(); return; }
+  const ns = numbersAt(id);
+  if (ns.length) select(ns[0], false); else showSlot(id);
+}
+function paintSelection() {
+  const ob = document.querySelector("#stage-before .outline"), oa = document.querySelector("#stage-after .outline");
+  const sid = current ? shownSlot(current) : currentSlot;
+  ob.setAttribute("points", current ? pts(POLY.before[outlineOf(current)]) : "");
+  oa.setAttribute("points", sid ? pts(SLOT[sid]) : "");
+  document.querySelector("#stage-saladin .outline").setAttribute("points", current ? pts(POLY.saladin[current]) : "");
+  if (current) marks.before[current]?.classList.add("sel");
+  if (sid) marks.after[sid]?.classList.add("sel");
+}
+function applyFilter() {
+  const shown = photoMode && curPhoto ? assignedOf(curPhoto) : null, shownNew = shown ? newsOf(curPhoto) : [];
+  VW.forEach(v => $("stage-" + v).classList.toggle("filtering", shown ? shown.length + shownNew.length > 0 : !!filter));
+  const found = shown ?? (filter ? NUMS.filter(n => flags(n)[filter]) : []);
+  document.querySelector("#stage-before .holes").innerHTML = found.map(n => `<polygon points="${pts(POLY.before[outlineOf(n)])}"/>`).join("");
+  const afterIds = !shown && filter === "newp" ? Object.keys(SLOT).filter(id => newOf(id) === "yes") : [...found.map(n => slotOf(n)).filter(Boolean), ...shownNew];
+  document.querySelector("#stage-saladin .holes").innerHTML = found.map(n => `<polygon points="${pts(POLY.saladin[n])}"/>`).join("");
+  document.querySelector("#stage-after .holes").innerHTML = afterIds.map(id => `<polygon points="${pts(SLOT[id])}"/>`).join("");
+  found.forEach(n => marks.before[n]?.classList.add("hit"));
+  afterIds.forEach(id => marks.after[id]?.classList.add("hit"));
+}
+const seg = (name, val, opts) => `<div class="seg small" role="group" aria-label="${name}">${opts.map(([v, t]) =>
+  `<button type="button" data-set="${name}" data-val="${v}" aria-pressed="${(val ?? "") === v}">${t}</button>`).join("")}</div>`;
+const YESNO = [["yes", "Yes"], ["no", "No"]];
+
+function editForm(n) {
+  const p = P(n), h = homeOf(n), k = outlineOf(n);
+  const creOpts = (h ? [["yes", "Yes"]] : []).concat([["no", "No"], ["moved", "Yes, in a different position"]]);
+  const others = p.cre === "moved" && p.slot ? numbersAt(p.slot).filter(m => m !== n) : [];
+  return `<form class="edit" id="edit">
+    <div class="field"><span class="lab">Is the Saladin number correct?</span>${seg("num", p.num, YESNO)}
+      ${p.num === "no" ? `<div class="row"><label for="e-num">Correct number</label><input id="e-num" type="number" min="1" max="79"><button type="button" id="e-numgo">Set</button></div>
+      <span class="hint-t">If that number is already used, the two panels swap.</span>` : ""}
+      ${k !== n ? `<span class="hint-t">Corrected: this position started as no. ${k}.</span>` : ""}</div>
+    <div class="field"><span class="lab">Does it exist in Creswell?</span>${seg("cre", p.cre, creOpts)}
+      ${p.cre === "moved" ? `<label for="e-slot">Its position in Creswell</label>
+      <select id="e-slot"><option value="">Choose a position</option>${SLOT_ORDER.map(id => `<option value="${id}" ${id === p.slot ? "selected" : ""}>${slotName(id)}</option>`).join("")}</select>
+      <button type="button" id="e-pick">${picking ? "Now click a number on Creswell's photograph" : "Pick on the photograph"}</button>
+      ${others.length ? `<span class="warn">Panel ${others.join(", ")} is at this position too.</span>` : ""}` : ""}</div>
+    ${h ? `<div class="field"><span class="lab">Is the Creswell panel at its original position new?</span>${seg("isNew", newOf(h), YESNO)}
+      ${newOf(h) === "yes" ? `<span class="hint-t">Labelled N on Creswell's photograph.</span>` : ""}</div>` : ""}
+  </form>`;
+}
+function bindForm(n) {
+  const f = $("edit"); if (!f) return;
+  if ($("e-numgo")) {
+    $("e-numgo").onclick = () => renumber(n, +$("e-num").value);
+    $("e-num").onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); renumber(n, +$("e-num").value); } };
+  }
+  if ($("e-slot")) {
+    $("e-slot").onchange = e => { const v = e.target.value; if (v) assign(n, v); else setP(n, {slot: undefined}); stopPick(); changed(); };
+    $("e-pick").onclick = () => { picking = true; partner = "after"; setView("both"); renderCard(); };
+  }
+  f.querySelectorAll("[data-set]").forEach(b => b.onclick = () => {
+    const name = b.dataset.set, on = b.getAttribute("aria-pressed") === "true", val = on ? undefined : b.dataset.val, h = homeOf(n);
+    stopPick();
+    if (name === "num") setP(n, {num: val});
+    else if (name === "isNew") setSlotNew(h, val);
+    else {
+      setP(n, {cre: val, slot: val === "moved" ? P(n).slot : undefined});
+      if (val === "yes" && E.slots[h]) delete E.slots[h];
+      if (val === "moved" && !P(n).slot) { picking = true; partner = "after"; setView("both"); }
+    }
+    changed();
+  });
+}
+function assign(n, id) {
+  if (id === homeOf(n)) { setP(n, {cre: "yes", slot: undefined}); delete E.slots[id]; return; }
+  setP(n, {cre: "moved", slot: id});
+  if (newOf(id) === "yes") E.slots[id] = {isNew: "no"};
+}
+function setSlotNew(id, val) {
+  if (val) E.slots[id] = {isNew: val}; else delete E.slots[id];
+  if (val === "yes") numbersAt(id).forEach(m => setP(m, {cre: "no", slot: undefined}));
+}
+function renumber(n, m) {
+  if (!Number.isInteger(m) || m < 1 || m > 79) { status("Use a number from 1 to 79"); return; }
+  if (m === n) { setP(n, {num: "yes"}); changed(); return; }
+  const a = outlineOf(n), b = outlineOf(m), pa = E.panels[n], pb = E.panels[m];
+  E.numbers[a] = m; E.numbers[b] = n;
+  [a, b].forEach(k => { if (E.numbers[k] === k) delete E.numbers[k]; });
+  delete E.panels[n]; delete E.panels[m];
+  if (pa) E.panels[m] = pa;
+  if (pb) E.panels[n] = pb;
+  setP(n, {num: undefined}); setP(m, {num: "yes"});
+  current = m; changed();
+}
+function stopPick() { picking = false; }
+
+function afterNote(n) {
+  const c = P(n).cre, s = slotOf(n);
+  const h = homeOf(n), nw = h && newOf(h) === "yes" ? " A new panel stands at its position." : "";
+  if (c === "no") return `Not in Creswell's photograph.${nw}`;
+  if (c === "moved") return s ? `Moved. In Creswell's photograph it is at: ${slotName(s)}.${nw}` : `In a different position in Creswell's photograph; the position is not chosen yet.`;
+  if (c === "yes") return isBal(n) ? `Still present, at his position ${BAL[n - 52]} from the top, following Creswell's table.` : `The same panel, in the same position.`;
+  if (!s) return `Creswell says this panel <q>has disappeared</q>, so nothing is outlined on his photograph.`;
+  if (isBal(n)) return `The balustrade was rebuilt with sixteen panels. Following Creswell's table, this panel now stands at his position ${BAL[n - 52]} from the top, outlined on his photograph.`;
+  return "";
+}
+function renderCard() {
+  if (!current && !currentSlot) return;
+  if (currentSlot) return showSlot(currentSlot);
+  const n = current, i = info(outlineOf(n)), notes = N[n] || [];
+  const plates = [assignedOf("s26").includes(n) && "XXVI", assignedOf("s27").includes(n) && "XXVII"].filter(Boolean);
+  const an = afterNote(n);
+  const figs = photosOf(n).map(p => `<figure class="fig"><img src="${p.file}" alt="${p.title}" loading="lazy"><figcaption>${p.group}: ${p.title}</figcaption></figure>`);
+  const top = card.scrollTop;
+  card.hidden = false;
+  card.innerHTML = `<button class="close" id="close">Close</button>
+    <div class="head"><b>${n}</b><div>
+      <span class="kind">${i.kind}</span>
+      <span class="sub">${i.where[0].toUpperCase() + i.where.slice(1)}</span>
+      ${plates.length ? `<span class="sub">Saladin Pl. ${plates.join(" and ")}</span>` : ""}
+    </div></div>
+    ${editing ? editForm(n) : ""}
+    ${figs.length ? `<div class="figs">${figs.join("")}</div>` : ""}
+    ${!editing && an ? `<div class="note"><span class="src">Compared with Creswell</span><p>${an}</p></div>` : ""}
+    ${editing ? "" : notes.length ? notes.map(o => `<div class="note${o.inf ? " inf" : ""}"><span class="src">${S[o.src]}</span><p>${o.html}</p></div>`).join("")
+      : `<p class="empty">No source read so far comments on this panel individually. Strzygowski (1907, col. 388) says only that each of the nearly eighty fields <q>zeigt ein anderes Muster</q> (shows a different pattern).</p>`}
+    <div class="nav"><button id="prev">← ${n > 1 ? n - 1 : 79}</button><button id="next">${n < 79 ? n + 1 : 1} →</button></div>
+    ${editing ? "" : sources}`;
+  card.scrollTop = top;
+  $("close").onclick = () => { card.hidden = true; };
+  $("prev").onclick = () => select(n > 1 ? n - 1 : 79, true);
+  $("next").onclick = () => select(n < 79 ? n + 1 : 1, true);
+  bindForm(n);
+}
+function showSlot(id) {
+  current = null; currentSlot = id;
+  renderMarks();
+  const isNew = newOf(id), ns = numbersAt(id);
+  card.hidden = false; card.scrollTop = 0;
+  card.innerHTML = `<button class="close" id="close">Close</button>
+    <div class="head"><b>${isNew === "yes" ? "N" : "?"}</b><div><span class="kind">${isNew === "yes" ? "New panel" : "No panel assigned"}</span><span class="sub">${slotName(id)}, after 1907</span></div></div>
+    ${editing ? `<form class="edit" id="edit">
+      <div class="field"><span class="lab">Is this Creswell panel new?</span>${seg("isNew", isNew, YESNO)}</div>
+      <div class="field"><label for="e-as">If not, its Saladin number</label><div class="row"><input id="e-as" type="number" min="1" max="79"><button type="button" id="e-asgo">Assign</button></div></div>
+    </form>` : ""}
+    ${photosOfSlot(id).length ? `<div class="figs">${photosOfSlot(id).map(p => `<figure class="fig"><img src="${p.file}" alt="${p.title}" loading="lazy"><figcaption>${p.group}: ${p.title}</figcaption></figure>`).join("")}</div>` : ""}
+    ${(id === "b10" || id === "b16") ? `<div class="note"><span class="src">${S.CRE}</span><p>The balustrade <q>now consists of sixteen only, of which Nos. 10 and 16 are new, the latter being twice the width of the rest</q>; p. 317.</p></div>` : ""}
+    ${id === "b16" ? `<div class="note"><span class="src">${S.PD}</span><p>The two original panels nos. 68 and 69 of the left face were replaced by a single one; p. 223.</p></div>` : ""}
+    ${!ns.length && isNew !== "yes" && id[0] === "f" ? `<p class="empty">The panel that was here is marked as gone or moved. Say whether this one is new, or which old panel it is.</p>` : ""}`;
+  $("close").onclick = () => { card.hidden = true; };
+  soon(() => focusPanel());
+  if ($("edit")) {
+    $("edit").querySelectorAll("[data-set]").forEach(b => b.onclick = () => { setSlotNew(id, b.getAttribute("aria-pressed") === "true" ? undefined : b.dataset.val); changed(); });
+    $("e-asgo").onclick = () => { const m = +$("e-as").value; if (m >= 1 && m <= 79) { assign(m, id); currentSlot = null; current = m; changed(); } };
+  }
+}
+function select(n, scroll) {
+  if (photoMode) return;
+  if (!POLY.before[n]) return;
+  current = n; currentSlot = null;
+  renderMarks(); renderCard();
+  try { if (!editing && location.hash !== "#panel-" + n) history.replaceState(null, "", "#panel-" + n); } catch (e) {}
+  soon(() => focusPanel());
+  if (scroll && !editing) { const ids = [marks.before[n], slotOf(n) && marks.after[slotOf(n)], hits[n]].filter(Boolean);
+    ids.forEach(b => b.scrollIntoView({block: "center", inline: "center", behavior: "smooth"})); }
+}
+function renderAll() { renderMarks(); if (photoMode) renderPhotoCard(); else if (current || currentSlot) renderCard(); soon(() => focusPanel()); }
+
+const sources = `<details><summary>Sources and caveats</summary><ul>
+  <li>Saladin 1899: H. Saladin, <i>La Mosquée de Sidi Okba à Kairouan</i> (Paris, 1899), pp. 104–105, fig. 52, Pl. XXVI–XXVII. Panel numbers are his.</li>
+  <li>Strzygowski 1907: “Die Kanzel von Kairuan,” <i>Kunstchronik</i> N.F. 18 (1907), cols. 386–389.</li>
+  <li>Dimand 1937: “Studies in Islamic Ornament I,” <i>Ars Islamica</i> 4 (1937), pp. 293–337.</li>
+  <li>Creswell 1940: <i>Early Muslim Architecture</i> II (Oxford, 1940), pp. 314–319, Pl. 89–90; his prints V&amp;A 720-1929 to 726-1929.</li>
+  <li>Moraitou 2001: “Umayyad ornament on early Islamic woodwork,” <i>Benaki Museum journal</i> 1 (2001), pp. 168–169.</li>
+  <li>Bloom 2012: “Strapwork Designs in Western Islamic Art,” p. 155.</li>
+  <li>Picotin and Déléry 2018: “Fragments d'histoire du minbar de Kairouan,” in <i>The Aghlabids and their Neighbors</i> (Leiden, 2018), pp. 207–227.</li>
+  <li>Other photographs: Wikimedia Commons (Grande Mosquée de Kairouan, détails du minbar; Un panneau sculpté du minbar); museum photographs and a catalogue page from the site's author.</li>
+  <li>Images: Saladin 1899, fig. 52, Pl. XXI, XXVI, XXVII; Garrigues, Tunis, no. 271 (via Wikimedia Commons); Creswell, Pl. 89a; Creswell prints, Victoria and Albert Museum. Reproduced for research and study.</li>
+  </ul><p>Notes marked “Compared with Creswell” record the site author's comparison of the two photographs. Notes marked “Identification” are matches made by comparing photographs, not statements in the sources. Saladin's panel lists were checked against the Heidelberg scan. Outlines were traced separately on each photograph. For rectangles and triangles they mark the same position in the frame, which may now hold a replaced panel; for the balustrade they follow Creswell's table of moved panels.</p></details>`;
+
+function syncSave() {
+  ["saveb", "savef", "saved"].forEach(id => { $(id).hidden = !editing; });
+}
+function setView(v) {
+  view = v;
+  const show = w => v === w || (v === "both" && (w === "before" || w === partner));
+  VW.forEach(w => { $("pane-" + w).hidden = !show(w); });
+  $("withseg").hidden = v !== "both";
+  syncSave();
+  document.querySelectorAll("#withseg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.w === partner));
+  soon(() => focusPanel(true));
+  document.querySelectorAll("#viewseg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === v));
+  $("views").classList.toggle("both", v === "both");
+}
+document.querySelectorAll("#viewseg button").forEach(b => b.addEventListener("click", () => { setView(b.dataset.v); if (current) setTimeout(() => select(current, true), 50); }));
+
+$("hl").addEventListener("change", e => { filter = e.target.value; renderMarks(); });
+const nums = $("nums");
+nums.addEventListener("click", () => {
+  const on = nums.getAttribute("aria-pressed") !== "true";
+  nums.setAttribute("aria-pressed", on); nums.textContent = on ? "Numbers on" : "Numbers off";
+  document.querySelectorAll(".stage").forEach(s => s.classList.toggle("quiet", !on));
+});
+// zoom one image, keeping the point at (ax, ay) in its pane still
+function zoomView(v, k, ax, ay) {
+  const sc = $("scroll-" + v), st = $("stage-" + v), W = sc.clientWidth, H = sc.clientHeight;
+  if (!W) return;
+  ax ??= W / 2; ay ??= H / 2;
+  const fx = (sc.scrollLeft + ax - st.offsetLeft) / st.offsetWidth, fy = (sc.scrollTop + ay - st.offsetTop) / st.offsetHeight;
+  setZf(v, clampN(zfs[v] * k, 1, 10));
+  sc.scrollLeft = st.offsetLeft + fx * st.offsetWidth - ax;
+  sc.scrollTop = st.offsetTop + fy * st.offsetHeight - ay;
+}
+const zoom = k => VW.forEach(v => zoomView(v, k));
+let panned = false;
+VW.forEach(v => {
+  const pane = $("pane-" + v), sc = $("scroll-" + v);
+  pane.querySelectorAll("[data-pz]").forEach(b => b.addEventListener("click", () => {
+    if (b.dataset.pz === "fit") focusView(v, null); else zoomView(v, b.dataset.pz === "in" ? 1.4 : 1 / 1.4);
+  }));
+  // pinch on a trackpad, or Ctrl/Cmd + wheel with a mouse
+  pane.addEventListener("wheel", e => {
+    if (!e.ctrlKey && !e.metaKey) return;
+    e.preventDefault();
+    const r = sc.getBoundingClientRect();
+    zoomView(v, Math.exp(clampN(-e.deltaY * .01, -.5, .5)), e.clientX - r.left, e.clientY - r.top);
+  }, {passive: false});
+  // drag to move around a zoomed image
+  sc.addEventListener("pointerdown", e => {
+    if (e.pointerType !== "mouse" || e.button !== 0 || zfs[v] <= 1) return;
+    const x0 = e.clientX, y0 = e.clientY, l0 = sc.scrollLeft, t0 = sc.scrollTop;
+    let moved = false;
+    const move = m => {
+      if (!moved && Math.hypot(m.clientX - x0, m.clientY - y0) < 5) return;
+      moved = true; sc.classList.add("panning");
+      sc.scrollLeft = l0 - (m.clientX - x0); sc.scrollTop = t0 - (m.clientY - y0);
+    };
+    const up = () => {
+      window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up);
+      sc.classList.remove("panning");
+      if (moved) { panned = true; setTimeout(() => { panned = false; }, 0); }
+    };
+    window.addEventListener("pointermove", move); window.addEventListener("pointerup", up);
+  });
+  // a drag must not count as a click on a panel
+  sc.addEventListener("click", e => { if (panned) { e.stopImmediatePropagation(); e.preventDefault(); panned = false; } }, true);
+  sc.addEventListener("dragstart", e => e.preventDefault());
+});
+$("fitb").onclick = fitAll;
+document.querySelectorAll("#withseg button").forEach(b => b.addEventListener("click", () => { partner = b.dataset.w; setView("both"); }));
+$("go").addEventListener("change", e => {
+  if (photoMode) { const n = +e.target.value; if (n >= 1 && n <= 79) togglePanel(n); e.target.value = ""; return; }
+  select(+e.target.value, true);
+});
+// the reading page and the edit page are the same code in two states
+const SEPARATE_PAGES = true;
+const HL_VIEW = [["", "Highlight…"], ["geo", "Saladin: geometric"], ["ori", "Saladin: “more oriental”"], ["rep", "Repaired, moved or replaced"], ["pl", "In Saladin's plates"], ["cre", "In Creswell's plates"], ["tri", "Triangles"], ["bal", "Balustrade"], ["gone", "Not in Creswell"], ["newp", "New in Creswell"]];
+const HL_EDIT = [["", "Highlight…"], ["todo", "Not answered yet"], ["gone", "Not in Creswell"], ["newp", "New in Creswell"]];
+let pageReady = false;
+function setPage(edit) {
+  if (pageReady && edit === editing) return;
+  pageReady = true; editing = edit;
+  document.body.classList.toggle("editing", edit);
+  document.querySelectorAll(".edit-only").forEach(x => { x.hidden = !edit; });
+  document.querySelectorAll(".view-only").forEach(x => { x.hidden = edit; });
+  syncSave();
+  $("ttl").textContent = edit ? "Edit" : "Kairouan Minbar Panels";
+  const pl = $("pagelink");
+  pl.textContent = edit ? "Back to the panels" : "Edit";
+  pl.href = SEPARATE_PAGES ? (edit ? "index.html" : "edit.html") : (edit ? "#view" : "#edit");
+  filter = ""; $("hl").innerHTML = (edit ? HL_EDIT : HL_VIEW).map(([v, t]) => `<option value="${v}">${t}</option>`).join("");
+  if (!edit) { stopPick(); setPhotoMode(false); fitAll(); setView("before"); }
+  else setView("both");
+  if (current || currentSlot) renderAll(); else { renderMarks(); idleCard(); }
+  if (edit) soon(() => focusPanel(true));
+}
+$("pagelink").addEventListener("click", () => {
+  const n = current;
+  if (SEPARATE_PAGES && n) $("pagelink").href = (editing ? "index.html" : "edit.html") + "#panel-" + n;
+});
+function idleCard() {
+  if (editing) {
+    card.innerHTML = `<button class="close" id="close">Close</button><p class="empty">Click a number to edit that panel, or switch to Photos to assign photographs.</p>`;
+  } else {
+    const groups = [...new Set(PHOTOS.map(q => q.group))];
+    card.innerHTML = `<button class="close" id="close">Close</button>
+      <p class="empty">Click a number to read about a panel. Double-click a panel to zoom to it. Click a photo below to enlarge it.</p>
+      ${groups.map(g => `<div class="field"><span class="glabel">${g}</span><div class="thumbs">${PHOTOS.filter(q => q.group === g).map(q => `<button type="button" class="thumb" data-open="${q.id}" title="${q.title}" aria-label="${q.title}"><img src="${q.thumb}" alt="" loading="lazy"></button>`).join("")}</div></div>`).join("")}
+      ${sources}`;
+  }
+  $("close").onclick = () => { card.hidden = true; };
+}
+$("allb").addEventListener("click", () => { clearSelection(); card.hidden = false; card.scrollTop = 0; });
+$("savef").addEventListener("click", saveFile);
+$("saveb").addEventListener("click", saveNow);
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && !$("lb").hidden) { closeLb(); return; }
+  if (e.key === "Escape" && picking) { stopPick(); renderCard(); return; }
+  if (photoMode && !e.target.matches("input, select") && (e.key === "ArrowRight" || e.key === "ArrowLeft")) { stepPhoto(e.key === "ArrowRight" ? 1 : -1); return; }
+  if (e.target.matches("input, select")) return;
+  if (e.key === "ArrowRight" && current) select(current < 79 ? current + 1 : 1, true);
+  if (e.key === "ArrowLeft" && current) select(current > 1 ? current - 1 : 79, true);
+  if (e.key === "Escape") card.hidden = true;
+});
+
+// ---- photo editing: one photograph at a time, numbers on the images toggle its panels
+function setPhotoMode(on) {
+  if (photoMode === on) return;
+  photoMode = on;
+  document.body.classList.toggle("photomode", on);
+  document.querySelectorAll("#modeseg button").forEach(b => b.setAttribute("aria-pressed", (b.dataset.m === "photos") === on));
+  if (on) {
+    current = null; currentSlot = null; follow = null; stopPick();
+    curPhoto = curPhoto || (PHOTOS.find(p => !placed(p.id)) || PHOTOS[0]).id;
+    if (view !== "both") setView("both");
+    card.hidden = false;
+    renderAll();
+  } else { curPhoto = null; clearSelection(); }
+}
+document.querySelectorAll("#modeseg button").forEach(b => b.addEventListener("click", () => setPhotoMode(b.dataset.m === "photos")));
+function togglePanel(n) {
+  const a = assignedOf(curPhoto);
+  setPhoto(curPhoto, a.includes(n) ? a.filter(m => m !== n) : [...a, n], wholeOf(curPhoto));
+  changed();
+}
+function stepPhoto(d) {
+  const list = photoList(), i = list.findIndex(p => p.id === curPhoto);
+  curPhoto = list[(i + d + list.length) % list.length].id; renderAll();
+}
+const photoList = () => { const l = PHOTOS.filter(p => photoFilter === "all" || !placed(p.id) || p.id === curPhoto); return l.length ? l : PHOTOS; };
+function toggleNew(id) {
+  const a = newsOf(curPhoto);
+  setPhoto(curPhoto, assignedOf(curPhoto), wholeOf(curPhoto), a.includes(id) ? a.filter(s => s !== id) : [...a, id]);
+  changed();
+}
+function parsePanels(t) {
+  const out = [];
+  t.split(/[\s,;]+/).filter(Boolean).forEach(x => {
+    const m = x.match(/^(\d+)(?:[-–](\d+))?$/); if (!m) return;
+    const a = +m[1], b = +(m[2] ?? m[1]);
+    for (let i = Math.min(a, b); i <= Math.max(a, b); i++) if (i >= 1 && i <= 79) out.push(i);
+  });
+  return out;
+}
+function renderPhotoCard() {
+  const p = PHOTO[curPhoto], a = assignedOf(curPhoto), w = wholeOf(curPhoto), top = card.scrollTop;
+  const groups = [...new Set(PHOTOS.map(q => q.group))];
+  const nw = newsOf(curPhoto), free = SLOT_ORDER.filter(id => !numbersAt(id).length && !nw.includes(id));
+  card.innerHTML = `<figure class="fig"><img src="${p.file}" alt="${p.title}"><figcaption>${p.group}: ${p.title}. Click the photo to enlarge it.</figcaption></figure>
+    <div class="edit">
+      <div class="field"><span class="lab">Panels in this photo: click numbers on the images to add or remove</span>
+        <div class="chips">${a.length ? a.map(n => `<button type="button" class="chip" data-rm="${n}" aria-label="Remove panel ${n}">${n} ×</button>`).join("") : `<span class="hint-t">None yet</span>`}</div></div>
+      <div class="row"><input id="p-add" aria-label="Panel numbers to add" placeholder="12, 40-45"><button type="button" id="p-addgo">Add</button></div>
+      <div class="field"><span class="lab">New panels in this photo: click an N on Creswell's photograph, or choose one</span>
+        ${nw.length ? `<div class="chips">${nw.map(id => `<button type="button" class="chip" data-rmn="${id}" aria-label="Remove new panel, ${slotName(id)}">N: ${slotName(id)} ×</button>`).join("")}</div>` : ""}
+        ${free.length ? `<select id="p-new" aria-label="Add a new panel"><option value="">Add a new panel…</option>${free.map(id => `<option value="${id}">${slotName(id)}</option>`).join("")}</select>` : ""}</div>
+      <div class="row"><button type="button" id="p-whole" aria-pressed="${w}">${w ? "Shows the whole minbar ✓" : "Shows the whole minbar"}</button><button type="button" id="p-clear">Clear</button>${E.photos[curPhoto] ? `<button type="button" id="p-reset">Reset</button>` : ""}</div>
+    </div>
+    <div class="nav"><button id="p-prev">← Previous</button><button id="p-next">Next →</button></div>
+    <div class="seg small" role="group" aria-label="Which photos to list"><button type="button" data-pf="all" aria-pressed="${photoFilter === "all"}">All ${PHOTOS.length}</button><button type="button" data-pf="todo" aria-pressed="${photoFilter === "todo"}">Not assigned ${PHOTOS.filter(q => !placed(q.id)).length}</button></div>
+    ${groups.map(g => { const l = PHOTOS.filter(q => q.group === g && (photoFilter === "all" || !placed(q.id) || q.id === curPhoto));
+      return l.length ? `<div class="field"><span class="lab">${g}</span><div class="thumbs">${l.map(q => `<button type="button" class="thumb${q.id === curPhoto ? " on" : ""}" data-ph="${q.id}" title="${q.title}" aria-label="${q.title}"><img src="${q.thumb}" alt="" loading="lazy"><span class="n${placed(q.id) ? "" : " zero"}">${wholeOf(q.id) ? "all" : assignedOf(q.id).length + newsOf(q.id).length}</span></button>`).join("")}</div></div>` : ""; }).join("")}`;
+  card.scrollTop = top;
+  const add = () => { const n = parsePanels($("p-add").value); if (n.length) { setPhoto(curPhoto, [...assignedOf(curPhoto), ...n], wholeOf(curPhoto)); changed(); } };
+  $("p-addgo").onclick = add;
+  $("p-add").onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); add(); } };
+  $("p-whole").onclick = () => { setPhoto(curPhoto, assignedOf(curPhoto), !wholeOf(curPhoto)); changed(); };
+  $("p-clear").onclick = () => { setPhoto(curPhoto, [], false, []); changed(); };
+  if ($("p-new")) $("p-new").onchange = e => { if (e.target.value) toggleNew(e.target.value); };
+  if ($("p-reset")) $("p-reset").onclick = () => { delete E.photos[curPhoto]; changed(); };
+  $("p-prev").onclick = () => stepPhoto(-1);
+  $("p-next").onclick = () => stepPhoto(1);
+}
+card.addEventListener("click", e => {
+  const el = e.target;
+  const pick = el.closest?.("[data-ph]"), rm = el.closest?.("[data-rm]"), pf = el.closest?.("[data-pf]"), rmn = el.closest?.("[data-rmn]");
+  if (pick) { curPhoto = pick.dataset.ph; card.scrollTop = 0; renderAll(); return; }
+  if (rm) { togglePanel(+rm.dataset.rm); return; }
+  if (rmn) { toggleNew(rmn.dataset.rmn); return; }
+  if (pf) { photoFilter = pf.dataset.pf; renderAll(); return; }
+  const open = el.closest?.("[data-open]");
+  if (open) { openPhoto(open.dataset.open); return; }
+  if (el.matches?.(".fig img")) { const q = PHOTOS.find(x => x.file === el.getAttribute("src")); if (q) openPhoto(q.id); }
+});
+function openPhoto(id) {
+  const p = PHOTO[id], l = $("lb"), a = assignedOf(id), nw = newsOf(id);
+  l.classList.remove("big"); l.querySelector("img").src = p.file;
+  l.querySelector("p").textContent = `${p.group}: ${p.title}${wholeOf(id) ? ". Shows the whole minbar" : ""}`;
+  $("lbchips").innerHTML = editing ? "" : a.map(n => `<button type="button" class="chip" data-go="${n}">Panel ${n}</button>`).join("")
+    + nw.map(s => `<button type="button" class="chip" data-goslot="${s}">New panel: ${slotName(s)}</button>`).join("");
+  l.hidden = false; l.scrollTop = 0;
+}
+function closeLb() { $("lb").hidden = true; }
+$("lb").addEventListener("click", e => {
+  const go = e.target.closest("[data-go]"), gs = e.target.closest("[data-goslot]");
+  if (go) { closeLb(); select(+go.dataset.go, true); return; }
+  if (gs) { closeLb(); showSlot(gs.dataset.goslot); return; }
+  if (e.target.matches("img")) $("lb").classList.toggle("big"); else closeLb();
+});
+// in photo mode a click on a number or panel changes the photo's list instead of selecting
+document.querySelectorAll(".scroll").forEach(sc => sc.addEventListener("click", e => {
+  if (!photoMode) return;
+  e.stopImmediatePropagation();
+  const a = e.target.closest?.("[data-n], [data-k], [data-slot]");
+  if (!a) return;
+  const nAttr = a.getAttribute("data-n"), k = a.getAttribute("data-k"), slot = a.getAttribute("data-slot");
+  const n = nAttr ? +nAttr : k ? numberAt(+k) : numbersAt(slot)[0];
+  if (n) togglePanel(n); else toggleNew(slot);
+}, true));
+
+const dock = () => $("views").classList.toggle("docked", !card.hidden);
+new MutationObserver(dock).observe(card, {attributes: true, attributeFilter: ["hidden"], childList: true});
+
+setView("before");
+dock();
+renderMarks();
+function clearSelection() {
+  current = null; currentSlot = null; follow = null; focusKey = "";
+  renderMarks();
+  idleCard();
+  card.hidden = card.hidden || innerWidth <= 760;
+  try { if (location.hash.startsWith("#panel")) history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
+}
+let lastClick = null;
+document.querySelectorAll(".scroll").forEach(sc => sc.addEventListener("click", e => {
+  const t = performance.now(), l = lastClick, el = e.target;
+  const isNumber = !!el.closest?.(".mark, #stage-saladin .hits polygon");
+  const k = el.getAttribute?.("data-k"), slot = el.getAttribute?.("data-slot");
+  if (picking && !isNumber) { if (slot) clickSlot(slot); return; }   // choosing a Creswell position
+  const hit = isNumber ? {n: current, slot: currentSlot}
+    : k ? {n: numberAt(+k), slot: null}
+    : slot ? (numbersAt(slot).length ? {n: numbersAt(slot)[0], slot: null} : {n: null, slot}) : null;
+  if (!hit) { lastClick = null; if (current || currentSlot) clearSelection(); return; }
+  if (l && t - l.t < 400 && Math.hypot(e.clientX - l.x, e.clientY - l.y) < 10) {
+    lastClick = null;
+    // in Edit the first click already zoomed, so the second may land on a neighbouring panel
+    if (l.n) { if (current !== l.n) select(l.n, false); } else if (l.slot && currentSlot !== l.slot) showSlot(l.slot);
+    zoomSelected();
+    return;
+  }
+  lastClick = {t, x: e.clientX, y: e.clientY, n: hit.n, slot: hit.slot};
+  if (!isNumber && (current || currentSlot)) clearSelection();
+}));
+
+const fromHash = () => { const m = location.hash.match(/^#panel-(\d+)$/); return m ? +m[1] : null; };
+window.addEventListener("hashchange", () => {
+  if (!SEPARATE_PAGES && location.hash === "#edit") { setPage(true); return; }
+  if (!SEPARATE_PAGES && location.hash === "#view") { setPage(false); return; }
+  const n = fromHash(); if (n) select(n, true);
+});
+setPage(!SEPARATE_PAGES ? location.hash === "#edit" : location.pathname.endsWith("edit.html"));
+if (innerWidth <= 760) card.hidden = !fromHash();
+if (fromHash()) select(fromHash(), true);
+loadEdits();
+</script>
+
+</body>
+</html>

@@ -89,7 +89,7 @@ body { background: var(--stage); color: var(--fg); font-family: var(--serif); fo
 .tools select, .tools input, .tools > button { font: inherit; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; }
 .tools > button { cursor: pointer; min-width: 30px; }
 .tools input { width: 4.8em; }
-.edit-only[hidden] { display: none !important; }
+.edit-only[hidden], .view-only[hidden] { display: none !important; }
 :is(.tools button, .tools select, .tools input, .mark, .card button, summary):focus-visible { outline: 2px solid var(--sel); outline-offset: 2px; }
 
 .card { position: fixed; z-index: 11; top: calc(env(safe-area-inset-top, 0px) + 10px); max-height: calc(100vh - 20px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
@@ -116,6 +116,8 @@ body { background: var(--stage); color: var(--fg); font-family: var(--serif); fo
 .fig figcaption { font-family: var(--label); font-size: .8rem; color: var(--muted); }
 .nav { display: flex; gap: 8px; }
 .nav button { flex: 1; font-family: var(--label); font-size: .88rem; border: 1px solid var(--line); background: transparent; color: var(--muted); border-radius: 6px; padding: 6px; cursor: pointer; }
+.field { display: flex; flex-direction: column; gap: 4px; }
+.glabel { font-family: var(--label); font-size: .78rem; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
 .chips { display: flex; flex-wrap: wrap; gap: 4px; }
 .chip { font-family: var(--label); font-size: .85rem; font-variant-numeric: tabular-nums; border: 1px solid var(--accent); background: transparent; color: var(--fg); border-radius: 12px; padding: 1px 8px; cursor: pointer; }
 .thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(62px, 1fr)); gap: 5px; }
@@ -131,6 +133,10 @@ body { background: var(--stage); color: var(--fg); font-family: var(--serif); fo
 #lb { position: fixed; inset: 0; z-index: 30; display: flex; flex-direction: column; align-items: center; overflow: auto; background: rgba(0,0,0,.93); padding: 12px; }
 #lb img { max-width: 100%; max-height: calc(100vh - 70px); margin: auto; cursor: zoom-in; }
 #lb.big img { max-width: none; max-height: none; margin: 0; cursor: zoom-out; }
+#lb .chips { justify-content: center; margin-top: 6px; }
+#lb .chip { color: #f3ede3; }
+.tools > a.linkb { color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px; text-decoration: none; }
+.tools > a.linkb:focus-visible { outline: 2px solid var(--sel); outline-offset: 2px; }
 #lb p { color: #f3ede3; font-family: var(--label); font-size: .85rem; margin: 6px 0 0; text-align: center; }
 .edit { display: flex; flex-direction: column; gap: 10px; padding: 12px; border: 1px solid var(--accent); border-radius: 6px; font-family: var(--label); font-size: .9rem; }
 .edit .row { display: flex; align-items: center; gap: 8px; }
@@ -161,7 +167,7 @@ details ul { padding-left: 1.2em; display: flex; flex-direction: column; gap: 4p
 </div>
 
 <div class="tools">
-  <h1>Kairouan Minbar Panels</h1>
+  <h1 id="ttl">Kairouan Minbar Panels</h1>
   <div class="seg" id="viewseg" role="group" aria-label="View">
     <button data-v="before" aria-pressed="true">Before</button>
     <button data-v="after" aria-pressed="false">Creswell</button>
@@ -185,21 +191,20 @@ details ul { padding-left: 1.2em; display: flex; flex-direction: column; gap: 4p
     <option value="gone">Not in Creswell</option>
     <option value="newp">New in Creswell</option>
   </select>
-  <button id="nums" aria-pressed="true">Numbers on</button>
-  <button id="zout" aria-label="Zoom all images out" title="Zoom all images">−</button>
-  <button id="zin" aria-label="Zoom all images in" title="Zoom all images">+</button>
+  <button id="nums" class="view-only" aria-pressed="true">Numbers on</button>
   <button id="fitb">Whole minbar</button>
-  <input id="go" type="number" min="1" max="79" inputmode="numeric" placeholder="Panel" aria-label="Go to panel">
-  <button id="editb" aria-pressed="false">Edit</button>
+  <input id="go" class="edit-only" type="number" min="1" max="79" inputmode="numeric" placeholder="Panel" aria-label="Go to panel" hidden>
+  <button id="allb" class="view-only">All photos</button>
+  <a id="pagelink" class="linkb" href="edit.html">Edit</a>
   <div class="seg edit-only" id="modeseg" role="group" aria-label="What to edit" hidden><button data-m="panels" aria-pressed="true">Panels</button><button data-m="photos" aria-pressed="false">Photos</button></div>
-  <button id="saveb" hidden>Save</button>
-  <button id="savef" hidden>Save file</button>
+  <button id="saveb" class="edit-only" hidden>Save</button>
+  <button id="savef" class="edit-only" hidden>Save file</button>
   <label class="edit-only file-b" hidden>Load file<input id="loadf" type="file" accept="application/json,.json" hidden></label>
-  <span class="saved" id="saved" role="status" hidden>Saved 0/79</span>
+  <span class="edit-only saved" id="saved" role="status" hidden>Saved 0/79</span>
 </div>
 
 <aside class="card" id="card" aria-live="polite"></aside>
-<div id="lb" role="dialog" aria-label="Enlarged photograph" hidden><img alt=""><p></p></div>
+<div id="lb" role="dialog" aria-label="Enlarged photograph" hidden><img alt=""><p></p><div class="chips" id="lbchips"></div></div>
 
 <script>
 const diag = {errors: [], db: "not started", save: ""};
@@ -714,8 +719,10 @@ function stopPick() { picking = false; }
 
 function afterNote(n) {
   const c = P(n).cre, s = slotOf(n);
-  if (c === "no") return `You marked this panel as not in Creswell's photograph.`;
-  if (c === "moved") return s ? `You placed this panel in a different position on Creswell's photograph: ${slotName(s)}.` : `You marked this panel as in a different position. Choose where.`;
+  const h = homeOf(n), nw = h && newOf(h) === "yes" ? " A new panel stands at its position." : "";
+  if (c === "no") return `Not in Creswell's photograph.${nw}`;
+  if (c === "moved") return s ? `Moved. In Creswell's photograph it is at: ${slotName(s)}.${nw}` : `In a different position in Creswell's photograph; the position is not chosen yet.`;
+  if (c === "yes") return isBal(n) ? `Still present, at his position ${BAL[n - 52]} from the top, following Creswell's table.` : `The same panel, in the same position.`;
   if (!s) return `Creswell says this panel <q>has disappeared</q>, so nothing is outlined on his photograph.`;
   if (isBal(n)) return `The balustrade was rebuilt with sixteen panels. Following Creswell's table, this panel now stands at his position ${BAL[n - 52]} from the top, outlined on his photograph.`;
   return "";
@@ -737,11 +744,11 @@ function renderCard() {
     </div></div>
     ${editing ? editForm(n) : ""}
     ${figs.length ? `<div class="figs">${figs.join("")}</div>` : ""}
-    ${an ? `<div class="note inf"><span class="src">After 1907</span><p>${an}</p></div>` : ""}
-    ${notes.length ? notes.map(o => `<div class="note${o.inf ? " inf" : ""}"><span class="src">${S[o.src]}</span><p>${o.html}</p></div>`).join("")
+    ${!editing && an ? `<div class="note"><span class="src">Compared with Creswell</span><p>${an}</p></div>` : ""}
+    ${editing ? "" : notes.length ? notes.map(o => `<div class="note${o.inf ? " inf" : ""}"><span class="src">${S[o.src]}</span><p>${o.html}</p></div>`).join("")
       : `<p class="empty">No source read so far comments on this panel individually. Strzygowski (1907, col. 388) says only that each of the nearly eighty fields <q>zeigt ein anderes Muster</q> (shows a different pattern).</p>`}
     <div class="nav"><button id="prev">← ${n > 1 ? n - 1 : 79}</button><button id="next">${n < 79 ? n + 1 : 1} →</button></div>
-    ${sources}`;
+    ${editing ? "" : sources}`;
   card.scrollTop = top;
   $("close").onclick = () => { card.hidden = true; };
   $("prev").onclick = () => select(n > 1 ? n - 1 : 79, true);
@@ -775,7 +782,7 @@ function select(n, scroll) {
   if (!POLY.before[n]) return;
   current = n; currentSlot = null;
   renderMarks(); renderCard();
-  try { if (location.hash !== "#panel-" + n) history.replaceState(null, "", "#panel-" + n); } catch (e) {}
+  try { if (!editing && location.hash !== "#panel-" + n) history.replaceState(null, "", "#panel-" + n); } catch (e) {}
   soon(() => focusPanel());
   if (scroll && !editing) { const ids = [marks.before[n], slotOf(n) && marks.after[slotOf(n)], hits[n]].filter(Boolean);
     ids.forEach(b => b.scrollIntoView({block: "center", inline: "center", behavior: "smooth"})); }
@@ -792,11 +799,10 @@ const sources = `<details><summary>Sources and caveats</summary><ul>
   <li>Picotin and Déléry 2018: “Fragments d'histoire du minbar de Kairouan,” in <i>The Aghlabids and their Neighbors</i> (Leiden, 2018), pp. 207–227.</li>
   <li>Other photographs: Wikimedia Commons (Grande Mosquée de Kairouan, détails du minbar; Un panneau sculpté du minbar); museum photographs and a catalogue page from the site's author.</li>
   <li>Images: Saladin 1899, fig. 52, Pl. XXI, XXVI, XXVII; Garrigues, Tunis, no. 271 (via Wikimedia Commons); Creswell, Pl. 89a; Creswell prints, Victoria and Albert Museum. Reproduced for research and study.</li>
-  </ul><p>Notes marked “Identification” are matches made by comparing photographs, not statements in the sources. Saladin's panel lists were checked against the Heidelberg scan. Outlines were traced separately on each photograph. For rectangles and triangles they mark the same position in the frame, which may now hold a replaced panel; for the balustrade they follow Creswell's table of moved panels.</p></details>`;
+  </ul><p>Notes marked “Compared with Creswell” record the site author's comparison of the two photographs. Notes marked “Identification” are matches made by comparing photographs, not statements in the sources. Saladin's panel lists were checked against the Heidelberg scan. Outlines were traced separately on each photograph. For rectangles and triangles they mark the same position in the frame, which may now hold a replaced panel; for the balustrade they follow Creswell's table of moved panels.</p></details>`;
 
 function syncSave() {
-  const on = editing || view === "both";
-  ["saveb", "savef", "saved"].forEach(id => { $(id).hidden = !on; });
+  ["saveb", "savef", "saved"].forEach(id => { $(id).hidden = !editing; });
 }
 function setView(v) {
   view = v;
@@ -863,25 +869,51 @@ VW.forEach(v => {
   sc.addEventListener("click", e => { if (panned) { e.stopImmediatePropagation(); e.preventDefault(); panned = false; } }, true);
   sc.addEventListener("dragstart", e => e.preventDefault());
 });
-$("zin").onclick = () => zoom(1.4);
-$("zout").onclick = () => zoom(1 / 1.4);
 $("fitb").onclick = fitAll;
 document.querySelectorAll("#withseg button").forEach(b => b.addEventListener("click", () => { partner = b.dataset.w; setView("both"); }));
 $("go").addEventListener("change", e => {
   if (photoMode) { const n = +e.target.value; if (n >= 1 && n <= 79) togglePanel(n); e.target.value = ""; return; }
   select(+e.target.value, true);
 });
-$("editb").addEventListener("click", () => {
-  editing = !editing;
-  $("editb").setAttribute("aria-pressed", editing); $("editb").textContent = editing ? "Done editing" : "Edit";
-  document.body.classList.toggle("editing", editing);
-  document.querySelectorAll(".edit-only").forEach(x => { x.hidden = !editing; });
+// the reading page and the edit page are the same code in two states
+const SEPARATE_PAGES = true;
+const HL_VIEW = [["", "Highlight…"], ["geo", "Saladin: geometric"], ["ori", "Saladin: “more oriental”"], ["rep", "Repaired, moved or replaced"], ["pl", "In Saladin's plates"], ["cre", "In Creswell's plates"], ["tri", "Triangles"], ["bal", "Balustrade"], ["gone", "Not in Creswell"], ["newp", "New in Creswell"]];
+const HL_EDIT = [["", "Highlight…"], ["todo", "Not answered yet"], ["gone", "Not in Creswell"], ["newp", "New in Creswell"]];
+let pageReady = false;
+function setPage(edit) {
+  if (pageReady && edit === editing) return;
+  pageReady = true; editing = edit;
+  document.body.classList.toggle("editing", edit);
+  document.querySelectorAll(".edit-only").forEach(x => { x.hidden = !edit; });
+  document.querySelectorAll(".view-only").forEach(x => { x.hidden = edit; });
   syncSave();
-  if (!editing) { stopPick(); setPhotoMode(false); fitAll(); }
-  if (editing && view !== "both") setView("both");
-  renderAll();
-  if (editing) soon(() => focusPanel(true));
+  $("ttl").textContent = edit ? "Edit" : "Kairouan Minbar Panels";
+  const pl = $("pagelink");
+  pl.textContent = edit ? "Back to the panels" : "Edit";
+  pl.href = SEPARATE_PAGES ? (edit ? "index.html" : "edit.html") : (edit ? "#view" : "#edit");
+  filter = ""; $("hl").innerHTML = (edit ? HL_EDIT : HL_VIEW).map(([v, t]) => `<option value="${v}">${t}</option>`).join("");
+  if (!edit) { stopPick(); setPhotoMode(false); fitAll(); setView("before"); }
+  else setView("both");
+  if (current || currentSlot) renderAll(); else { renderMarks(); idleCard(); }
+  if (edit) soon(() => focusPanel(true));
+}
+$("pagelink").addEventListener("click", () => {
+  const n = current;
+  if (SEPARATE_PAGES && n) $("pagelink").href = (editing ? "index.html" : "edit.html") + "#panel-" + n;
 });
+function idleCard() {
+  if (editing) {
+    card.innerHTML = `<button class="close" id="close">Close</button><p class="empty">Click a number to edit that panel, or switch to Photos to assign photographs.</p>`;
+  } else {
+    const groups = [...new Set(PHOTOS.map(q => q.group))];
+    card.innerHTML = `<button class="close" id="close">Close</button>
+      <p class="empty">Click a number to read about a panel. Double-click a panel to zoom to it. Click a photo below to enlarge it.</p>
+      ${groups.map(g => `<div class="field"><span class="glabel">${g}</span><div class="thumbs">${PHOTOS.filter(q => q.group === g).map(q => `<button type="button" class="thumb" data-open="${q.id}" title="${q.title}" aria-label="${q.title}"><img src="${q.thumb}" alt="" loading="lazy"></button>`).join("")}</div></div>`).join("")}
+      ${sources}`;
+  }
+  $("close").onclick = () => { card.hidden = true; };
+}
+$("allb").addEventListener("click", () => { clearSelection(); card.hidden = false; card.scrollTop = 0; });
 $("savef").addEventListener("click", saveFile);
 $("saveb").addEventListener("click", saveNow);
 document.addEventListener("keydown", e => {
@@ -969,11 +1001,25 @@ card.addEventListener("click", e => {
   if (rm) { togglePanel(+rm.dataset.rm); return; }
   if (rmn) { toggleNew(rmn.dataset.rmn); return; }
   if (pf) { photoFilter = pf.dataset.pf; renderAll(); return; }
-  if (el.matches?.(".fig img")) openLb(el.getAttribute("src"), el.closest(".fig").querySelector("figcaption")?.textContent || "");
+  const open = el.closest?.("[data-open]");
+  if (open) { openPhoto(open.dataset.open); return; }
+  if (el.matches?.(".fig img")) { const q = PHOTOS.find(x => x.file === el.getAttribute("src")); if (q) openPhoto(q.id); }
 });
-function openLb(src, cap) { const l = $("lb"); l.classList.remove("big"); l.querySelector("img").src = src; l.querySelector("p").textContent = cap; l.hidden = false; }
+function openPhoto(id) {
+  const p = PHOTO[id], l = $("lb"), a = assignedOf(id), nw = newsOf(id);
+  l.classList.remove("big"); l.querySelector("img").src = p.file;
+  l.querySelector("p").textContent = `${p.group}: ${p.title}${wholeOf(id) ? ". Shows the whole minbar" : ""}`;
+  $("lbchips").innerHTML = editing ? "" : a.map(n => `<button type="button" class="chip" data-go="${n}">Panel ${n}</button>`).join("")
+    + nw.map(s => `<button type="button" class="chip" data-goslot="${s}">New panel: ${slotName(s)}</button>`).join("");
+  l.hidden = false; l.scrollTop = 0;
+}
 function closeLb() { $("lb").hidden = true; }
-$("lb").addEventListener("click", e => { if (e.target.matches("img")) $("lb").classList.toggle("big"); else closeLb(); });
+$("lb").addEventListener("click", e => {
+  const go = e.target.closest("[data-go]"), gs = e.target.closest("[data-goslot]");
+  if (go) { closeLb(); select(+go.dataset.go, true); return; }
+  if (gs) { closeLb(); showSlot(gs.dataset.goslot); return; }
+  if (e.target.matches("img")) $("lb").classList.toggle("big"); else closeLb();
+});
 // in photo mode a click on a number or panel changes the photo's list instead of selecting
 document.querySelectorAll(".scroll").forEach(sc => sc.addEventListener("click", e => {
   if (!photoMode) return;
@@ -994,10 +1040,9 @@ renderMarks();
 function clearSelection() {
   current = null; currentSlot = null; follow = null; focusKey = "";
   renderMarks();
-  card.innerHTML = `<button class="close" id="close">Close</button><p class="empty">Click a number to read about a panel. Double-click a panel to zoom to it.</p>${sources}`;
-  $("close").onclick = () => { card.hidden = true; };
+  idleCard();
   card.hidden = card.hidden || innerWidth <= 760;
-  try { if (location.hash) history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
+  try { if (location.hash.startsWith("#panel")) history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
 }
 let lastClick = null;
 document.querySelectorAll(".scroll").forEach(sc => sc.addEventListener("click", e => {
@@ -1021,12 +1066,14 @@ document.querySelectorAll(".scroll").forEach(sc => sc.addEventListener("click", 
 }));
 
 const fromHash = () => { const m = location.hash.match(/^#panel-(\d+)$/); return m ? +m[1] : null; };
-window.addEventListener("hashchange", () => { const n = fromHash(); if (n) select(n, true); });
+window.addEventListener("hashchange", () => {
+  if (!SEPARATE_PAGES && location.hash === "#edit") { setPage(true); return; }
+  if (!SEPARATE_PAGES && location.hash === "#view") { setPage(false); return; }
+  const n = fromHash(); if (n) select(n, true);
+});
+setPage(!SEPARATE_PAGES ? location.hash === "#edit" : location.pathname.endsWith("edit.html"));
+if (innerWidth <= 760) card.hidden = !fromHash();
 if (fromHash()) select(fromHash(), true);
-else {
-  card.innerHTML = `<button class="close" id="close">Close</button><p class="empty">Click a number to read what the sources say about that panel. Double-click a panel to zoom to it. Use Compare to see the 1890s photograph beside Creswell's, taken after the 1907 restoration, or beside Saladin's numbered diagram.</p>${sources}`;
-  $("close").onclick = () => { card.hidden = true; };
-}
 loadEdits();
 </script>
 

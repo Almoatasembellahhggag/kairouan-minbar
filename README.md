@@ -8,4 +8,4 @@ Photographs: Saladin (1899), fig. 52 and Pl. XXI, XXVI, XXVII; Wikimedia Commons
 
 ## Editing
 
-Press Edit on the site to answer three questions for each panel: is the Saladin number correct, does it exist in Creswell (yes, no, or yes in a different position), and is the Creswell panel at that position new. Switch Edit to Photos to assign each photograph to the panels it shows, including new panels marked N on Creswell's photograph. Edits stay in that browser until you press Save file and commit the result here as `edits.json`, which the site then loads for everyone.
+The main page shows the images, panels and notes. The Edit link opens `edit.html`, where you answer three questions for each panel: is the Saladin number correct, does it exist in Creswell (yes, no, or yes in a different position), and is the Creswell panel at that position new. Switch to Photos to assign each photograph to the panels it shows, including new panels marked N on Creswell's photograph. Edits stay in that browser until you press Save file and commit the result here as `edits.json`, which the site then loads for everyone.
