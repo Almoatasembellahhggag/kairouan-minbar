@@ -49,6 +49,13 @@ body { background: var(--stage); color: var(--fg); font-family: var(--serif); fo
 .editing #stage-saladin .hits polygon.c2 { fill: rgba(47, 143, 78, .32); }
 #stage-saladin .hits polygon.sel { fill: rgba(232, 134, 47, .25); }
 .outline { fill: none; stroke: var(--sel); stroke-width: 3; vector-effect: non-scaling-stroke; stroke-linejoin: round; filter: drop-shadow(0 0 6px rgba(0,0,0,.8)); }
+.pzoom { position: absolute; z-index: 5; right: 10px; bottom: 10px; display: flex; align-items: center; gap: 2px; padding: 2px; border-radius: 6px; background: rgba(0,0,0,.62); font-family: var(--label); font-size: .82rem; color: #f3ede3; font-variant-numeric: tabular-nums; }
+.pzoom button { font: inherit; color: inherit; background: transparent; border: 0; border-radius: 4px; min-width: 28px; padding: 3px 7px; cursor: pointer; }
+.pzoom button:hover { background: rgba(255,255,255,.18); }
+.pzoom button:focus-visible { outline: 2px solid var(--sel); outline-offset: 1px; }
+.pzoom span { min-width: 3em; text-align: center; }
+.scroll.zoomed { cursor: grab; }
+.scroll.panning, .scroll.panning * { cursor: grabbing !important; }
 .tag { position: absolute; left: 10px; bottom: 10px; font-family: var(--label); font-size: .78rem; color: #f3ede3; background: rgba(0,0,0,.55); padding: 3px 8px; border-radius: 4px; pointer-events: none; }
 
 .mark { position: absolute; transform: translate(-50%, -50%); width: clamp(18px, 1.7cqw, 30px); height: clamp(18px, 1.7cqw, 30px);
@@ -130,9 +137,9 @@ details ul { padding-left: 1.2em; display: flex; flex-direction: column; gap: 4p
 </head>
 <body>
 <div class="views" id="views">
-  <div class="pane" id="pane-before"><div class="scroll" id="scroll-before"><div class="stage" id="stage-before"></div></div><span class="tag">Before 1907: Garrigues no. 271</span></div>
-  <div class="pane" id="pane-after"><div class="scroll" id="scroll-after"><div class="stage" id="stage-after"></div></div><span class="tag">After 1907: Creswell 1940, Pl. 89a</span></div>
-  <div class="pane" id="pane-saladin"><div class="scroll" id="scroll-saladin"><div class="stage" id="stage-saladin"></div></div><span class="tag">Saladin 1899, fig. 52, drawn 1896</span></div>
+  <div class="pane" id="pane-before"><div class="scroll" id="scroll-before"><div class="stage" id="stage-before"></div></div><div class="pzoom" role="group" aria-label="Zoom this image"><button data-pz="out" aria-label="Zoom this image out">−</button><span id="zl-before">1×</span><button data-pz="in" aria-label="Zoom this image in">+</button><button data-pz="fit">Fit</button></div><span class="tag">Before 1907: Garrigues no. 271</span></div>
+  <div class="pane" id="pane-after"><div class="scroll" id="scroll-after"><div class="stage" id="stage-after"></div></div><div class="pzoom" role="group" aria-label="Zoom this image"><button data-pz="out" aria-label="Zoom this image out">−</button><span id="zl-after">1×</span><button data-pz="in" aria-label="Zoom this image in">+</button><button data-pz="fit">Fit</button></div><span class="tag">After 1907: Creswell 1940, Pl. 89a</span></div>
+  <div class="pane" id="pane-saladin"><div class="scroll" id="scroll-saladin"><div class="stage" id="stage-saladin"></div></div><div class="pzoom" role="group" aria-label="Zoom this image"><button data-pz="out" aria-label="Zoom this image out">−</button><span id="zl-saladin">1×</span><button data-pz="in" aria-label="Zoom this image in">+</button><button data-pz="fit">Fit</button></div><span class="tag">Saladin 1899, fig. 52, drawn 1896</span></div>
 </div>
 
 <div class="tools">
@@ -161,8 +168,8 @@ details ul { padding-left: 1.2em; display: flex; flex-direction: column; gap: 4p
     <option value="newp">New in Creswell</option>
   </select>
   <button id="nums" aria-pressed="true">Numbers on</button>
-  <button id="zout" aria-label="Zoom out">−</button>
-  <button id="zin" aria-label="Zoom in">+</button>
+  <button id="zout" aria-label="Zoom all images out" title="Zoom all images">−</button>
+  <button id="zin" aria-label="Zoom all images in" title="Zoom all images">+</button>
   <button id="fitb">Whole minbar</button>
   <input id="go" type="number" min="1" max="79" inputmode="numeric" placeholder="Panel" aria-label="Go to panel">
   <button id="editb" aria-pressed="false">Edit</button>
@@ -449,7 +456,11 @@ const VIEWS = {
 };
 const VW = Object.keys(VIEWS), zfs = {before: 1, after: 1, saladin: 1};
 const clampN = (x, a, b) => Math.max(a, Math.min(b, x));
-const setZf = (v, f) => { zfs[v] = f; $("stage-" + v).style.setProperty("--zf", f); };
+const setZf = (v, f) => {
+  zfs[v] = f; $("stage-" + v).style.setProperty("--zf", f);
+  $("zl-" + v).textContent = (Math.round(f * 10) / 10) + "×";
+  $("scroll-" + v).classList.toggle("zoomed", f > 1);
+};
 function focusView(v, p) {
   const sc = $("scroll-" + v), st = $("stage-" + v), d = VIEWS[v], W = sc.clientWidth, H = sc.clientHeight;
   if (!W || !H) return;
@@ -733,13 +744,50 @@ nums.addEventListener("click", () => {
   nums.setAttribute("aria-pressed", on); nums.textContent = on ? "Numbers on" : "Numbers off";
   document.querySelectorAll(".stage").forEach(s => s.classList.toggle("quiet", !on));
 });
-const zoom = k => VW.forEach(v => {
-  const sc = $("scroll-" + v), st = $("stage-" + v);
-  if (!sc.clientWidth) return;
-  const fx = (sc.scrollLeft + sc.clientWidth / 2 - st.offsetLeft) / st.offsetWidth, fy = (sc.scrollTop + sc.clientHeight / 2 - st.offsetTop) / st.offsetHeight;
+// zoom one image, keeping the point at (ax, ay) in its pane still
+function zoomView(v, k, ax, ay) {
+  const sc = $("scroll-" + v), st = $("stage-" + v), W = sc.clientWidth, H = sc.clientHeight;
+  if (!W) return;
+  ax ??= W / 2; ay ??= H / 2;
+  const fx = (sc.scrollLeft + ax - st.offsetLeft) / st.offsetWidth, fy = (sc.scrollTop + ay - st.offsetTop) / st.offsetHeight;
   setZf(v, clampN(zfs[v] * k, 1, 10));
-  sc.scrollLeft = st.offsetLeft + fx * st.offsetWidth - sc.clientWidth / 2;
-  sc.scrollTop = st.offsetTop + fy * st.offsetHeight - sc.clientHeight / 2;
+  sc.scrollLeft = st.offsetLeft + fx * st.offsetWidth - ax;
+  sc.scrollTop = st.offsetTop + fy * st.offsetHeight - ay;
+}
+const zoom = k => VW.forEach(v => zoomView(v, k));
+let panned = false;
+VW.forEach(v => {
+  const pane = $("pane-" + v), sc = $("scroll-" + v);
+  pane.querySelectorAll("[data-pz]").forEach(b => b.addEventListener("click", () => {
+    if (b.dataset.pz === "fit") focusView(v, null); else zoomView(v, b.dataset.pz === "in" ? 1.4 : 1 / 1.4);
+  }));
+  // pinch on a trackpad, or Ctrl/Cmd + wheel with a mouse
+  pane.addEventListener("wheel", e => {
+    if (!e.ctrlKey && !e.metaKey) return;
+    e.preventDefault();
+    const r = sc.getBoundingClientRect();
+    zoomView(v, Math.exp(clampN(-e.deltaY * .01, -.5, .5)), e.clientX - r.left, e.clientY - r.top);
+  }, {passive: false});
+  // drag to move around a zoomed image
+  sc.addEventListener("pointerdown", e => {
+    if (e.pointerType !== "mouse" || e.button !== 0 || zfs[v] <= 1) return;
+    const x0 = e.clientX, y0 = e.clientY, l0 = sc.scrollLeft, t0 = sc.scrollTop;
+    let moved = false;
+    const move = m => {
+      if (!moved && Math.hypot(m.clientX - x0, m.clientY - y0) < 5) return;
+      moved = true; sc.classList.add("panning");
+      sc.scrollLeft = l0 - (m.clientX - x0); sc.scrollTop = t0 - (m.clientY - y0);
+    };
+    const up = () => {
+      window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up);
+      sc.classList.remove("panning");
+      if (moved) { panned = true; setTimeout(() => { panned = false; }, 0); }
+    };
+    window.addEventListener("pointermove", move); window.addEventListener("pointerup", up);
+  });
+  // a drag must not count as a click on a panel
+  sc.addEventListener("click", e => { if (panned) { e.stopPropagation(); e.preventDefault(); panned = false; } }, true);
+  sc.addEventListener("dragstart", e => e.preventDefault());
 });
 $("zin").onclick = () => zoom(1.4);
 $("zout").onclick = () => zoom(1 / 1.4);
@@ -767,10 +815,11 @@ document.addEventListener("keydown", e => {
   if (e.key === "Escape") card.hidden = true;
 });
 
-const dock = () => $("views").classList.toggle("docked", !card.hidden && !card.querySelector(".hint"));
+const dock = () => $("views").classList.toggle("docked", !card.hidden);
 new MutationObserver(dock).observe(card, {attributes: true, attributeFilter: ["hidden"], childList: true});
 
 setView("before");
+dock();
 renderMarks();
 function clearSelection() {
   current = null; currentSlot = null; follow = null; focusKey = "";
@@ -805,7 +854,7 @@ const fromHash = () => { const m = location.hash.match(/^#panel-(\d+)$/); return
 window.addEventListener("hashchange", () => { const n = fromHash(); if (n) select(n, true); });
 if (fromHash()) select(fromHash(), true);
 else {
-  card.innerHTML = `<button class="close hint" id="close">Close</button><p class="empty">Click a number to read what the sources say about that panel. Double-click a panel to zoom to it. Use Compare to see the 1890s photograph beside Creswell's, taken after the 1907 restoration, or beside Saladin's numbered diagram.</p>${sources}`;
+  card.innerHTML = `<button class="close" id="close">Close</button><p class="empty">Click a number to read what the sources say about that panel. Double-click a panel to zoom to it. Use Compare to see the 1890s photograph beside Creswell's, taken after the 1907 restoration, or beside Saladin's numbered diagram.</p>${sources}`;
   $("close").onclick = () => { card.hidden = true; };
 }
 loadEdits();
