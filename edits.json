@@ -1,716 +1,744 @@
 {
- "v": 2,
- "numbers": {},
- "panels": {
-  "1": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "2": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "3": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "4": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "5": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "6": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "7": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "8": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "9": {
-   "num": "yes",
-   "cre": "no"
-  },
-  "10": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "11": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "12": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "13": {
-   "num": "yes",
-   "cre": "no"
-  },
-  "14": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "15": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "16": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "17": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "18": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "19": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "20": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "21": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "22": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "23": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "24": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "25": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "26": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "27": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "28": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "29": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "30": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "31": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "32": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "33": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "34": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "35": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "36": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "37": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "38": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "39": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "40": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "41": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "42": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "43": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "44": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "45": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "46": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "47": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "48": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "49": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "50": {
-   "num": "yes",
-   "cre": "no"
-  },
-  "51": {
-   "num": "yes",
-   "cre": "no"
-  },
-  "52": {
-   "num": "yes",
-   "cre": "no"
-  },
-  "53": {
-   "num": "yes",
-   "cre": "no"
-  },
-  "54": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "55": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "56": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "57": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "58": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "59": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "60": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "61": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "62": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "63": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "64": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "65": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "66": {
-   "num": "yes",
-   "cre": "no"
-  },
-  "67": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "68": {
-   "num": "yes",
-   "cre": "yes"
-  },
-  "69": {
-   "num": "yes",
-   "cre": "no"
-  },
-  "70": {
-   "num": "yes",
-   "cre": "no"
-  },
-  "71": {
-   "num": "yes",
-   "cre": "no"
-  },
-  "72": {
-   "num": "yes",
-   "cre": "no"
-  },
-  "73": {
-   "num": "yes",
-   "cre": "no"
-  },
-  "74": {
-   "num": "yes",
-   "cre": "no"
-  },
-  "75": {
-   "num": "yes",
-   "cre": "moved",
-   "slot": "f76"
-  },
-  "76": {
-   "num": "yes",
-   "cre": "no"
-  },
-  "77": {
-   "num": "yes",
-   "cre": "no"
-  },
-  "78": {
-   "num": "yes",
-   "cre": "no"
-  },
-  "79": {
-   "num": "yes",
-   "cre": "no"
+  "v": 2,
+  "numbers": {},
+  "panels": {
+    "1": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "2": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "3": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "4": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "5": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "6": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "7": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "8": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "9": {
+      "num": "yes",
+      "cre": "no"
+    },
+    "10": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "11": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "12": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "13": {
+      "num": "yes",
+      "cre": "no"
+    },
+    "14": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "15": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "16": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "17": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "18": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "19": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "20": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "21": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "22": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "23": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "24": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "25": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "26": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "27": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "28": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "29": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "30": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "31": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "32": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "33": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "34": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "35": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "36": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "37": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "38": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "39": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "40": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "41": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "42": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "43": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "44": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "45": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "46": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "47": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "48": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "49": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "50": {
+      "num": "yes",
+      "cre": "no"
+    },
+    "51": {
+      "num": "yes",
+      "cre": "no"
+    },
+    "52": {
+      "num": "yes",
+      "cre": "no"
+    },
+    "53": {
+      "num": "yes",
+      "cre": "no"
+    },
+    "54": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "55": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "56": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "57": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "58": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "59": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "60": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "61": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "62": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "63": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "64": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "65": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "66": {
+      "num": "yes",
+      "cre": "no"
+    },
+    "67": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "68": {
+      "num": "yes",
+      "cre": "yes"
+    },
+    "69": {
+      "num": "yes",
+      "cre": "no"
+    },
+    "70": {
+      "num": "yes",
+      "cre": "no"
+    },
+    "71": {
+      "num": "yes",
+      "cre": "no"
+    },
+    "72": {
+      "num": "yes",
+      "cre": "no"
+    },
+    "73": {
+      "num": "yes",
+      "cre": "no"
+    },
+    "74": {
+      "num": "yes",
+      "cre": "no"
+    },
+    "75": {
+      "num": "yes",
+      "cre": "moved",
+      "slot": "f76"
+    },
+    "76": {
+      "num": "yes",
+      "cre": "no"
+    },
+    "77": {
+      "num": "yes",
+      "cre": "no"
+    },
+    "78": {
+      "num": "yes",
+      "cre": "no"
+    },
+    "79": {
+      "num": "yes",
+      "cre": "no"
+    }
+  },
+  "slots": {
+    "f51": {
+      "isNew": "yes"
+    },
+    "f52": {
+      "isNew": "yes"
+    },
+    "f50": {
+      "isNew": "yes"
+    },
+    "f70": {
+      "isNew": "yes"
+    },
+    "f71": {
+      "isNew": "yes"
+    },
+    "f72": {
+      "isNew": "yes"
+    },
+    "f73": {
+      "isNew": "yes"
+    },
+    "f74": {
+      "isNew": "yes"
+    },
+    "f75": {
+      "isNew": "yes"
+    },
+    "f9": {
+      "isNew": "yes"
+    },
+    "f76": {
+      "isNew": "no"
+    },
+    "f77": {
+      "isNew": "yes"
+    },
+    "f78": {
+      "isNew": "yes"
+    },
+    "f79": {
+      "isNew": "yes"
+    },
+    "f13": {
+      "isNew": "yes"
+    }
+  },
+  "photos": {
+    "q02": {
+      "panels": [
+        31,
+        40
+      ],
+      "whole": false
+    },
+    "q03": {
+      "panels": [
+        36
+      ],
+      "whole": false
+    },
+    "q04": {
+      "panels": [
+        26
+      ],
+      "whole": false
+    },
+    "q05": {
+      "panels": [
+        35,
+        42
+      ],
+      "whole": false
+    },
+    "q06": {
+      "panels": [
+        15
+      ],
+      "whole": false
+    },
+    "q07": {
+      "panels": [
+        30
+      ],
+      "whole": false
+    },
+    "q08": {
+      "panels": [
+        39
+      ],
+      "whole": false
+    },
+    "q09": {
+      "panels": [
+        45
+      ],
+      "whole": false
+    },
+    "q10": {
+      "panels": [
+        19
+      ],
+      "whole": false
+    },
+    "q11": {
+      "panels": [
+        74
+      ],
+      "whole": false
+    },
+    "q12": {
+      "panels": [
+        74
+      ],
+      "whole": false
+    },
+    "q13": {
+      "panels": [
+        42
+      ],
+      "whole": false
+    },
+    "q14": {
+      "panels": [
+        74
+      ],
+      "whole": false
+    },
+    "s26": {
+      "panels": [
+        15,
+        17,
+        25,
+        26,
+        27,
+        28,
+        29,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        41,
+        42,
+        43,
+        44,
+        45
+      ],
+      "whole": false
+    },
+    "s27": {
+      "panels": [
+        19,
+        21,
+        23,
+        24,
+        30,
+        31,
+        32,
+        33,
+        39,
+        40,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78
+      ],
+      "whole": false
+    },
+    "c83c": {
+      "panels": [
+        42
+      ],
+      "whole": false
+    },
+    "c89b": {
+      "panels": [
+        43,
+        48
+      ],
+      "whole": false
+    },
+    "c90a": {
+      "panels": [
+        38,
+        45
+      ],
+      "whole": false
+    },
+    "v721": {
+      "panels": [
+        43,
+        48
+      ],
+      "whole": false
+    },
+    "v722": {
+      "panels": [
+        19,
+        30
+      ],
+      "whole": false
+    },
+    "v723": {
+      "panels": [
+        6,
+        19,
+        30
+      ],
+      "whole": false
+    },
+    "v724": {
+      "panels": [
+        38,
+        45
+      ],
+      "whole": false
+    },
+    "v725": {
+      "panels": [
+        29,
+        38
+      ],
+      "whole": false
+    },
+    "v726": {
+      "panels": [
+        30,
+        39
+      ],
+      "whole": false
+    },
+    "pd08": {
+      "panels": [
+        35,
+        37,
+        41,
+        42,
+        43,
+        44,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        70,
+        71
+      ],
+      "whole": false
+    },
+    "pd09": {
+      "panels": [
+        19,
+        21,
+        23,
+        30,
+        31,
+        32,
+        33,
+        39,
+        40,
+        60,
+        61,
+        62,
+        63,
+        64,
+        74,
+        75,
+        76,
+        77
+      ],
+      "whole": false
+    },
+    "pd13": {
+      "panels": [],
+      "whole": false,
+      "news": [
+        "f78",
+        "f79"
+      ]
+    },
+    "pd15": {
+      "panels": [
+        30,
+        54,
+        55,
+        56,
+        57
+      ],
+      "whole": false,
+      "news": [
+        "b16"
+      ]
+    },
+    "x01": {
+      "panels": [
+        30
+      ],
+      "whole": false
+    },
+    "x03": {
+      "panels": [
+        8
+      ],
+      "whole": false
+    },
+    "x04": {
+      "panels": [
+        37
+      ],
+      "whole": false
+    },
+    "x08": {
+      "panels": [
+        44
+      ],
+      "whole": false
+    }
+  },
+  "geo": {
+    "panels": [
+      1,
+      2,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      14,
+      15,
+      16,
+      17,
+      18,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      27,
+      28,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      40,
+      41,
+      42,
+      43,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      63,
+      65,
+      66,
+      67,
+      68,
+      69,
+      70,
+      71,
+      72,
+      74,
+      75,
+      76,
+      78,
+      79
+    ],
+    "slots": [
+      "f79",
+      "f13",
+      "b16",
+      "f78",
+      "f77",
+      "f75",
+      "f74",
+      "f73",
+      "f72",
+      "f71",
+      "f70",
+      "f50",
+      "f52",
+      "f51",
+      "f9"
+    ]
   }
- },
- "slots": {
-  "f51": {
-   "isNew": "yes"
-  },
-  "f52": {
-   "isNew": "yes"
-  },
-  "f50": {
-   "isNew": "yes"
-  },
-  "f70": {
-   "isNew": "yes"
-  },
-  "f71": {
-   "isNew": "yes"
-  },
-  "f72": {
-   "isNew": "yes"
-  },
-  "f73": {
-   "isNew": "yes"
-  },
-  "f74": {
-   "isNew": "yes"
-  },
-  "f75": {
-   "isNew": "yes"
-  },
-  "f9": {
-   "isNew": "yes"
-  },
-  "f76": {
-   "isNew": "no"
-  },
-  "f77": {
-   "isNew": "yes"
-  },
-  "f78": {
-   "isNew": "yes"
-  },
-  "f79": {
-   "isNew": "yes"
-  },
-  "f13": {
-   "isNew": "yes"
-  }
- },
- "photos": {
-  "q02": {
-   "panels": [
-    31,
-    40
-   ],
-   "whole": false
-  },
-  "q03": {
-   "panels": [
-    36
-   ],
-   "whole": false
-  },
-  "q04": {
-   "panels": [
-    26
-   ],
-   "whole": false
-  },
-  "q05": {
-   "panels": [
-    35,
-    42
-   ],
-   "whole": false
-  },
-  "q06": {
-   "panels": [
-    15
-   ],
-   "whole": false
-  },
-  "q07": {
-   "panels": [
-    30
-   ],
-   "whole": false
-  },
-  "q08": {
-   "panels": [
-    39
-   ],
-   "whole": false
-  },
-  "q09": {
-   "panels": [
-    45
-   ],
-   "whole": false
-  },
-  "q10": {
-   "panels": [
-    19
-   ],
-   "whole": false
-  },
-  "q11": {
-   "panels": [
-    74
-   ],
-   "whole": false
-  },
-  "q12": {
-   "panels": [
-    74
-   ],
-   "whole": false
-  },
-  "q13": {
-   "panels": [],
-   "whole": false
-  },
-  "q14": {
-   "panels": [
-    74
-   ],
-   "whole": false
-  },
-  "s26": {
-   "panels": [
-    15,
-    17,
-    25,
-    26,
-    27,
-    28,
-    29,
-    34,
-    35,
-    36,
-    37,
-    38,
-    39,
-    41,
-    42,
-    43,
-    44,
-    45
-   ],
-   "whole": false
-  },
-  "s27": {
-   "panels": [
-    19,
-    21,
-    23,
-    24,
-    30,
-    31,
-    32,
-    33,
-    39,
-    40,
-    60,
-    61,
-    62,
-    63,
-    64,
-    65,
-    73,
-    74,
-    75,
-    76,
-    77,
-    78
-   ],
-   "whole": false
-  },
-  "c83c": {
-   "panels": [],
-   "whole": false
-  },
-  "c89b": {
-   "panels": [
-    43,
-    48
-   ],
-   "whole": false
-  },
-  "c90a": {
-   "panels": [
-    38,
-    45
-   ],
-   "whole": false
-  },
-  "v721": {
-   "panels": [
-    43,
-    48
-   ],
-   "whole": false
-  },
-  "v722": {
-   "panels": [
-    19,
-    30
-   ],
-   "whole": false
-  },
-  "v723": {
-   "panels": [
-    6,
-    19,
-    30
-   ],
-   "whole": false
-  },
-  "v724": {
-   "panels": [
-    38,
-    45
-   ],
-   "whole": false
-  },
-  "v725": {
-   "panels": [
-    29,
-    38
-   ],
-   "whole": false
-  },
-  "v726": {
-   "panels": [
-    30,
-    39
-   ],
-   "whole": false
-  },
-  "pd08": {
-   "panels": [
-    35,
-    37,
-    41,
-    42,
-    43,
-    44,
-    46,
-    47,
-    48,
-    49,
-    50,
-    51,
-    52,
-    53,
-    54,
-    55,
-    56,
-    70,
-    71
-   ],
-   "whole": false
-  },
-  "pd09": {
-   "panels": [
-    19,
-    21,
-    23,
-    30,
-    31,
-    32,
-    33,
-    39,
-    40,
-    60,
-    61,
-    62,
-    63,
-    64,
-    74,
-    75,
-    76,
-    77
-   ],
-   "whole": false
-  },
-  "pd13": {
-   "panels": [],
-   "whole": false,
-   "news": [
-    "f78",
-    "f79"
-   ]
-  },
-  "pd15": {
-   "panels": [
-    30,
-    54,
-    55,
-    56,
-    57
-   ],
-   "whole": false,
-   "news": [
-    "b16"
-   ]
-  }
- },
- "geo": {
-  "panels": [
-   1,
-   2,
-   4,
-   5,
-   6,
-   7,
-   8,
-   9,
-   10,
-   11,
-   12,
-   14,
-   15,
-   16,
-   17,
-   18,
-   20,
-   21,
-   22,
-   23,
-   24,
-   25,
-   27,
-   28,
-   31,
-   32,
-   33,
-   34,
-   35,
-   36,
-   37,
-   38,
-   40,
-   41,
-   42,
-   43,
-   46,
-   47,
-   48,
-   49,
-   50,
-   51,
-   52,
-   53,
-   54,
-   55,
-   56,
-   57,
-   58,
-   59,
-   60,
-   61,
-   63,
-   65,
-   66,
-   67,
-   68,
-   69,
-   70,
-   71,
-   72,
-   74,
-   75,
-   76,
-   78,
-   79
-  ],
-  "slots": [
-   "f79",
-   "f13",
-   "b16",
-   "f78",
-   "f77",
-   "f75",
-   "f74",
-   "f73",
-   "f72",
-   "f71",
-   "f70",
-   "f50",
-   "f52",
-   "f51",
-   "f9"
-  ]
- }
 }
