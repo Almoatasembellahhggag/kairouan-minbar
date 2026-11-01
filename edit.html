@@ -208,6 +208,7 @@ details ul { padding-left: 1.2em; display: flex; flex-direction: column; gap: 4p
   <button id="saveb" class="edit-only" hidden>Save</button>
   <button id="savef" class="edit-only" hidden>Save file</button>
   <label class="edit-only file-b" hidden>Load file<input id="loadf" type="file" accept="application/json,.json" hidden></label>
+  <label class="edit-only file-b" hidden>Show qq photos<input id="loadl" type="file" accept="image/*" multiple hidden></label>
   <span class="edit-only saved" id="saved" role="status" hidden>Saved 0/79</span>
 </div>
 
@@ -359,7 +360,7 @@ const HIDE_PRIVATE = true;
 const ph = (id, file, group, title, def = [], whole = false, priv = false) => ({id, file, thumb: `th/${id}.jpg`, group, title, def, whole, priv});
 const G_S = "Saladin 1899", G_C = "Creswell 1940", G_V = "Creswell's prints, V&A", G_Q = "Qayrawan folder", G_P = "Picotin and Déléry 2018", G_X = "Social media, private";
 const WM = "Wikimedia Commons, Grande Mosquée de Kairouan, détails du minbar ";
-const PHOTOS = [
+const ALL_PHOTOS = [
   ph("s52", "saladin.jpg", G_S, "Fig. 52, Saladin's numbered diagram, signed 1896", [], true),
   ph("s21", "ph/s21.jpg", G_S, "Pl. XXI, mihrab, minbar and maqsūra", [], true),
   ph("s26", "ph/s26.jpg", G_S, "Pl. XXVI, detail of the minbar", PL26),
@@ -413,7 +414,8 @@ const PHOTOS = [
   ph("x07", "ph/x07.jpg", G_X, "Facebook collage, whole minbar and panel details, source unknown", [], false, true),
   ph("x08", "ph/x08.jpg", G_X, "Arched panel with vine roundels and crenellations, Mahdi Jouini (Facebook)", [], false, true),
   ph("x09", "ph/x09.jpg", G_X, "Key-pattern lattice panel with vine friezes (Facebook), source unknown", [], false, true),
-].filter(p => !(HIDE_PRIVATE && p.priv));
+];
+const PHOTOS = ALL_PHOTOS.filter(p => !(HIDE_PRIVATE && p.priv));
 const PHOTO = Object.fromEntries(PHOTOS.map(p => [p.id, p]));
 
 const pts = p => p.map(q => q.join(",")).join(" ");
@@ -572,6 +574,22 @@ $("loadf").addEventListener("change", async e => {
   if (!f) return;
   try { E = clean(JSON.parse(await f.text())); changed(); status("File loaded"); }
   catch (err) { status("That file could not be read"); }
+});
+
+// photographs that stay on the editor's computer: picked files are shown in this browser and never uploaded
+const LOCAL = {"FPgzWRIX0A09a4k.jpeg": "x01", "FPgzXM2XIAYHlMK.jpeg": "x02", "FPgzYXjXIAArdIh.jpeg": "x03", "FPgzZV_XsAYhgNb.jpeg": "x04", "FPgzaq1XoBkw4pT.jpeg": "x05", "FPgzbtsWYAIOZQz.jpeg": "x06", "480702220_509563375519274_4776963790451744821_n.jpg": "x07", "481122779_509563272185951_2412546301922627222_n.jpg": "x08", "481140356_509563295519282_6739216780137177207_n.jpg": "x09"};
+if (!HIDE_PRIVATE) $("loadl").closest("label").remove();
+else $("loadl").addEventListener("change", e => {
+  const found = [...e.target.files].filter(f => LOCAL[f.name]);
+  found.forEach(f => {
+    const p = ALL_PHOTOS.find(q => q.id === LOCAL[f.name]);
+    p.file = p.thumb = URL.createObjectURL(f);
+    if (!PHOTO[p.id]) { PHOTOS.push(p); PHOTO[p.id] = p; }
+  });
+  e.target.value = "";
+  if (!found.length) { status("None of those are the qq photos"); return; }
+  setMode("photos"); curPhoto = LOCAL[found[0].name]; card.hidden = false; renderAll();
+  status(`${found.length} photos shown from this computer, not uploaded`);
 });
 
 // ---- photographs
