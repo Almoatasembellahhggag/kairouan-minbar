@@ -416,6 +416,10 @@ const ALL_PHOTOS = [
 ];
 const PHOTOS = ALL_PHOTOS.filter(p => !(HIDE_PRIVATE && p.priv));
 const PHOTO = Object.fromEntries(PHOTOS.map(p => [p.id, p]));
+// reconstruction drawings, by Saladin number: `web` shows in the panel, `file` is the full PNG
+const DRAWINGS = {"1":[{"label":"grooved","file":"dr/panel-1-grooved.png","web":"dr/web/panel-1-grooved.jpg","w":7510,"h":3320,"mb":2.7},{"label":"pearled","file":"dr/panel-1-pearled.png","web":"dr/web/panel-1-pearled.jpg","w":7510,"h":3320,"mb":4.4}],"8":[{"label":"wood colour, grooved","file":"dr/panel-8-wood-colour-grooved.png","web":"dr/web/panel-8-wood-colour-grooved.jpg","w":2940,"h":4848,"mb":0.3}],"15":[{"label":"wood colour, braid B","file":"dr/panel-15-wood-colour-braid-b.png","web":"dr/web/panel-15-wood-colour-braid-b.jpg","w":4544,"h":7756,"mb":0.8},{"label":"wood colour, braid A","file":"dr/panel-15-wood-colour-braid-a.png","web":"dr/web/panel-15-wood-colour-braid-a.jpg","w":4544,"h":7756,"mb":0.8}],"16":[{"label":"double line","file":"dr/panel-16-double-line.png","web":"dr/web/panel-16-double-line.jpg","w":3688,"h":6316,"mb":1.4}],"17":[{"label":"single line, unfinished","file":"dr/panel-17-single-line-unfinished.png","web":"dr/web/panel-17-single-line-unfinished.jpg","w":2080,"h":6080,"mb":0.9}],"18":[{"label":"grooved","file":"dr/panel-18-grooved.png","web":"dr/web/panel-18-grooved.jpg","w":4152,"h":6915,"mb":1.8},{"label":"pearled","file":"dr/panel-18-pearled.png","web":"dr/web/panel-18-pearled.jpg","w":4152,"h":6915,"mb":4.3}],"22":[{"label":"wood colour","file":"dr/panel-22-wood-colour.png","web":"dr/web/panel-22-wood-colour.jpg","w":3088,"h":5571,"mb":0.5}],"23":[{"label":"grooved","file":"dr/panel-23-grooved.png","web":"dr/web/panel-23-grooved.jpg","w":4104,"h":6987,"mb":0.9},{"label":"pearled","file":"dr/panel-23-pearled.png","web":"dr/web/panel-23-pearled.jpg","w":4104,"h":6987,"mb":2.7}],"24":[{"label":"double line","file":"dr/panel-24-double-line.png","web":"dr/web/panel-24-double-line.jpg","w":4407,"h":7647,"mb":3.5}],"35":[{"label":"double line","file":"dr/panel-35-double-line.png","web":"dr/web/panel-35-double-line.jpg","w":4164,"h":7044,"mb":4.6}],"36":[{"label":"wood colour","file":"dr/panel-36-wood-colour.png","web":"dr/web/panel-36-wood-colour.jpg","w":4560,"h":7760,"mb":3.8}],"37":[{"label":"grooved","file":"dr/panel-37-grooved.png","web":"dr/web/panel-37-grooved.jpg","w":2739,"h":6525,"mb":2.8},{"label":"pearled","file":"dr/panel-37-pearled.png","web":"dr/web/panel-37-pearled.jpg","w":2739,"h":6525,"mb":3.5}],"38":[{"label":"grooved","file":"dr/panel-38-grooved.png","web":"dr/web/panel-38-grooved.jpg","w":4164,"h":7476,"mb":2.5},{"label":"pearled","file":"dr/panel-38-pearled.png","web":"dr/web/panel-38-pearled.jpg","w":4164,"h":7476,"mb":5.8}],"41":[{"label":"double line, unfinished","file":"dr/panel-41-double-line-unfinished.png","web":"dr/web/panel-41-double-line-unfinished.jpg","w":5124,"h":6084,"mb":0.2}],"42":[{"label":"double line","file":"dr/panel-42-double-line.png","web":"dr/web/panel-42-double-line.jpg","w":4276,"h":7152,"mb":3.6}],"43":[{"label":"grooved","file":"dr/panel-43-grooved.png","web":"dr/web/panel-43-grooved.jpg","w":4100,"h":7185,"mb":3.5},{"label":"pearled","file":"dr/panel-43-pearled.png","web":"dr/web/panel-43-pearled.jpg","w":4100,"h":7185,"mb":5.4}],"47":[{"label":"double line","file":"dr/panel-47-double-line.png","web":"dr/web/panel-47-double-line.jpg","w":6532,"h":4372,"mb":0.6}],"48":[{"label":"wood colour","file":"dr/panel-48-wood-colour.png","web":"dr/web/panel-48-wood-colour.jpg","w":3372,"h":5932,"mb":0.5}],"50":[{"label":"wood colour, braid B","file":"dr/panel-50-wood-colour-braid-b.png","web":"dr/web/panel-50-wood-colour-braid-b.jpg","w":3265,"h":4613,"mb":0.3}],"66":[{"label":"one colour, grooved","file":"dr/panel-66-one-colour-grooved.png","web":"dr/web/panel-66-one-colour-grooved.jpg","w":2668,"h":8990,"mb":3.0}]};
+const DRAW_NOTE = "Reconstruction drawing from photographs, not a measured drawing";
+const drawingFigs = n => (DRAWINGS[n] || []).map((d, i) => `<figure class="fig"><img src="${d.web}" alt="${DRAW_NOTE}, panel ${n}, ${d.label}" loading="lazy" data-draw="${n}:${i}"><figcaption>Panel ${n}, ${d.label}. ${DRAW_NOTE}. <a href="${d.file}" download>Full PNG, ${d.w} × ${d.h} px, ${d.mb} MB</a></figcaption></figure>`);
 
 const pts = p => p.map(q => q.join(",")).join(" ");
 const centroid = p => { const n = p.length; return [p.reduce((a, q) => a + q[0], 0) / n, p.reduce((a, q) => a + q[1], 0) / n]; };
@@ -790,7 +794,7 @@ function renderCard() {
   const n = current, i = info(outlineOf(n)), notes = N[n] || [];
   const plates = [assignedOf("s26").includes(n) && "XXVI", assignedOf("s27").includes(n) && "XXVII"].filter(Boolean);
   const an = afterNote(n);
-  const figs = photosOf(n).map(p => `<figure class="fig"><img src="${p.file}" alt="${p.title}" loading="lazy"><figcaption>${p.group}: ${p.title}</figcaption></figure>`);
+  const figs = drawingFigs(n).concat(photosOf(n).map(p => `<figure class="fig"><img src="${p.file}" alt="${p.title}" loading="lazy"><figcaption>${p.group}: ${p.title}</figcaption></figure>`));
   const top = card.scrollTop;
   card.hidden = false;
   card.innerHTML = `<button class="close" id="close">Close</button>
@@ -968,6 +972,7 @@ function idleCard() {
     card.innerHTML = `<button class="close" id="close">Close</button>
       <p class="empty">Click a number to read about a panel. Double-click a panel to zoom to it. Click a photo below to enlarge it.</p>
       ${E.geo.panels.length || E.geo.slots.length ? (c => `<p class="empty">Geometric panels on this face: ${c.before} of 79 before 1907, ${c.after} of ${c.afterTotal} in Creswell's photograph.</p>`)(geoCounts()) : ""}
+      <div class="field"><span class="glabel">Reconstruction drawings</span><div class="chips">${Object.keys(DRAWINGS).map(n => `<button type="button" class="chip" data-drawgo="${n}">Panel ${n}</button>`).join("")}</div></div>
       ${groups.map(g => `<div class="field"><span class="glabel">${g}</span><div class="thumbs">${PHOTOS.filter(q => q.group === g).map(q => `<button type="button" class="thumb" data-open="${q.id}" title="${q.title}" aria-label="${q.title}"><img src="${q.thumb}" alt="" loading="lazy"></button>`).join("")}</div></div>`).join("")}
       ${sources}`;
   }
@@ -1104,6 +1109,9 @@ card.addEventListener("click", e => {
   if (rm) { togglePanel(+rm.dataset.rm); return; }
   if (rmn) { toggleNew(rmn.dataset.rmn); return; }
   if (pf) { photoFilter = pf.dataset.pf; renderAll(); return; }
+  const dgo = el.closest?.("[data-drawgo]");
+  if (dgo) { select(+dgo.dataset.drawgo, true); return; }
+  if (el.matches?.("[data-draw]")) { const [dn, di] = el.dataset.draw.split(":"); openDrawing(+dn, +di); return; }
   const open = el.closest?.("[data-open]");
   if (open) { openPhoto(open.dataset.open); return; }
   if (el.matches?.(".fig img")) { const q = PHOTOS.find(x => x.file === el.getAttribute("src")); if (q) openPhoto(q.id); }
@@ -1114,6 +1122,13 @@ function openPhoto(id) {
   l.querySelector("p").textContent = `${p.group}: ${p.title}${wholeOf(id) ? ". Shows the whole minbar" : ""}`;
   $("lbchips").innerHTML = editing ? "" : a.map(n => `<button type="button" class="chip" data-go="${n}">Panel ${n}</button>`).join("")
     + nw.map(s => `<button type="button" class="chip" data-goslot="${s}">New panel: ${slotName(s)}</button>`).join("");
+  l.hidden = false; l.scrollTop = 0;
+}
+function openDrawing(n, i) {
+  const d = DRAWINGS[n][i], l = $("lb");
+  l.classList.remove("big"); l.querySelector("img").src = d.file;
+  l.querySelector("p").textContent = `Panel ${n}, ${d.label}. ${DRAW_NOTE}`;
+  $("lbchips").innerHTML = editing ? "" : `<button type="button" class="chip" data-go="${n}">Panel ${n}</button>`;
   l.hidden = false; l.scrollTop = 0;
 }
 function closeLb() { $("lb").hidden = true; }

@@ -6,6 +6,10 @@ Notes marked "Identification" on the site are matches made by comparing photogra
 
 Photographs: Saladin (1899), fig. 52 and Pl. XXI, XXVI, XXVII; Wikimedia Commons (détails du minbar; Un panneau sculpté du minbar); museum photographs and a catalogue page; Garrigues, Tunis, no. 271 (Wikimedia Commons); K. A. C. Creswell, *Early Muslim Architecture* II (1940), Pl. 89–90; Creswell prints in the Victoria and Albert Museum, 720-1929 to 726-1929; figures 11.2, 11.3 and 11.8–11.15 of Picotin and Déléry (2018), with the credits printed there: fonds Poinssot, Bibliothèque de l'INHA, Collection Jacques Doucet; Saladin; Strzygowski, *Altai-Iran* (Lehnert and Landrock); social media posts by @HistoireTn and Mahdi Jouini (Facebook), and two Facebook posts of unknown source; an Alamy preview (PB954T). They are reproduced for research and study and are not covered by any licence on this repository.
 
+## Drawings
+
+Panels with a reconstruction drawing show it first in their card, and `dr/` holds the full PNGs (`dr/web/` the lighter copies shown on the page). They are drawn from the photographs and from readings of them, not from measurements of the object, and two are marked unfinished.
+
 ## Editing
 
 The main page shows the images, panels and notes. The Edit link opens `edit.html`, where you answer three questions for each panel: is the Saladin number correct, does it exist in Creswell (yes, no, or yes in a different position), and is the Creswell panel at that position new. Switch to Photos to assign each photograph to the panels it shows, including new panels marked N on Creswell's photograph. Edits stay in that browser until you press Save file and commit the result here as `edits.json`, which the site then loads for everyone.
