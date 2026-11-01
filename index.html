@@ -357,7 +357,7 @@ function info(n) {
 // every photograph of the minbar, with the panels its source caption names
 const HIDE_PRIVATE = true;
 const ph = (id, file, group, title, def = [], whole = false, priv = false) => ({id, file, thumb: `th/${id}.jpg`, group, title, def, whole, priv});
-const G_S = "Saladin 1899", G_C = "Creswell 1940", G_V = "Creswell's prints, V&A", G_Q = "Qayrawan folder";
+const G_S = "Saladin 1899", G_C = "Creswell 1940", G_V = "Creswell's prints, V&A", G_Q = "Qayrawan folder", G_P = "Picotin and Déléry 2018";
 const WM = "Wikimedia Commons, Grande Mosquée de Kairouan, détails du minbar ";
 const PHOTOS = [
   ph("s52", "saladin.jpg", G_S, "Fig. 52, Saladin's numbered diagram, signed 1896", [], true),
@@ -383,6 +383,27 @@ const PHOTOS = [
   ph("q14", "ph/q14.jpg", G_Q, "Openwork triangle in a museum case, 9 Aug 2026, 15.33.12"),
   ph("q15", "ph/q15.jpg", G_Q, "Scanned catalogue page with three fragments, 10 Aug 2026"),
   ph("q16", "ph/q16.jpg", G_Q, "Stair detail of the minbar, Alamy (watermarked)", [], false, true),
+  ph("pd01", "ph/pd01.jpg", G_P, "Fig. 11.1, the minbar, present state, from Sculptures et peintures kairouanaises, 47", [], false, true),
+  ph("pd02", "ph/pd02.jpg", G_P, "Fig. 11.2, left face, Garrigues, Tunis, late 19th c. Bibliothèque de l'INHA, Collection Jacques Doucet, fonds Poinssot, Archives 060, carton 10"),
+  ph("pd03", "ph/pd03.jpg", G_P, "Fig. 11.3, Saladin's drawing of the left face, 1896, from Saladin and Gauckler, Les monuments historiques, 105"),
+  ph("pd04a", "ph/pd04a.jpg", G_P, "Fig. 11.4a, inscription on the new backrest, 1909-10", [], false, true),
+  ph("pd04b", "ph/pd04b.jpg", G_P, "Fig. 11.4b, transcription of that inscription", [], false, true),
+  ph("pd05", "ph/pd05.jpg", G_P, "Fig. 11.5, fragment inv. 74.1976.3.1, on deposit at the Louvre", [], false, true),
+  ph("pd06a", "ph/pd06a.jpg", G_P, "Fig. 11.6, case of minbar fragments, Musée du Bardo, 2014", [], false, true),
+  ph("pd06b", "ph/pd06b.jpg", G_P, "Fig. 11.6, detail of a triangle in the Bardo case", [], false, true),
+  ph("pd06c", "ph/pd06c.jpg", G_P, "Fig. 11.6, detail of a rectangular fragment in the Bardo case", [], false, true),
+  ph("pd07a", "ph/pd07a.jpg", G_P, "Fig. 11.7, fragments, Musée de Raqqada (a)", [], false, true),
+  ph("pd07b", "ph/pd07b.jpg", G_P, "Fig. 11.7, fragments, Musée de Raqqada (b)", [], false, true),
+  ph("pd07c", "ph/pd07c.jpg", G_P, "Fig. 11.7, fragments, Musée de Raqqada (c)", [], false, true),
+  ph("pd08", "ph/pd08.jpg", G_P, "Fig. 11.8, upper left face, annotated 2578, about 1907. Bibliothèque de l'INHA, Collection Jacques Doucet, fonds Poinssot, Archives 106, 130, 03"),
+  ph("pd09", "ph/pd09.jpg", G_P, "Fig. 11.9, left face, Sadoux, probably 1907, from Saladin, Les Villes d'Art célèbres, 126"),
+  ph("pd10", "ph/pd10.jpg", G_P, "Fig. 11.10, original backrest, probably after its removal in 1907. Bibliothèque de l'INHA, Collection Jacques Doucet, fonds Poinssot, Archives 106, 130, 03"),
+  ph("pd11", "ph/pd11.jpg", G_P, "Fig. 11.11, the minbar, undated. Bibliothèque de l'INHA, Collection Jacques Doucet, fonds Poinssot, Archives 106, 130, 03"),
+  ph("pd12a", "ph/pd12a.jpg", G_P, "Fig. 11.12a, risers, Lehnert and Landrock, from Strzygowski, Altai-Iran, Abb. 169"),
+  ph("pd12b", "ph/pd12b.jpg", G_P, "Fig. 11.12b, risers, Lehnert and Landrock, from Strzygowski, Altai-Iran, Abb. 170"),
+  ph("pd13", "ph/pd13.jpg", G_P, "Fig. 11.13, new decoration being made. Bibliothèque de l'INHA, Collection Jacques Doucet, fonds Poinssot, Archives 106, 130, 03"),
+  ph("pd14", "ph/pd14.jpg", G_P, "Fig. 11.14, face against the maqsūra, Lehnert and Landrock, from Strzygowski, Altai-Iran, Abb. 167"),
+  ph("pd15", "ph/pd15.jpg", G_P, "Fig. 11.15, new balustrades being made. Bibliothèque de l'INHA, Collection Jacques Doucet, fonds Poinssot, Archives 106, 130, 03"),
 ].filter(p => !(HIDE_PRIVATE && p.priv));
 const PHOTO = Object.fromEntries(PHOTOS.map(p => [p.id, p]));
 
@@ -825,6 +846,7 @@ const sources = `<details><summary>Sources and caveats</summary><ul>
   <li>Picotin and Déléry 2018: “Fragments d'histoire du minbar de Kairouan,” in <i>The Aghlabids and their Neighbors</i> (Leiden, 2018), pp. 207–227.</li>
   <li>Other photographs: Wikimedia Commons (Grande Mosquée de Kairouan, détails du minbar; Un panneau sculpté du minbar); museum photographs and a catalogue page from the site's author.</li>
   <li>Images: Saladin 1899, fig. 52, Pl. XXI, XXVI, XXVII; Garrigues, Tunis, no. 271 (via Wikimedia Commons); Creswell, Pl. 89a; Creswell prints, Victoria and Albert Museum. Reproduced for research and study.</li>
+  <li>Picotin and Déléry 2018, figs. 11.2, 11.3, 11.8–11.15: historic photographs and drawings, credited in their captions. Reproduced for research and study.</li>
   </ul><p>Notes marked “Compared with Creswell” record the site author's comparison of the two photographs. Notes marked “Identification” are matches made by comparing photographs, not statements in the sources. Saladin's panel lists were checked against the Heidelberg scan. Outlines were traced separately on each photograph. For rectangles and triangles they mark the same position in the frame, which may now hold a replaced panel; for the balustrade they follow Creswell's table of moved panels.</p></details>`;
 
 function syncSave() {
