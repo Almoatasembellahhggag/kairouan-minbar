@@ -357,7 +357,7 @@ function info(n) {
 // every photograph of the minbar, with the panels its source caption names
 const HIDE_PRIVATE = true;
 const ph = (id, file, group, title, def = [], whole = false, priv = false) => ({id, file, thumb: `th/${id}.jpg`, group, title, def, whole, priv});
-const G_S = "Saladin 1899", G_C = "Creswell 1940", G_V = "Creswell's prints, V&A", G_Q = "Qayrawan folder", G_P = "Picotin and Déléry 2018";
+const G_S = "Saladin 1899", G_C = "Creswell 1940", G_V = "Creswell's prints, V&A", G_Q = "Qayrawan folder", G_P = "Picotin and Déléry 2018", G_X = "Social media, private";
 const WM = "Wikimedia Commons, Grande Mosquée de Kairouan, détails du minbar ";
 const PHOTOS = [
   ph("s52", "saladin.jpg", G_S, "Fig. 52, Saladin's numbered diagram, signed 1896", [], true),
@@ -404,6 +404,15 @@ const PHOTOS = [
   ph("pd13", "ph/pd13.jpg", G_P, "Fig. 11.13, new decoration being made. Bibliothèque de l'INHA, Collection Jacques Doucet, fonds Poinssot, Archives 106, 130, 03"),
   ph("pd14", "ph/pd14.jpg", G_P, "Fig. 11.14, face against the maqsūra, Lehnert and Landrock, from Strzygowski, Altai-Iran, Abb. 167"),
   ph("pd15", "ph/pd15.jpg", G_P, "Fig. 11.15, new balustrades being made. Bibliothèque de l'INHA, Collection Jacques Doucet, fonds Poinssot, Archives 106, 130, 03"),
+  ph("x01", "ph/x01.jpg", G_X, "@HistoireTn, pine-cone and leaf panel, detail", [], false, true),
+  ph("x02", "ph/x02.jpg", G_X, "@HistoireTn, lattice, vine-scroll strip and braided panel below the stair rail, detail", [], false, true),
+  ph("x03", "ph/x03.jpg", G_X, "@HistoireTn, geometric openwork panels, detail", [], false, true),
+  ph("x04", "ph/x04.jpg", G_X, "@HistoireTn, interlaced roundels with cusped openings, detail", [], false, true),
+  ph("x05", "ph/x05.jpg", G_X, "@HistoireTn, key-pattern lattice panel", [], false, true),
+  ph("x06", "ph/x06.jpg", G_X, "@HistoireTn, lattice of octagons with key-fret squares, detail", [], false, true),
+  ph("x07", "ph/x07.jpg", G_X, "Facebook collage, whole minbar and panel details, source unknown", [], false, true),
+  ph("x08", "ph/x08.jpg", G_X, "Arched panel with vine roundels and crenellations, Mahdi Jouini (Facebook)", [], false, true),
+  ph("x09", "ph/x09.jpg", G_X, "Key-pattern lattice panel with vine friezes (Facebook), source unknown", [], false, true),
 ].filter(p => !(HIDE_PRIVATE && p.priv));
 const PHOTO = Object.fromEntries(PHOTOS.map(p => [p.id, p]));
 
