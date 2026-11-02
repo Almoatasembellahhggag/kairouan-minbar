@@ -196,8 +196,8 @@ details ul { padding-left: 1.2em; display: flex; flex-direction: column; gap: 4p
     <option value="tri">Triangles</option>
     <option value="bal">Balustrade</option>
     <option value="todo">Not answered yet</option>
-    <option value="gone">Not in Creswell</option>
-    <option value="newp">New in Creswell</option>
+    <option value="gone">Removed in the restoration</option>
+    <option value="newp">New after 1907</option>
   </select>
   <button id="nums" class="view-only" aria-pressed="true">Numbers on</button>
   <button id="fitb">Whole minbar</button>
@@ -940,8 +940,8 @@ $("go").addEventListener("change", e => {
 });
 // the reading page and the edit page are the same code in two states
 const SEPARATE_PAGES = true;
-const HL_VIEW = [["", "Highlight…"], ["mygeo", "Geometric panels"], ["geo", "Saladin: geometric"], ["ori", "Saladin: “more oriental”"], ["rep", "Repaired, moved or replaced"], ["pl", "In Saladin's plates"], ["cre", "In Creswell's plates"], ["tri", "Triangles"], ["bal", "Balustrade"], ["gone", "Not in Creswell"], ["newp", "New in Creswell"]];
-const HL_EDIT = [["", "Highlight…"], ["mygeo", "Geometric panels"], ["todo", "Not answered yet"], ["gone", "Not in Creswell"], ["newp", "New in Creswell"]];
+const HL_VIEW = [["", "Highlight…"], ["mygeo", "Geometric panels"], ["geo", "Saladin: geometric"], ["ori", "Saladin: “more oriental”"], ["rep", "Repaired, moved or replaced"], ["pl", "In Saladin's plates"], ["cre", "In Creswell's plates"], ["tri", "Triangles"], ["bal", "Balustrade"], ["gone", "Removed in the restoration"], ["newp", "New after 1907"]];
+const HL_EDIT = [["", "Highlight…"], ["mygeo", "Geometric panels"], ["todo", "Not answered yet"], ["gone", "Removed in the restoration"], ["newp", "New after 1907"]];
 let pageReady = false;
 function setPage(edit) {
   if (pageReady && edit === editing) return;
