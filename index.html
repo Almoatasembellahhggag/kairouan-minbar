@@ -65,6 +65,8 @@ body { background: var(--stage); color: var(--fg); font-family: var(--serif); fo
   font-variant-numeric: tabular-nums; transition: opacity .15s, background .15s; }
 .mark:hover { background: rgba(18, 14, 10, .9); }
 .mark.new { background: rgba(120, 40, 20, .8); }
+.mark.golv { background: rgba(22, 62, 96, .85); }
+.mark.golv:hover { background: rgba(22, 62, 96, 1); }
 .mark.orphan { background: rgba(170, 130, 10, .9); }
 .mark.clash { background: rgba(170, 20, 20, .92); width: auto; padding: 0 6px; border-radius: 12px; }
 .editing .mark.c1 { box-shadow: 0 0 0 2px #e3c34a; }
@@ -200,6 +202,7 @@ details ul { padding-left: 1.2em; display: flex; flex-direction: column; gap: 4p
     <option value="newp">New after 1907</option>
   </select>
   <button id="nums" class="view-only" aria-pressed="true">Numbers on</button>
+  <button id="golv" aria-pressed="false" title="Numbers on Creswell's photograph">Show Golvin's numbers</button>
   <button id="fitb">Whole minbar</button>
   <input id="go" class="edit-only" type="number" min="1" max="79" inputmode="numeric" placeholder="Panel" aria-label="Go to panel" hidden>
   <button id="allb" class="view-only">All photos</button>
@@ -432,6 +435,10 @@ const isBal = n => n >= 53 && n <= 69;
 NUMS.filter(k => !isBal(k)).forEach(k => SLOT["f" + k] = POLY.after[k]);
 NUMS.filter(isBal).forEach(k => { if (BAL[k - 52]) SLOT["b" + BAL[k - 52]] = POLY.after[k]; });
 Object.entries(POLY.newBal).forEach(([j, p]) => SLOT["b" + j] = p);
+// ---- Golvin 1970, fig. 84: his numbers by Creswell position (his diagram matches Pl. 89a position for position)
+const GOLVIN = {"f51":1,"f49":2,"f46":3,"f41":4,"f34":5,"f25":6,"f14":7,"f1":8,"f52":9,"f50":10,"f47":11,"f42":12,"f35":13,"f26":14,"f15":15,"f2":16,"f70":17,"f48":18,"f43":19,"f36":20,"f27":21,"f16":22,"f3":23,"f71":24,"f44":25,"f37":26,"f28":27,"f17":28,"f4":29,"f72":30,"f45":31,"f38":32,"f29":33,"f18":34,"f5":35,"f73":36,"f39":37,"f30":38,"f19":39,"f6":40,"f74":41,"f40":42,"f31":43,"f20":44,"f7":45,"f75":46,"f32":47,"f21":48,"f8":49,"f76":50,"f33":51,"f22":52,"f9":53,"f77":54,"f23":55,"f10":56,"f78":57,"f24":58,"f11":59,"f79":60,"f12":61,"f13":62,"b1":63,"b2":64,"b3":65,"b4":66,"b5":67,"b6":68,"b7":69,"b8":70,"b9":71,"b10":72,"b11":73,"b12":74,"b13":75,"b14":76,"b15":77,"b16":78};
+const golvinLine = id => GOLVIN[id] ? `<span class="sub">Golvin no. ${GOLVIN[id]}${GOLVIN[id] === 4 ? " (printed 14 on his fig. 84)" : ""}</span>` : "";
+let golvinOn = false;
 const defSlot = k => !isBal(k) ? "f" + k : (BAL[k - 52] ? "b" + BAL[k - 52] : null);
 const slotName = id => {
   if (!id) return "Not on his photograph";
@@ -671,9 +678,10 @@ function renderMarks() {
   });
   Object.keys(SLOT).forEach(id => {
     const ns = numbersAt(id), isNew = newOf(id) === "yes";
-    const text = ns.length ? ns.join("/") : isNew ? "N" : "?";
-    const cls = [isNew ? "new" : "", !ns.length && !isNew ? "orphan" : "", ns.length > 1 ? "clash" : "", ns.length === 1 ? stateClass(ns[0]) : ""].join(" ");
-    const label = ns.length ? "Panel " + ns.join(" and ") + " on Creswell's photograph" : "Creswell position with no panel assigned";
+    let text = ns.length ? ns.join("/") : isNew ? "N" : "?";
+    let cls = [isNew ? "new" : "", !ns.length && !isNew ? "orphan" : "", ns.length > 1 ? "clash" : "", ns.length === 1 ? stateClass(ns[0]) : ""].join(" ");
+    let label = ns.length ? "Panel " + ns.join(" and ") + " on Creswell's photograph" : "Creswell position with no panel assigned";
+    if (golvinOn) { text = GOLVIN[id]; cls = "golv"; label = `Golvin no. ${GOLVIN[id]} on Creswell's photograph` + (ns.length ? `, Saladin panel ${ns.join(" and ")}` : ""); }
     marks.after[id] = makeMark(ha, VIEWS.after, SLOT[id], text, label, cls, () => clickSlot(id));
     marks.after[id].dataset.slot = id;
   });
@@ -802,6 +810,7 @@ function renderCard() {
       <span class="kind">${i.kind}${isGeoPanel(n) ? ", geometric" : ""}</span>
       <span class="sub">${i.where[0].toUpperCase() + i.where.slice(1)}</span>
       ${plates.length ? `<span class="sub">Saladin Pl. ${plates.join(" and ")}</span>` : ""}
+      ${golvinLine(slotOf(n))}
     </div></div>
     ${editing ? editForm(n) : ""}
     ${figs.length ? `<div class="figs">${figs.join("")}</div>` : ""}
@@ -822,7 +831,7 @@ function showSlot(id) {
   const isNew = newOf(id), ns = numbersAt(id);
   card.hidden = false; card.scrollTop = 0;
   card.innerHTML = `<button class="close" id="close">Close</button>
-    <div class="head"><b>${isNew === "yes" ? "N" : "?"}</b><div><span class="kind">${isNew === "yes" ? "New panel" : "No panel assigned"}</span><span class="sub">${slotName(id)}, after 1907</span></div></div>
+    <div class="head"><b>${isNew === "yes" ? "N" : "?"}</b><div><span class="kind">${isNew === "yes" ? "New panel" : "No panel assigned"}</span><span class="sub">${slotName(id)}, after 1907</span>${golvinLine(id)}</div></div>
     ${editing ? `<form class="edit" id="edit">
       <div class="field"><span class="lab">Is this Creswell panel new?</span>${seg("isNew", isNew, YESNO)}</div>
       <div class="field"><label for="e-as">If not, its Saladin number</label><div class="row"><input id="e-as" type="number" min="1" max="79"><button type="button" id="e-asgo">Assign</button></div></div>
@@ -854,6 +863,7 @@ const sources = `<details><summary>Sources and caveats</summary><ul>
   <li>Saladin 1899: H. Saladin, <i>La Mosquée de Sidi Okba à Kairouan</i> (Paris, 1899), pp. 104–105, fig. 52, Pl. XXVI–XXVII. Panel numbers are his.</li>
   <li>Strzygowski 1907: “Die Kanzel von Kairuan,” <i>Kunstchronik</i> N.F. 18 (1907), cols. 386–389.</li>
   <li>Dimand 1937: “Studies in Islamic Ornament I,” <i>Ars Islamica</i> 4 (1937), pp. 293–337.</li>
+  <li>Golvin 1970: L. Golvin, <i>Essai sur l'architecture religieuse musulmane</i> I (Paris, 1970), pp. 213–226, fig. 84. His numbers run down each column of the left flank, from the high end, then along the stair rail (63–78); his diagram matches Creswell's Pl. 89a position for position, checked against his twelve drawings (figs. 86–92). His caption says “right flank”, but the diagram is the left flank. Fig. 84 prints 14 twice: the one in the first column is his no. 4.</li>
   <li>Creswell 1940: <i>Early Muslim Architecture</i> II (Oxford, 1940), pp. 314–319, Pl. 89–90; his prints V&amp;A 720-1929 to 726-1929.</li>
   <li>Moraitou 2001: “Umayyad ornament on early Islamic woodwork,” <i>Benaki Museum journal</i> 1 (2001), pp. 168–169.</li>
   <li>Bloom 2012: “Strapwork Designs in Western Islamic Art,” p. 155.</li>
@@ -885,6 +895,12 @@ nums.addEventListener("click", () => {
   const on = nums.getAttribute("aria-pressed") !== "true";
   nums.setAttribute("aria-pressed", on); nums.textContent = on ? "Numbers on" : "Numbers off";
   document.querySelectorAll(".stage").forEach(s => s.classList.toggle("quiet", !on));
+});
+$("golv").addEventListener("click", () => {
+  golvinOn = !golvinOn;
+  $("golv").setAttribute("aria-pressed", golvinOn); $("golv").textContent = golvinOn ? "Show Saladin's numbers" : "Show Golvin's numbers";
+  if (golvinOn && view === "before") setView("after");
+  renderMarks();
 });
 // zoom one image, keeping the point at (ax, ay) in its pane still
 function zoomView(v, k, ax, ay) {
