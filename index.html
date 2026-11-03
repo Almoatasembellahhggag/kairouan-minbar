@@ -104,6 +104,10 @@ body { background: var(--stage); color: var(--fg); font-family: var(--serif); fo
 .head { display: flex; align-items: center; gap: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
 .head b { font-family: var(--label); font-weight: 600; font-size: 2.4rem; line-height: 1; color: var(--accent); font-variant-numeric: tabular-nums; min-width: 1.6em; }
 .head div { display: flex; flex-direction: column; }
+.head .ids { flex-direction: row; gap: 12px; flex: none; }
+.head .id { align-items: center; gap: 3px; }
+.head .id span { font-family: var(--label); font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.head .id.g b { color: var(--fg); }
 .head .kind { font-weight: 600; }
 .head .sub { color: var(--muted); font-size: .9rem; }
 .note { display: flex; flex-direction: column; gap: 2px; }
@@ -437,7 +441,8 @@ NUMS.filter(isBal).forEach(k => { if (BAL[k - 52]) SLOT["b" + BAL[k - 52]] = POL
 Object.entries(POLY.newBal).forEach(([j, p]) => SLOT["b" + j] = p);
 // ---- Golvin 1970, fig. 84: his numbers by Creswell position (his diagram matches Pl. 89a position for position)
 const GOLVIN = {"f51":1,"f49":2,"f46":3,"f41":4,"f34":5,"f25":6,"f14":7,"f1":8,"f52":9,"f50":10,"f47":11,"f42":12,"f35":13,"f26":14,"f15":15,"f2":16,"f70":17,"f48":18,"f43":19,"f36":20,"f27":21,"f16":22,"f3":23,"f71":24,"f44":25,"f37":26,"f28":27,"f17":28,"f4":29,"f72":30,"f45":31,"f38":32,"f29":33,"f18":34,"f5":35,"f73":36,"f39":37,"f30":38,"f19":39,"f6":40,"f74":41,"f40":42,"f31":43,"f20":44,"f7":45,"f75":46,"f32":47,"f21":48,"f8":49,"f76":50,"f33":51,"f22":52,"f9":53,"f77":54,"f23":55,"f10":56,"f78":57,"f24":58,"f11":59,"f79":60,"f12":61,"f13":62,"b1":63,"b2":64,"b3":65,"b4":66,"b5":67,"b6":68,"b7":69,"b8":70,"b9":71,"b10":72,"b11":73,"b12":74,"b13":75,"b14":76,"b15":77,"b16":78};
-const golvinLine = id => GOLVIN[id] ? `<span class="sub">Golvin no. ${GOLVIN[id]}${GOLVIN[id] === 4 ? " (printed 14 on his fig. 84)" : ""}</span>` : "";
+const golvinLine = id => GOLVIN[id] === 4 ? `<span class="sub">Golvin's no. 4 is printed “14” on his fig. 84</span>` : "";
+const idBlock = (big, lab, slot) => `<div class="ids"><div class="id"><b>${big}</b><span>${lab}</span></div>${GOLVIN[slot] ? `<div class="id g"><b>${GOLVIN[slot]}</b><span>Golvin</span></div>` : ""}</div>`;
 let golvinOn = false;
 const defSlot = k => !isBal(k) ? "f" + k : (BAL[k - 52] ? "b" + BAL[k - 52] : null);
 const slotName = id => {
@@ -806,11 +811,11 @@ function renderCard() {
   const top = card.scrollTop;
   card.hidden = false;
   card.innerHTML = `<button class="close" id="close">Close</button>
-    <div class="head"><b>${n}</b><div>
+    <div class="head">${idBlock(n, "Saladin", slotOf(n))}<div>
       <span class="kind">${i.kind}${isGeoPanel(n) ? ", geometric" : ""}</span>
       <span class="sub">${i.where[0].toUpperCase() + i.where.slice(1)}</span>
       ${plates.length ? `<span class="sub">Saladin Pl. ${plates.join(" and ")}</span>` : ""}
-      ${golvinLine(slotOf(n))}
+      ${slotOf(n) ? golvinLine(slotOf(n)) : `<span class="sub">No Golvin number: not in Creswell's photograph</span>`}
     </div></div>
     ${editing ? editForm(n) : ""}
     ${figs.length ? `<div class="figs">${figs.join("")}</div>` : ""}
@@ -831,7 +836,7 @@ function showSlot(id) {
   const isNew = newOf(id), ns = numbersAt(id);
   card.hidden = false; card.scrollTop = 0;
   card.innerHTML = `<button class="close" id="close">Close</button>
-    <div class="head"><b>${isNew === "yes" ? "N" : "?"}</b><div><span class="kind">${isNew === "yes" ? "New panel" : "No panel assigned"}</span><span class="sub">${slotName(id)}, after 1907</span>${golvinLine(id)}</div></div>
+    <div class="head">${idBlock(isNew === "yes" ? "N" : "?", isNew === "yes" ? "New" : "Saladin", id)}<div><span class="kind">${isNew === "yes" ? "New panel" : "No panel assigned"}</span><span class="sub">${slotName(id)}, after 1907</span>${golvinLine(id)}</div></div>
     ${editing ? `<form class="edit" id="edit">
       <div class="field"><span class="lab">Is this Creswell panel new?</span>${seg("isNew", isNew, YESNO)}</div>
       <div class="field"><label for="e-as">If not, its Saladin number</label><div class="row"><input id="e-as" type="number" min="1" max="79"><button type="button" id="e-asgo">Assign</button></div></div>
