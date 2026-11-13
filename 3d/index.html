@@ -57,7 +57,8 @@
     <tr><td>Mihrab side, panels<small>13 columns: 8, 8, 6, 5, 5, 4, 4, 3, 3, 2, 2, 1, 1</small></td><td>52</td></tr>
     <tr><td>Mihrab side, triangles under the stair string</td><td>10</td></tr>
     <tr><td>Stair rail, mihrab side, outside<small>Creswell; one is double width; 17 before 1907</small></td><td>16</td></tr>
-    <tr><td>Stair rail, other three faces<small>each; taken to share the same frame, not counted exactly</small></td><td>16 ?</td></tr>
+    <tr><td>Stair rail, mihrab side, inside<small>same frame as the outside; a direct count on the photographs gives 17</small></td><td>16</td></tr>
+    <tr><td>Stair rail, maqsūra side, each face<small>three photographs per face that meet inside a panel, so one either way; drawn here as 16</small></td><td>17 or 18</td></tr>
     <tr><td>Stair risers<small>11 risers: six of 3 panels, five of 4</small></td><td>38</td></tr>
     <tr><td>Front of the seat<small>two panels with a lozenge</small></td><td>2</td></tr>
     <tr><td>Maqsūra side<small>no photograph of it in place on this site</small></td><td>not modelled</td></tr>
@@ -80,7 +81,7 @@
     <summary>What this is built from</summary>
     <p>The mihrab-side face is Creswell's photograph (1940, Pl. 89a) laid flat and scaled to his length of 3.93 m; that gives a height of 3.35 m against his 3.31 m. Panel outlines are the ones traced on that photograph for the panel site, and the numbers are Saladin's (1899, fig. 52).</p>
     <p>The stair has eleven steps, one over each of columns 3 to 13; their rise follows the slope of the stair string. Riser panels are counted from the fonds Poinssot photographs taken after 1910 (scans 013, 015, 018).</p>
-    <p>The reconstruction drawings are the ones on the panel site, drawn from photographs and not measured. Each is fitted inside the traced outline of its panel without stretching, so a little of the photograph can show beside it. The drawing of panel 50 stands where that panel was before 1907. The drawing of rail panel 66 is left out: that panel is not on the rail after 1907.</p>
+    <p>The reconstruction drawings are the ones on the panel site, drawn from photographs and not measured. Each is fitted to the traced outline of its panel, so its proportions follow the panel on Creswell's photograph and can differ a little from the drawing itself. The drawing of panel 50 stands where that panel was before 1907. The drawing of rail panel 66 is left out: that panel is not on the rail after 1907.</p>
     <p>Compare with the old photo puts Garrigues's photograph of before 1907 beside the model. Each pair of details is straightened to the same shape, so a panel can be checked against any place on the model. Where a panel is now is read from the edits saved on the panel site, in this browser if there are any; nothing here changes them.</p>
     <p>Estimated, not measured: the width (1.0 m), the height of the seat, the backrest and the posts. The inner rail faces and the maqsūra-side rail are shown as plain panels in the positions of the outer ones, and the maqsūra-side face is left blank.</p>
   </details>
@@ -179,12 +180,11 @@ SLOTS.forEach(s => {
   lb.position.set(mx(c[0]), my(c[1]), ZO + 0.006); scene.add(lb);
 });
 
-// ---- reconstruction drawings, each fitted inside the outline of its panel without stretching
+// ---- reconstruction drawings, each stretched to fill the outline of its panel
 const drawn = {}, texLoader = new THREE.TextureLoader();
 function showDrawing(o) {
   const v = o.d.v[o.i];
-  const put = t => { const a = t.image.width / t.image.height, f = Math.min(o.w / a, o.h);
-    o.mesh.scale.set(f * a, f, 1); o.mesh.material.map = t; o.mesh.material.needsUpdate = true; o.loaded = true; paint(); };
+  const put = t => { o.mesh.scale.set(o.w, o.h, 1); o.mesh.material.map = t; o.mesh.material.needsUpdate = true; o.loaded = true; paint(); };
   if (v.tex) put(v.tex); else texLoader.load(v.src, t => { t.anisotropy = renderer.capabilities.getMaxAnisotropy(); v.tex = t; if (o.d.v[o.i] === v) put(t); });
 }
 DRAW.forEach(d => {
@@ -203,12 +203,12 @@ const infoOf = m => { const o = drawingOf(m); if (!o) return m.userData.info;
 const RAIL = SLOTS.filter(s => s.kind === "rail");
 const FACES = [
   {name: "mihrab side, inside", z: ZI - 0.003, ry: Math.PI, color: 0x6f8f7a, tag: "i", note: "Carving known from scans 078, 080 and 082 (new rails turned over)"},
-  {name: "maqsūra side, outside", z: -ZO - 0.003, ry: Math.PI, color: 0x7f86a8, tag: "q", note: "Carving known from scans 078, 080 and 082"},
-  {name: "maqsūra side, inside", z: -ZI + 0.003, ry: 0, color: 0x9a8f6a, tag: "qi", note: "Carving known from scans 073, 074 and 075"},
+  {name: "maqsūra side, outside", z: -ZO - 0.003, ry: Math.PI, color: 0x7f86a8, tag: "q", note: "Carving known from scans 078, 080 and 082; this rail has 17 or 18 panels and is drawn as 16"},
+  {name: "maqsūra side, inside", z: -ZI + 0.003, ry: 0, color: 0x9a8f6a, tag: "qi", note: "Carving known from scans 073, 074 and 075; this rail has 17 or 18 panels and is drawn as 16"},
 ];
 FACES.forEach(f => RAIL.forEach(s => {
   const m = new THREE.Mesh(new THREE.ShapeGeometry(shapeOf(s.pts)), new THREE.MeshStandardMaterial({color: f.color, roughness: 0.9, side: THREE.DoubleSide}));
-  m.position.z = f.z; m.userData = {info: `Stair rail, ${f.name}: position ${s.pos} of 16 from the top${s.pos === 16 ? ", double width" : ""}. ${f.note}; position in the frame assumed`, base: f.color};
+  m.position.z = f.z; m.userData = {info: `Stair rail, ${f.name}: position ${s.pos} from the top as drawn${s.pos === 16 ? ", double width" : ""}. ${f.note}; position in the frame assumed`, base: f.color};
   scene.add(m); pick.push(m);
   const c = centroid(s.pts), lb = label(f.tag + s.pos, 0.08, "#fff");
   lb.position.set(mx(c[0]), my(c[1]), f.z + (f.ry ? -0.003 : 0.003)); lb.rotation.y = f.ry; scene.add(lb);
