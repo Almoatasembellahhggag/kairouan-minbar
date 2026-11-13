@@ -10,6 +10,10 @@ Photographs: Saladin (1899), fig. 52 and Pl. XXI, XXVI, XXVII; Wikimedia Commons
 
 Panels with a reconstruction drawing show it first in their card, and `dr/` holds the full PNGs (`dr/web/` the lighter copies shown on the page). They are drawn from the photographs and from readings of them, not from measurements of the object, and two are marked unfinished.
 
+## 3D model
+
+`3d/` is a schematic model of the minbar after the 1907–10 restoration, linked from the main page. The mihrab-side face is Creswell's Pl. 89a scaled to his length of 3.93 m, with the panel outlines and numbers of this site; the reconstruction drawings sit on their panels. The stair has eleven risers with 38 panels, counted from photographs taken after 1910. The width, the seat, the backrest and the posts are estimates, the three rail faces without a photograph in place are plain panels, and the maqsūra side is blank. "Compare with the old photo" puts Garrigues no. 271 beside the model: hold a panel of before 1907 and point at places on the model to see both details side by side; where a panel is now is read from the saved edits and is not changed there. `3d/lib/` holds three.js r128 (MIT licence).
+
 ## Editing
 
 The main page shows the images, panels and notes. The Edit link opens `edit.html`, where you answer three questions for each panel: is the Saladin number correct, does it exist in Creswell (yes, no, or yes in a different position), and is the Creswell panel at that position new. Switch to Photos to assign each photograph to the panels it shows, including new panels marked N on Creswell's photograph. Edits stay in that browser until you press Save file and commit the result here as `edits.json`, which the site then loads for everyone.

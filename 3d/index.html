@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kairouan minbar, 3D model</title>
+<style>
+  :root { --bg: #14110e; --fg: #eee6da; --dim: #b9ad9c; --accent: #e0b070; --line: #3a322a; --panel: rgba(24, 20, 16, .9); }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); font: 15px/1.45 Georgia, "Times New Roman", serif; overflow: hidden; }
+  canvas { display: block; }
+  #ui { position: absolute; left: 12px; top: 12px; width: min(360px, calc(100vw - 24px)); max-height: calc(100vh - 24px); overflow: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
+  h1 { font-size: 1.15rem; font-weight: normal; margin: 0 0 2px; }
+  .sub { color: var(--dim); font-size: .85rem; margin: 0 0 10px; }
+  table { border-collapse: collapse; width: 100%; font-size: .9rem; margin: 0 0 8px; }
+  td { padding: 3px 0; vertical-align: top; border-top: 1px solid var(--line); }
+  td:last-child { text-align: right; white-space: nowrap; padding-left: 8px; color: var(--accent); }
+  td small { color: var(--dim); display: block; }
+  .row { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 0; }
+  button { font: inherit; font-size: .85rem; color: var(--fg); background: #2a231c; border: 1px solid var(--line); border-radius: 6px; padding: 4px 9px; cursor: pointer; }
+  button[aria-pressed="true"] { background: var(--accent); color: #1a1410; border-color: var(--accent); }
+  #info { position: absolute; left: 12px; right: 12px; bottom: 12px; text-align: center; pointer-events: none; }
+  #info span { display: inline-block; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 5px 12px; max-width: 100%; }
+  #err { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; padding: 24px; text-align: center; }
+  details { margin-top: 8px; font-size: .85rem; color: var(--dim); }
+  summary { cursor: pointer; color: var(--fg); }
+  @media (max-width: 640px) { #ui { font-size: 13px; max-height: 46vh; } }
+  #cmp { position: absolute; right: 0; top: 0; bottom: 0; width: min(48vw, 680px); background: #1a1511; border-left: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; }
+  #cmp[hidden] { display: none; }
+  .cmp-head { display: flex; gap: 8px; align-items: baseline; font-size: .9rem; }
+  .cmp-head span { color: var(--dim); flex: 1; font-size: .82rem; }
+  #old-wrap { flex: 1 1 auto; min-height: 120px; position: relative; overflow: hidden; background: #000; border-radius: 6px; cursor: grab; touch-action: none; }
+  #old-stage { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+  #old-img { display: block; width: 100%; height: 100%; user-select: none; -webkit-user-drag: none; }
+  #old-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  #old-svg polygon { fill: transparent; stroke: rgba(255,255,255,.4); stroke-width: 3; cursor: pointer; }
+  #old-svg polygon:hover { fill: rgba(224,176,112,.3); stroke: #e0b070; }
+  #old-svg polygon.at { stroke: #5fd0ff; stroke-width: 9; fill: rgba(95,208,255,.25); }
+  #old-svg polygon.sel { stroke: #e0b070; stroke-width: 10; fill: rgba(224,176,112,.35); }
+  #old-svg text { fill: #fff; font: 600 40px Helvetica, Arial, sans-serif; text-anchor: middle; dominant-baseline: central; paint-order: stroke; stroke: rgba(0,0,0,.85); stroke-width: 8px; pointer-events: none; }
+  .cmp-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; flex: 0 0 auto; }
+  .cmp-pair figure { margin: 0; }
+  .cmp-pair canvas { display: block; width: 100%; height: 30vh; max-height: 300px; object-fit: contain; background: #000; border-radius: 6px; }
+  .cmp-pair figcaption { font-size: .82rem; padding-top: 4px; min-height: 2.6em; }
+  #cmp-status { margin: 0; font-size: .85rem; color: var(--accent); min-height: 1.4em; }
+  .cmp-on #ui table, .cmp-on #ui details, .cmp-on #ui .sub { display: none; }
+  .cmp-on #ui { width: auto; max-width: calc(52vw - 24px); }
+  @media (max-width: 760px) { #cmp { width: 100vw; top: 46vh; border-left: 0; border-top: 1px solid var(--line); } }
+</style>
+</head>
+<body>
+<div id="ui">
+  <p class="sub" style="margin:0 0 4px"><a href="../" style="color:inherit">← Panel site</a></p>
+  <h1>Minbar of the Great Mosque of Kairouan</h1>
+  <p class="sub">Schematic 3D model, state after the restoration of 1907–10. Drag to turn, scroll to zoom, right-drag to move.</p>
+  <table>
+    <tr><td>Mihrab side, panels<small>13 columns: 8, 8, 6, 5, 5, 4, 4, 3, 3, 2, 2, 1, 1</small></td><td>52</td></tr>
+    <tr><td>Mihrab side, triangles under the stair string</td><td>10</td></tr>
+    <tr><td>Stair rail, mihrab side, outside<small>Creswell; one is double width; 17 before 1907</small></td><td>16</td></tr>
+    <tr><td>Stair rail, other three faces<small>each; taken to share the same frame, not counted exactly</small></td><td>16 ?</td></tr>
+    <tr><td>Stair risers<small>11 risers: six of 3 panels, five of 4</small></td><td>38</td></tr>
+    <tr><td>Front of the seat<small>two panels with a lozenge</small></td><td>2</td></tr>
+    <tr><td>Maqsūra side<small>no photograph of it in place on this site</small></td><td>not modelled</td></tr>
+    <tr><td>Reconstruction drawings in place<small>click a panel with two versions to switch</small></td><td id="n-draw"></td></tr>
+  </table>
+  <div class="row">
+    <button id="b-photo" aria-pressed="true">Photograph</button>
+    <button id="b-draw" aria-pressed="true">Drawings</button>
+    <button id="b-num" aria-pressed="false">Numbers</button>
+    <button id="b-cmp" aria-pressed="false">Compare with the old photo</button>
+  </div>
+  <p class="sub" style="margin:6px 0 0">Numbers: Saladin's on the side; r, i, q, qi for the four rail faces; riser.panel on the stairs. With the photograph off, red marks rail positions 10 and 16, which Creswell calls new.</p>
+  <div class="row">
+    <button data-view="mihrab">Mihrab side</button>
+    <button data-view="front">Stairs</button>
+    <button data-view="inside">Inside the rail</button>
+    <button data-view="maqsura">Maqsūra side</button>
+  </div>
+  <details>
+    <summary>What this is built from</summary>
+    <p>The mihrab-side face is Creswell's photograph (1940, Pl. 89a) laid flat and scaled to his length of 3.93 m; that gives a height of 3.35 m against his 3.31 m. Panel outlines are the ones traced on that photograph for the panel site, and the numbers are Saladin's (1899, fig. 52).</p>
+    <p>The stair has eleven steps, one over each of columns 3 to 13; their rise follows the slope of the stair string. Riser panels are counted from the fonds Poinssot photographs taken after 1910 (scans 013, 015, 018).</p>
+    <p>The reconstruction drawings are the ones on the panel site, drawn from photographs and not measured. Each is fitted inside the traced outline of its panel without stretching, so a little of the photograph can show beside it. The drawing of panel 50 stands where that panel was before 1907. The drawing of rail panel 66 is left out: that panel is not on the rail after 1907.</p>
+    <p>Compare with the old photo puts Garrigues's photograph of before 1907 beside the model. Each pair of details is straightened to the same shape, so a panel can be checked against any place on the model. Where a panel is now is read from the edits saved on the panel site, in this browser if there are any; nothing here changes them.</p>
+    <p>Estimated, not measured: the width (1.0 m), the height of the seat, the backrest and the posts. The inner rail faces and the maqsūra-side rail are shown as plain panels in the positions of the outer ones, and the maqsūra-side face is left blank.</p>
+  </details>
+</div>
+<div id="info"><span id="info-t">Point at a panel</span></div>
+<aside id="cmp" hidden>
+  <div class="cmp-head"><b>Before 1907</b><span>Garrigues no. 271. Click a panel to hold it, then point at places on the model. Scroll to zoom, drag to move.</span><button id="cmp-close">Close</button></div>
+  <div id="old-wrap"><div id="old-stage"><img id="old-img" src="../minbar.jpg" alt="The minbar from its mihrab side before 1907, Garrigues photograph no. 271"><svg id="old-svg" viewBox="0 0 3600 2629" preserveAspectRatio="none"></svg></div></div>
+  <div class="cmp-pair">
+    <figure><canvas id="c-old" width="560" height="640"></canvas><figcaption id="cap-old">Before 1907</figcaption></figure>
+    <figure><canvas id="c-new" width="560" height="640"></canvas><figcaption id="cap-new">On the model (Creswell, after 1907)</figcaption></figure>
+  </div>
+  <p id="cmp-status"></p>
+</aside>
+<div id="err"></div>
+<script src="lib/three.min.js"></script>
+<script src="lib/OrbitControls.js"></script>
+<script src="data.js"></script>
+<script>
+"use strict";
+// ---- photo space to metres. The frame runs from x = 435 to 2700 px on Creswell's photograph and stands on y = 2095.
+const PX0 = 435, PX1 = 2700, PYF = 2095, PW = 3000, PH = 2262;
+const L = 3.93, S = L / (PX1 - PX0);
+const mx = x => (x - PX0) * S, my = y => (PYF - y) * S;
+const W = 1.0, T = 0.05;                       // overall width (estimate) and thickness of each side
+const ZO = W / 2, ZI = W / 2 - T;              // outer and inner planes of the mihrab side
+// outline of the side: frame, rail and handrail
+const OUTLINE = [[435, 172], [705, 172], [705, 213], [890, 213], [2700, 1656], [2700, 2095], [435, 2095]];
+// lower edge of the stair string, through the long sides of the triangles
+const stringY = x => 575 + 0.7956 * (x - 925);
+const X_SEAT = mx(897), RUN = (L - X_SEAT) / 11, RISE = 0.7956 * RUN, SEAT_FRONT = 0.45, SEAT = 11 * RISE + SEAT_FRONT;
+const TOP = my(172);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x14110e);
+const camera = new THREE.PerspectiveCamera(38, innerWidth / innerHeight, 0.05, 60);
+let renderer;
+try { renderer = new THREE.WebGLRenderer({antialias: true, preserveDrawingBuffer: true}); }
+catch (e) { const el = document.getElementById("err"); el.style.display = "flex"; el.textContent = "This browser could not start WebGL, which the 3D model needs."; throw e; }
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+document.body.appendChild(renderer.domElement);
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.maxPolarAngle = Math.PI * 0.52; controls.minDistance = 0.6; controls.maxDistance = 16;
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.72));
+const sun = new THREE.DirectionalLight(0xfff2dd, 0.75); sun.position.set(4, 7, 6); scene.add(sun);
+const fill = new THREE.DirectionalLight(0xdde6ff, 0.3); fill.position.set(-5, 3, -6); scene.add(fill);
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(14, 10), new THREE.MeshStandardMaterial({color: 0x241e18, roughness: 1}));
+floor.rotation.x = -Math.PI / 2; floor.position.set(L / 2, -0.001, 0); scene.add(floor);
+
+const WOOD = new THREE.MeshStandardMaterial({color: 0x6b4a30, roughness: 0.85});
+const WOOD_D = new THREE.MeshStandardMaterial({color: 0x54392a, roughness: 0.9});
+const GREY = new THREE.MeshStandardMaterial({color: 0x77736c, roughness: 1});
+const shapeOf = pts => { const s = new THREE.Shape(); pts.forEach((p, i) => i ? s.lineTo(mx(p[0]), my(p[1])) : s.moveTo(mx(p[0]), my(p[1]))); s.closePath(); return s; };
+const pick = [], labels = [], schematic = [];
+
+// ---- a text label on a small transparent plane
+function label(text, size, color = "#fff") {
+  const c = document.createElement("canvas"); c.width = 256; c.height = 128;
+  const g = c.getContext("2d"); g.font = "700 84px Helvetica, Arial, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
+  g.lineWidth = 7; g.lineJoin = "round"; g.strokeStyle = "rgba(0,0,0,.9)"; g.strokeText(text, 128, 68); g.fillStyle = color; g.fillText(text, 128, 68);
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(size * 2, size), new THREE.MeshBasicMaterial({map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false}));
+  m.visible = false; labels.push(m); return m;
+}
+const centroid = pts => [pts.reduce((a, p) => a + p[0], 0) / pts.length, pts.reduce((a, p) => a + p[1], 0) / pts.length];
+
+// ---- the two sides: a slab each, the mihrab one carrying Creswell's photograph
+const slabGeo = new THREE.ExtrudeGeometry(shapeOf(OUTLINE), {depth: T, bevelEnabled: false});
+const slabM = new THREE.Mesh(slabGeo, WOOD_D); slabM.position.z = ZI; scene.add(slabM);
+const slabQ = new THREE.Mesh(slabGeo, GREY); slabQ.position.z = -ZO; scene.add(slabQ);
+
+const photoGeo = new THREE.ShapeGeometry(shapeOf(OUTLINE));
+{ const p = photoGeo.attributes.position, uv = photoGeo.attributes.uv;
+  for (let i = 0; i < p.count; i++) uv.setXY(i, (p.getX(i) / S + PX0) / PW, 1 - (PYF - p.getY(i) / S) / PH); }
+const photoMat = new THREE.MeshBasicMaterial({color: 0x8a6a4a});
+const photo = new THREE.Mesh(photoGeo, photoMat); photo.position.z = ZO + 0.001; scene.add(photo);
+new THREE.TextureLoader().load("../after.jpg", t => { t.anisotropy = renderer.capabilities.getMaxAnisotropy(); photoMat.map = t; photoMat.color.set(0xffffff); photoMat.needsUpdate = true; },
+  undefined, () => { document.getElementById("info-t").textContent = "Creswell's photograph did not load."; });
+
+// ---- panels of the mihrab side, from the traced outlines
+const HL = new THREE.Color(0xe0b070);
+const COL = {panel: 0xb08a5c, tri: 0x8f7350, rail: 0xc9a877, railNew: 0xa2553f};
+const ORD = ["", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"];
+function slotInfo(s) {
+  if (s.kind === "panel") return `Mihrab side, column ${s.col}, ${ORD[s.row]} panel of ${s.of} from the bottom. Saladin no. ${s.n}`;
+  if (s.kind === "tri") return `Mihrab side, triangle under the stair string, column ${s.col}. Saladin no. ${s.n}`;
+  return `Stair rail, mihrab side, outside: position ${s.pos} of 16 from the top` + (s.new ? ", new in 1907–10" + (s.pos === 16 ? ", double width" : "") : `. Saladin no. ${s.was} before 1907`);
+}
+SLOTS.forEach(s => {
+  const geo = new THREE.ShapeGeometry(shapeOf(s.pts));
+  const base = s.kind === "rail" ? (s.new ? COL.railNew : COL.rail) : COL[s.kind];
+  const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({color: base, transparent: true, opacity: 0}));
+  m.position.z = ZO + 0.003; m.userData = {info: slotInfo(s), base, overlay: true, id: s.id}; scene.add(m); pick.push(m); schematic.push(m);
+  const c = centroid(s.pts), lb = label(s.kind === "rail" ? "r" + s.pos : String(s.n), s.kind === "panel" ? 0.095 : 0.08, s.kind === "rail" ? "#ffe2b0" : "#fff");
+  lb.position.set(mx(c[0]), my(c[1]), ZO + 0.006); scene.add(lb);
+});
+
+// ---- reconstruction drawings, each fitted inside the outline of its panel without stretching
+const drawn = {}, texLoader = new THREE.TextureLoader();
+function showDrawing(o) {
+  const v = o.d.v[o.i];
+  const put = t => { const a = t.image.width / t.image.height, f = Math.min(o.w / a, o.h);
+    o.mesh.scale.set(f * a, f, 1); o.mesh.material.map = t; o.mesh.material.needsUpdate = true; o.loaded = true; paint(); };
+  if (v.tex) put(v.tex); else texLoader.load(v.src, t => { t.anisotropy = renderer.capabilities.getMaxAnisotropy(); v.tex = t; if (o.d.v[o.i] === v) put(t); });
+}
+DRAW.forEach(d => {
+  const s = SLOTS.find(q => q.id === d.slot); if (!s) return;
+  const xs = s.pts.map(p => mx(p[0])), ys = s.pts.map(p => my(p[1]));
+  const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({color: 0xffffff}));
+  mesh.position.set((x0 + x1) / 2, (y0 + y1) / 2, ZO + 0.002); mesh.visible = false; scene.add(mesh);
+  drawn[d.slot] = {mesh, d, i: 0, w: x1 - x0, h: y1 - y0, loaded: false}; showDrawing(drawn[d.slot]);
+});
+const drawingOf = m => (drawOn && m && drawn[m.userData.id]?.loaded) ? drawn[m.userData.id] : null;
+const infoOf = m => { const o = drawingOf(m); if (!o) return m.userData.info;
+  const n = o.d.v.length; return `${m.userData.info}. Reconstruction drawing: ${o.d.v[o.i].label}${n > 1 ? ` (${o.i + 1} of ${n}, click to switch)` : ""}${o.d.note ? ". " + o.d.note : ""}`; };
+
+// ---- the other three rail faces: plain panels in the positions of the outer ones
+const RAIL = SLOTS.filter(s => s.kind === "rail");
+const FACES = [
+  {name: "mihrab side, inside", z: ZI - 0.003, ry: Math.PI, color: 0x6f8f7a, tag: "i", note: "Carving known from scans 078, 080 and 082 (new rails turned over)"},
+  {name: "maqsūra side, outside", z: -ZO - 0.003, ry: Math.PI, color: 0x7f86a8, tag: "q", note: "Carving known from scans 078, 080 and 082"},
+  {name: "maqsūra side, inside", z: -ZI + 0.003, ry: 0, color: 0x9a8f6a, tag: "qi", note: "Carving known from scans 073, 074 and 075"},
+];
+FACES.forEach(f => RAIL.forEach(s => {
+  const m = new THREE.Mesh(new THREE.ShapeGeometry(shapeOf(s.pts)), new THREE.MeshStandardMaterial({color: f.color, roughness: 0.9, side: THREE.DoubleSide}));
+  m.position.z = f.z; m.userData = {info: `Stair rail, ${f.name}: position ${s.pos} of 16 from the top${s.pos === 16 ? ", double width" : ""}. ${f.note}; position in the frame assumed`, base: f.color};
+  scene.add(m); pick.push(m);
+  const c = centroid(s.pts), lb = label(f.tag + s.pos, 0.08, "#fff");
+  lb.position.set(mx(c[0]), my(c[1]), f.z + (f.ry ? -0.003 : 0.003)); lb.rotation.y = f.ry; scene.add(lb);
+}));
+// a note on the face that has no photograph
+{ const c = document.createElement("canvas"); c.width = 1024; c.height = 256; const g = c.getContext("2d");
+  g.fillStyle = "#eee6da"; g.font = "64px Georgia, serif"; g.textAlign = "center"; g.fillText("Maqsūra side", 512, 100); g.font = "44px Georgia, serif"; g.fillText("not modelled", 512, 170);
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 0.4), new THREE.MeshBasicMaterial({map: new THREE.CanvasTexture(c), transparent: true}));
+  m.position.set(1.1, 1.2, -ZO - 0.004); m.rotation.y = Math.PI; scene.add(m); }
+
+// ---- body: seat block and eleven steps, one over each of columns 13 to 3
+{ const s = new THREE.Shape(); s.moveTo(0.02, 0); s.lineTo(L, 0);
+  for (let j = 1; j <= 11; j++) { s.lineTo(L - (j - 1) * RUN, j * RISE); s.lineTo(L - j * RUN, j * RISE); }
+  s.lineTo(X_SEAT, SEAT); s.lineTo(0.02, SEAT); s.closePath();
+  const body = new THREE.Mesh(new THREE.ExtrudeGeometry(s, {depth: 2 * ZI - 0.002, bevelEnabled: false}), WOOD); body.position.z = -ZI + 0.001; scene.add(body); }
+const RISER_MAT = () => new THREE.MeshStandardMaterial({color: 0xc9a877, roughness: 0.85});
+const WI = 2 * ZI;
+let riserPanels = 0;
+for (let j = 1; j <= 11; j++) {
+  const n = j % 2 ? 3 : 4, x = L - (j - 1) * RUN + 0.004, y0 = (j - 1) * RISE, gap = 0.035, w = (WI - gap * (n + 1)) / n, h = RISE * 0.56;
+  const fr = new THREE.Mesh(new THREE.PlaneGeometry(WI - 0.04, RISE * 0.24), new THREE.MeshStandardMaterial({color: 0x8a6a4a, roughness: 0.9}));
+  fr.rotation.y = Math.PI / 2; fr.position.set(x, y0 + RISE * 0.84, 0); scene.add(fr);
+  for (let k = 1; k <= n; k++) {
+    const z = ZI - gap - w / 2 - (k - 1) * (w + gap);   // counted from the mihrab side
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), RISER_MAT()); m.rotation.y = Math.PI / 2; m.position.set(x, y0 + RISE * 0.05 + h / 2, z);
+    m.userData = {info: `Stair riser ${j} of 11 from the bottom, panel ${k} of ${n} from the mihrab side`, base: 0xc9a877}; scene.add(m); pick.push(m); riserPanels++;
+    const lb = label(j + "." + k, 0.085); lb.rotation.y = Math.PI / 2; lb.position.set(x + 0.004, m.position.y, z); scene.add(lb);
+  }
+}
+for (let k = 0; k < 2; k++) {   // front of the seat
+  const w = WI / 2 - 0.05, m = new THREE.Mesh(new THREE.PlaneGeometry(w, SEAT_FRONT * 0.8), RISER_MAT());
+  m.rotation.y = Math.PI / 2; m.position.set(X_SEAT + 0.004, 11 * RISE + SEAT_FRONT * 0.45, (k ? -1 : 1) * (w / 2 + 0.017));
+  m.userData = {info: `Front of the seat, ${k ? "maqsūra" : "mihrab"}-side panel, with a lozenge`, base: 0xc9a877}; scene.add(m); pick.push(m);
+  const d = new THREE.Mesh(new THREE.PlaneGeometry(0.2, 0.2), new THREE.MeshStandardMaterial({color: 0x8a6a4a})); d.rotation.set(0, Math.PI / 2, 0); d.rotateZ(Math.PI / 4);
+  d.position.copy(m.position); d.position.x += 0.003; scene.add(d);
+}
+// backrest of 1909-10 and posts (shapes estimated)
+{ const s = new THREE.Shape(), z0 = -ZI + 0.03, z1 = ZI - 0.03, y0 = SEAT, y1 = TOP + 0.25;
+  s.moveTo(z0, y0); s.lineTo(z1, y0); s.lineTo(z1, y1); s.quadraticCurveTo(z1 * 0.45, y1, z1 * 0.3, y1 + 0.16); s.quadraticCurveTo(0.08, y1 + 0.3, 0, y1 + 0.34);
+  s.quadraticCurveTo(-0.08, y1 + 0.3, z0 * 0.3, y1 + 0.16); s.quadraticCurveTo(z0 * 0.45, y1, z0, y1); s.closePath();
+  const b = new THREE.Mesh(new THREE.ExtrudeGeometry(s, {depth: 0.04, bevelEnabled: false}), WOOD); b.rotation.y = -Math.PI / 2; b.position.x = 0.07;
+  b.userData = {info: "Backrest, new in 1909–10 (shape estimated)", base: 0x6b4a30}; scene.add(b); pick.push(b); }
+const post = (x, z, h, r = 0.035) => { const m = new THREE.Mesh(new THREE.BoxGeometry(r * 2, h, r * 2), WOOD_D); m.position.set(x, h / 2, z); scene.add(m);
+  const f = new THREE.Mesh(new THREE.ConeGeometry(r * 1.3, r * 4, 8), WOOD_D); f.position.set(x, h + r * 2, z); scene.add(f); };
+[ZO - 0.035, -ZO + 0.035].forEach(z => { post(L + 0.035, z, 1.72); post(0.035, z, TOP + 0.45); post(X_SEAT, z, TOP + 0.4, 0.028); });
+
+// ---- controls on the page
+const $ = id => document.getElementById(id);
+let photoOn = true, numOn = false, drawOn = true, hot = null, cmpOn = false, markId = null;
+function paint() {
+  photo.visible = photoOn;
+  schematic.forEach(m => { const mk = cmpOn && m.userData.id === markId && m !== hot;
+    m.material.opacity = mk ? 0.5 : photoOn || drawingOf(m) ? (m === hot ? (drawingOf(m) ? 0.3 : 0.45) : 0) : 1; m.material.color.set(mk ? 0x5fd0ff : m === hot ? HL : m.userData.base); });
+  Object.values(drawn).forEach(o => o.mesh.visible = drawOn && o.loaded);
+  $("b-draw").setAttribute("aria-pressed", drawOn);
+  labels.forEach(l => l.visible = numOn);
+  $("b-photo").setAttribute("aria-pressed", photoOn); $("b-num").setAttribute("aria-pressed", numOn);
+}
+$("b-photo").onclick = () => { photoOn = !photoOn; paint(); };
+$("b-num").onclick = () => { numOn = !numOn; paint(); };
+$("b-draw").onclick = () => { drawOn = !drawOn; paint(); };
+$("n-draw").textContent = DRAW.length + " panels";
+const VIEWS = {
+  mihrab: [[L / 2 - 0.85, 1.75, 6.6], [L / 2 - 0.85, 1.6, 0]],
+  front: [[L + 4.6, 2.9, 1.5], [L - 1.5, 1.2, 0]],
+  inside: [[L + 2.2, 3.4, -1.9], [L / 2, 1.5, 0.3]],
+  maqsura: [[L / 2 + 0.85, 1.75, -6.6], [L / 2 + 0.85, 1.6, 0]],
+  compare: [[L / 2, 2.25, 8.4], [L / 2, 2.25, 0]],
+};
+function view(k) { camera.position.set(...VIEWS[k][0]); controls.target.set(...VIEWS[k][1]); controls.update(); }
+document.querySelectorAll("[data-view]").forEach(b => b.onclick = () => view(b.dataset.view));
+view(new URLSearchParams(location.search).get("view") in VIEWS ? new URLSearchParams(location.search).get("view") : "mihrab");
+if (new URLSearchParams(location.search).has("numbers")) numOn = true;
+if (new URLSearchParams(location.search).has("plain")) photoOn = false;
+if (new URLSearchParams(location.search).has("nodraw")) drawOn = false;
+
+const ray = new THREE.Raycaster(), mouse = new THREE.Vector2();
+function point(e) {
+  const r = renderer.domElement.getBoundingClientRect();
+  mouse.set((e.clientX - r.left) / r.width * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1); ray.setFromCamera(mouse, camera);
+  const h = ray.intersectObjects(pick, false)[0]?.object || null;
+  if (h === hot) return;
+  if (hot && !hot.userData.overlay) hot.material.color.set(hot.userData.base);
+  hot = h;
+  if (hot && !hot.userData.overlay) hot.material.color.set(HL);
+  $("info-t").textContent = hot ? infoOf(hot) : "Point at a panel";
+  paint(); cmpRefresh();
+}
+let downAt = null;
+renderer.domElement.addEventListener("pointerleave", () => {   // off the model: nothing is pointed at any more
+  if (!hot) return; if (!hot.userData.overlay) hot.material.color.set(hot.userData.base);
+  hot = null; $("info-t").textContent = "Point at a panel"; paint(); cmpRefresh(); });
+renderer.domElement.addEventListener("pointermove", point);
+renderer.domElement.addEventListener("pointerdown", e => { downAt = [e.clientX, e.clientY]; point(e); });
+renderer.domElement.addEventListener("pointerup", e => {   // a click, not a drag: switch to the panel's other drawing
+  if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 5) return;
+  const o = drawingOf(hot);
+  if (o && o.d.v.length > 1) { o.i = (o.i + 1) % o.d.v.length; showDrawing(o); $("info-t").textContent = infoOf(hot); }
+});
+function layout() {
+  const cw = cmpOn && innerWidth > 760 ? $("cmp").offsetWidth : 0, w = innerWidth - cw, h = cmpOn && innerWidth <= 760 ? innerHeight * 0.46 : innerHeight;
+  camera.aspect = w / h; camera.updateProjectionMatrix(); renderer.setSize(w, h); $("info").style.right = (cw + 12) + "px";
+  if (cmpOn) fitOld();
+}
+addEventListener("resize", layout);
+paint();
+// ---- compare with the photograph of before 1907
+const NUMS = Array.from({length: 79}, (_, i) => i + 1), SLOT_BY = Object.fromEntries(SLOTS.map(s => [s.id, s]));
+let E = {panels: {}, slots: {}}, editsFrom = "none";
+const isBal = n => n >= 53 && n <= 69;
+const homeOf = n => isBal(n) ? (BAL[n - 52] ? "b" + BAL[n - 52] : null) : "f" + n;
+const nowOf = n => { const p = E.panels[n] || {}; return p.cre === "no" ? null : p.cre === "moved" ? (SLOT_BY[p.slot] ? p.slot : null) : homeOf(n); };
+const numbersAt = id => NUMS.filter(n => nowOf(n) === id);
+const posName = id => { const s = SLOT_BY[id]; return !s ? "a place not on the model" : s.kind === "rail" ? `rail position ${s.pos} from the top` : s.kind === "tri" ? `the triangle of column ${s.col}` : `column ${s.col}, ${ORD[s.row]} of ${s.of} from the bottom`; };
+function statusOf(n) {
+  const p = E.panels[n] || {};
+  if (p.cre === "yes") return `No. ${n}: the saved edits say it is still in the same place.`;
+  if (p.cre === "moved") return nowOf(n) ? `No. ${n}: the saved edits say it moved to ${posName(nowOf(n))}.` : `No. ${n}: the saved edits say it moved; the new place is not chosen.`;
+  if (p.cre === "no") return `No. ${n}: the saved edits say it is not on the minbar after 1907.`;
+  return homeOf(n) ? `No. ${n}: not judged yet; shown at the same place.` : `No. ${n}: not judged yet; Creswell's table has it gone.`;
+}
+const oldImg = $("old-img"), newImg = new Image(); newImg.src = "../after.jpg";
+const solve3 = (x, y, u) => { const den = x[0] * (y[1] - y[2]) - y[0] * (x[1] - x[2]) + (x[1] * y[2] - x[2] * y[1]);
+  return [(u[0] * (y[1] - y[2]) - y[0] * (u[1] - u[2]) + (u[1] * y[2] - u[2] * y[1])) / den,
+          (x[0] * (u[1] - u[2]) - u[0] * (x[1] - x[2]) + (x[1] * u[2] - x[2] * u[1])) / den,
+          (x[0] * (y[1] * u[2] - y[2] * u[1]) - y[0] * (x[1] * u[2] - x[2] * u[1]) + u[0] * (x[1] * y[2] - x[2] * y[1])) / den]; };
+function warpTri(g, img, s, d) {   // draw the source triangle s of img onto the triangle d
+  const x = s.map(p => p[0]), y = s.map(p => p[1]), [a, c, e] = solve3(x, y, d.map(p => p[0])), [b, dd, f] = solve3(x, y, d.map(p => p[1]));
+  g.save(); g.beginPath(); g.moveTo(d[0][0], d[0][1]); g.lineTo(d[1][0], d[1][1]); g.lineTo(d[2][0], d[2][1]); g.closePath(); g.clip();
+  g.setTransform(a, b, c, dd, e, f); g.drawImage(img, 0, 0); g.restore();
+}
+// a detail straightened to an upright rectangle; img space may differ from the outline space by the factor k
+function detail(cv, img, pts, k) {
+  const g = cv.getContext("2d"); g.setTransform(1, 0, 0, 1, 0, 0); g.fillStyle = "#000"; g.fillRect(0, 0, cv.width, cv.height);
+  if (!pts || !img.complete || !img.naturalWidth) return;
+  const c = centroid(pts), q = pts.map(p => [(c[0] + (p[0] - c[0]) * 1.16) * k, (c[1] + (p[1] - c[1]) * 1.16) * k]), d = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+  if (q.length === 4) {
+    const w = (d(q[0], q[1]) + d(q[3], q[2])) / 2, h = (d(q[0], q[3]) + d(q[1], q[2])) / 2, f = Math.min(cv.width / w, cv.height / h), W2 = w * f, H2 = h * f, x0 = (cv.width - W2) / 2, y0 = (cv.height - H2) / 2;
+    const D = [[x0, y0], [x0 + W2, y0], [x0 + W2, y0 + H2], [x0, y0 + H2]];
+    warpTri(g, img, [q[0], q[1], q[3]], [D[0], D[1], D[3]]); warpTri(g, img, [q[1], q[2], q[3]], [D[1], D[2], D[3]]);
+  } else {
+    const xs = q.map(p => p[0]), ys = q.map(p => p[1]), x = Math.min(...xs), y = Math.min(...ys), w = Math.max(...xs) - x, h = Math.max(...ys) - y, f = Math.min(cv.width / w, cv.height / h);
+    g.drawImage(img, x, y, w, h, (cv.width - w * f) / 2, (cv.height - h * f) / 2, w * f, h * f);
+  }
+}
+let sel = null, pre = null;
+const svg = $("old-svg");
+NUMS.forEach(n => { const p = BEFORE[n]; if (!p) return; const c = centroid(p);
+  svg.insertAdjacentHTML("beforeend", `<polygon data-n="${n}" points="${p.map(q => q.join(",")).join(" ")}"><title>Saladin no. ${n}</title></polygon><text x="${c[0]}" y="${c[1]}">${n}</text>`); });
+function cmpRefresh() {
+  if (!cmpOn) return;
+  const hs = hot && hot.userData.overlay ? hot.userData.id : null, at = hs ? numbersAt(hs) : [];
+  const n = sel ?? pre ?? at[0] ?? null, place = sel ? (hs || nowOf(sel)) : pre ? nowOf(pre) : hs;
+  const mk = n ? nowOf(n) : null; if (mk !== markId) { markId = mk; paint(); }
+  svg.querySelectorAll("polygon").forEach(p => { const k = +p.dataset.n; p.classList.toggle("sel", k === sel); p.classList.toggle("at", k !== sel && (at.includes(k) || k === pre)); });
+  detail($("c-old"), oldImg, n ? BEFORE[n] : null, oldImg.naturalWidth / 3600);
+  detail($("c-new"), newImg, place ? SLOT_BY[place].pts : null, newImg.naturalWidth / PW);
+  $("cap-old").textContent = n ? `Before 1907: Saladin no. ${n}` + (sel ? " (held)" : "") : hs ? "Before 1907: no panel is recorded as being in this place now" : "Before 1907: point at or click a panel";
+  $("cap-new").textContent = place ? `After 1907: ${posName(place)}` + (sel && hs && hs !== nowOf(sel) ? ", the place you are pointing at" : "") + (E.slots[place]?.isNew === "yes" ? " (marked new in the saved edits)" : "") : n ? "After 1907: not on the model" : "After 1907: point at a place on the model";
+  $("cmp-status").textContent = n ? statusOf(n) + (sel ? " Click it again to let go." : "") : "";
+}
+svg.addEventListener("pointerover", e => { const p = e.target.closest("polygon"); pre = p ? +p.dataset.n : null; cmpRefresh(); });
+svg.addEventListener("pointerout", () => { pre = null; cmpRefresh(); });
+// zoom and pan of the old photograph; a click without movement holds or releases a panel
+const wrap = $("old-wrap"), stage = $("old-stage"); let oz = 1, ox = 0, oy = 0, drag = null;
+const applyOld = () => { const w = stage.offsetWidth * oz, h = stage.offsetHeight * oz;
+  ox = w <= wrap.clientWidth ? (wrap.clientWidth - w) / 2 : Math.min(0, Math.max(wrap.clientWidth - w, ox)); oy = h <= wrap.clientHeight ? (wrap.clientHeight - h) / 2 : Math.min(0, Math.max(wrap.clientHeight - h, oy));
+  stage.style.transform = `translate(${ox}px, ${oy}px) scale(${oz})`; };
+function fitOld() { const w = Math.min(wrap.clientWidth, wrap.clientHeight * 3600 / 2629); stage.style.width = w + "px"; stage.style.height = (w * 2629 / 3600) + "px"; oz = 1; ox = oy = 0; applyOld(); }
+wrap.addEventListener("wheel", e => { e.preventDefault(); const r = wrap.getBoundingClientRect(), mxp = e.clientX - r.left, myp = e.clientY - r.top, z = Math.min(8, Math.max(1, oz * (e.deltaY < 0 ? 1.2 : 1 / 1.2)));
+  ox = mxp - (mxp - ox) * z / oz; oy = myp - (myp - oy) * z / oz; oz = z; applyOld(); }, {passive: false});
+wrap.addEventListener("pointerdown", e => { drag = {x: e.clientX, y: e.clientY, ox, oy, moved: false, n: e.target.closest?.("polygon")?.dataset.n}; });
+addEventListener("pointermove", e => { if (!drag) return; if (Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > 4) drag.moved = true; if (drag.moved) { ox = drag.ox + e.clientX - drag.x; oy = drag.oy + e.clientY - drag.y; applyOld(); } });
+addEventListener("pointerup", () => { if (drag && !drag.moved && drag.n) { sel = sel === +drag.n ? null : +drag.n; cmpRefresh(); } drag = null; });
+addEventListener("keydown", e => { if (e.key === "Escape" && sel) { sel = null; cmpRefresh(); } });
+let drawWas = true;
+function setCmp(on) {
+  cmpOn = on; $("cmp").hidden = !on; document.body.classList.toggle("cmp-on", on); $("b-cmp").setAttribute("aria-pressed", on);
+  if (on) { drawWas = drawOn; drawOn = false; } else { drawOn = drawWas; sel = pre = markId = null; }   // the drawings would hide Creswell's panels
+  layout(); view(on ? "compare" : "mihrab"); paint(); cmpRefresh();
+}
+$("b-cmp").onclick = () => setCmp(!cmpOn);
+$("cmp-close").onclick = () => setCmp(false);
+oldImg.addEventListener("load", cmpRefresh); newImg.addEventListener("load", cmpRefresh);
+(async () => {   // the edits saved on the panel site: this browser's own first, then the file in the repository
+  try { const ls = localStorage.getItem("kairouan-minbar-edits"); if (ls) { const o = JSON.parse(ls); if (o && o.panels) { E = {panels: o.panels, slots: o.slots || {}}; editsFrom = "browser"; } } } catch (e) {}
+  if (editsFrom === "none") try { const o = await (await fetch("../edits.json")).json(); E = {panels: o.panels || {}, slots: o.slots || {}}; editsFrom = "file"; } catch (e) {}
+  window.MODEL.editsFrom = editsFrom; cmpRefresh();
+  if (new URLSearchParams(location.search).has("compare")) setCmp(true);
+})();
+window.MODEL = {drawn, hold: n => { sel = n; cmpRefresh(); }, riserPanels, slots: SLOTS.length, seat: SEAT, rise: RISE, run: RUN, top: TOP};
+(function loop() { controls.update(); renderer.render(scene, camera); requestAnimationFrame(loop); })();
+</script>
+</body>
+</html>
