@@ -56,9 +56,8 @@
   <table>
     <tr><td>Mihrab side, panels<small>13 columns: 8, 8, 6, 5, 5, 4, 4, 3, 3, 2, 2, 1, 1</small></td><td>52</td></tr>
     <tr><td>Mihrab side, triangles under the stair string</td><td>10</td></tr>
-    <tr><td>Stair rail, mihrab side, outside<small>Creswell; one is double width; 17 before 1907</small></td><td>16</td></tr>
-    <tr><td>Stair rail, mihrab side, inside<small>same frame as the outside; a direct count on the photographs gives 17</small></td><td>16</td></tr>
-    <tr><td>Stair rail, maqsūra side, each face<small>three photographs per face that meet inside a panel, so one either way; drawn here as 16</small></td><td>17 or 18</td></tr>
+    <tr><td>Stair rail, mihrab side, each face<small>15 single and one of double width at the foot; Creswell's count on the rail in place, and counted on both faces in the restoration photographs; 17 before 1907</small></td><td>16</td></tr>
+    <tr><td>Stair rail, maqsūra side, each face<small>17 single and one of double width at the foot; counted on both faces in the restoration photographs</small></td><td>18</td></tr>
     <tr><td>Stair risers<small>11 risers: six of 3 panels, five of 4</small></td><td>38</td></tr>
     <tr><td>Front of the seat<small>two panels with a lozenge</small></td><td>2</td></tr>
     <tr><td>Maqsūra side<small>no photograph of it in place on this site</small></td><td>not modelled</td></tr>
@@ -67,10 +66,12 @@
   <div class="row">
     <button id="b-photo" aria-pressed="true">Photograph</button>
     <button id="b-draw" aria-pressed="true">Drawings</button>
-    <button id="b-num" aria-pressed="false">Numbers</button>
+    <button id="b-rail" aria-pressed="true">Rail photos</button>
+    <button id="b-num" aria-pressed="false">Saladin's numbers</button>
+    <button id="b-gol" aria-pressed="false">Golvin's numbers</button>
     <button id="b-cmp" aria-pressed="false">Compare with the old photo</button>
   </div>
-  <p class="sub" style="margin:6px 0 0">Numbers: Saladin's on the side; r, i, q, qi for the four rail faces; riser.panel on the stairs. With the photograph off, red marks rail positions 10 and 16, which Creswell calls new.</p>
+  <p class="sub" style="margin:6px 0 0">Numbers are those of the panel site: Saladin's, placed by the saved edits (N is a new panel, ? a place with no panel assigned), or Golvin's. They run over the side and the outside of the mihrab-side rail; the inside of that rail has the same number with r. The maqsūra-side rail, which neither of them numbered, is q1 to q18 from the top, with r on its inside. Stairs: riser.panel.</p>
   <div class="row">
     <button data-view="mihrab">Mihrab side</button>
     <button data-view="front">Stairs</button>
@@ -83,7 +84,9 @@
     <p>The stair has eleven steps, one over each of columns 3 to 13; their rise follows the slope of the stair string. Riser panels are counted from the fonds Poinssot photographs taken after 1910 (scans 013, 015, 018).</p>
     <p>The reconstruction drawings are the ones on the panel site, drawn from photographs and not measured. Each is fitted to the traced outline of its panel, so its proportions follow the panel on Creswell's photograph and can differ a little from the drawing itself. The drawing of panel 50 stands where that panel was before 1907. The drawing of rail panel 66 is left out: that panel is not on the rail after 1907.</p>
     <p>Compare with the old photo puts Garrigues's photograph of before 1907 beside the model. Each pair of details is straightened to the same shape, so a panel can be checked against any place on the model. Where a panel is now is read from the edits saved on the panel site, in this browser if there are any; nothing here changes them.</p>
-    <p>Estimated, not measured: the width (1.0 m), the height of the seat, the backrest and the posts. The inner rail faces and the maqsūra-side rail are shown as plain panels in the positions of the outer ones, and the maqsūra-side face is left blank.</p>
+    <p>Estimated, not measured: the width (1.0 m), the height of the seat, the backrest and the posts. The maqsūra-side face is left blank.</p>
+    <p>Rail photos puts a photograph on every rail panel, cut from the six photographs of the new rails laid flat during the restoration (Bibliothèque de l'INHA, Collection Jacques Doucet, fonds Poinssot, Archives 106, 130, 03, scans 073 to 075, 078, 080 and 082; reproduced for research and study). Each is straightened and stretched to the outline of its panel, so proportions are approximate; black or white patches are breaks in the prints. With Rail photos off, the outside of the mihrab-side rail shows Creswell's photograph and the other three faces are plain panels.</p>
+    <p>The rail counts come from six photographs of the two new rails laid flat during the restoration (fonds Poinssot, scans 073 to 075, 078, 080 and 082), three for each face, joined into one image per face. Each rail was counted on both of its faces from a different set of photographs, and the two counts agree: 16 on the mihrab-side rail, which is also Creswell's count, and 18 on the maqsūra-side rail. The 18 are narrower, so both rails come out the same length. On the model the inside of the mihrab-side rail follows the positions of its outside, and the 18 of the maqsūra-side rail are set out evenly, so each of those panels is in the right order but not exactly in its place.</p>
   </details>
 </div>
 <div id="info"><span id="info-t">Point at a panel</span></div>
@@ -142,10 +145,12 @@ const pick = [], labels = [], schematic = [];
 // ---- a text label on a small transparent plane
 function label(text, size, color = "#fff") {
   const c = document.createElement("canvas"); c.width = 256; c.height = 128;
-  const g = c.getContext("2d"); g.font = "700 84px Helvetica, Arial, sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
-  g.lineWidth = 7; g.lineJoin = "round"; g.strokeStyle = "rgba(0,0,0,.9)"; g.strokeText(text, 128, 68); g.fillStyle = color; g.fillText(text, 128, 68);
-  const m = new THREE.Mesh(new THREE.PlaneGeometry(size * 2, size), new THREE.MeshBasicMaterial({map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false}));
-  m.visible = false; labels.push(m); return m;
+  const g = c.getContext("2d"), tex = new THREE.CanvasTexture(c);
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(size * 2, size), new THREE.MeshBasicMaterial({map: tex, transparent: true, depthWrite: false}));
+  m.userData.set = t => { if (m.userData.text === t) return; m.userData.text = t; g.clearRect(0, 0, 256, 128);
+    g.font = `700 ${t.length > 5 ? 50 : t.length > 3 ? 66 : 84}px Helvetica, Arial, sans-serif`; g.textAlign = "center"; g.textBaseline = "middle";
+    g.lineWidth = 7; g.lineJoin = "round"; g.strokeStyle = "rgba(0,0,0,.9)"; g.strokeText(t, 128, 68); g.fillStyle = color; g.fillText(t, 128, 68); tex.needsUpdate = true; };
+  m.userData.set(text); m.visible = false; labels.push(m); return m;
 }
 const centroid = pts => [pts.reduce((a, p) => a + p[0], 0) / pts.length, pts.reduce((a, p) => a + p[1], 0) / pts.length];
 
@@ -167,16 +172,32 @@ const HL = new THREE.Color(0xe0b070);
 const COL = {panel: 0xb08a5c, tri: 0x8f7350, rail: 0xc9a877, railNew: 0xa2553f};
 const ORD = ["", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"];
 function slotInfo(s) {
-  if (s.kind === "panel") return `Mihrab side, column ${s.col}, ${ORD[s.row]} panel of ${s.of} from the bottom. Saladin no. ${s.n}`;
-  if (s.kind === "tri") return `Mihrab side, triangle under the stair string, column ${s.col}. Saladin no. ${s.n}`;
-  return `Stair rail, mihrab side, outside: position ${s.pos} of 16 from the top` + (s.new ? ", new in 1907–10" + (s.pos === 16 ? ", double width" : "") : `. Saladin no. ${s.was} before 1907`);
+  const sal = salText(s.id), num = (sal === "N" ? "New panel" : sal === "?" ? "No panel assigned" : `Saladin no. ${sal}`) + `, Golvin no. ${GOLVIN[s.id]}`;
+  if (s.kind === "panel") return `Mihrab side, column ${s.col}, ${ORD[s.row]} panel of ${s.of} from the bottom. ${num}`;
+  if (s.kind === "tri") return `Mihrab side, triangle under the stair string, column ${s.col}. ${num}`;
+  return `Stair rail, mihrab side, outside: position ${s.pos} of 16 from the top${s.pos === 16 ? ", double width" : ""}. ${num}`;
 }
+// ---- photographs of the rail panels: one sheet per face, cut from the photographs of the new rails laid flat in 1907-10 (fonds Poinssot).
+// In a sheet every panel has one cell and the last, wide one has two; each is stretched to the outline of its panel.
+const railTex = {}, railReady = {}, railOuter = [], railFaces = [];
+const RAIL_TINT = 0xd6cfbf;      // a little warmer and darker, to sit with Creswell's photograph
+function railGeo(s, n) {
+  const geo = new THREE.ShapeGeometry(shapeOf(s.pts)), p = geo.attributes.position, uv = geo.attributes.uv;
+  const [tl, tr, , bl] = s.pts.map(q => [mx(q[0]), my(q[1])]), e1 = [tr[0] - tl[0], tr[1] - tl[1]], e2 = [bl[0] - tl[0], bl[1] - tl[1]], det = e1[0] * e2[1] - e1[1] * e2[0];
+  const c0 = (s.pos - 1) / (n + 1), cw = (s.pos === n ? 2 : 1) / (n + 1);
+  for (let i = 0; i < p.count; i++) { const dx = p.getX(i) - tl[0], dy = p.getY(i) - tl[1];
+    uv.setXY(i, c0 + cw * (dx * e2[1] - dy * e2[0]) / det, 1 - (e1[0] * dy - e1[1] * dx) / det); }
+  return geo;
+}
+const railMat = face => { if (!railTex[face]) railTex[face] = new THREE.TextureLoader().load(`rail/rail${face}.jpg`, t => { t.anisotropy = renderer.capabilities.getMaxAnisotropy(); railReady[face] = true; paint(); });
+  return new THREE.MeshBasicMaterial({map: railTex[face], color: RAIL_TINT, side: THREE.DoubleSide}); };
+SLOTS.filter(s => s.kind === "rail").forEach(s => { const m = new THREE.Mesh(railGeo(s, 16), railMat(1)); m.position.z = ZO + 0.0025; m.visible = false; scene.add(m); railOuter.push(m); });
 SLOTS.forEach(s => {
   const geo = new THREE.ShapeGeometry(shapeOf(s.pts));
   const base = s.kind === "rail" ? (s.new ? COL.railNew : COL.rail) : COL[s.kind];
   const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({color: base, transparent: true, opacity: 0}));
-  m.position.z = ZO + 0.003; m.userData = {info: slotInfo(s), base, overlay: true, id: s.id}; scene.add(m); pick.push(m); schematic.push(m);
-  const c = centroid(s.pts), lb = label(s.kind === "rail" ? "r" + s.pos : String(s.n), s.kind === "panel" ? 0.095 : 0.08, s.kind === "rail" ? "#ffe2b0" : "#fff");
+  m.position.z = ZO + 0.003; m.userData = {base, overlay: true, id: s.id, rail: s.kind === "rail"}; Object.defineProperty(m.userData, "info", {get: () => slotInfo(s)}); scene.add(m); pick.push(m); schematic.push(m);
+  const c = centroid(s.pts), lb = label(String(s.n ?? s.was ?? "N"), s.kind === "panel" ? 0.095 : 0.08, s.kind === "rail" ? "#ffe2b0" : "#fff"); lb.userData.num = {id: s.id};
   lb.position.set(mx(c[0]), my(c[1]), ZO + 0.006); scene.add(lb);
 });
 
@@ -201,16 +222,23 @@ const infoOf = m => { const o = drawingOf(m); if (!o) return m.userData.info;
 
 // ---- the other three rail faces: plain panels in the positions of the outer ones
 const RAIL = SLOTS.filter(s => s.kind === "rail");
+// the maqsūra-side rail: 17 single panels and one of double width at the foot, set out evenly along the same rail (its panels are narrower)
+const RAILQ = (() => { const xa = 930, xb = 2645, p = (xb - xa) / 18.62, w = 0.62 * p, top = x => 290 + 0.7975 * (x - xa), h = x => 206 - 20 * (x - xa) / (xb - xa);
+  const quad = (x0, x1) => [[x0, top(x0)], [x1, top(x1)], [x1, top(x1) + h(x1)], [x0, top(x0) + h(x0)]];
+  return Array.from({length: 18}, (_, i) => ({pos: i + 1, pts: i < 17 ? quad(xa + i * p, xa + i * p + w) : quad(xa + 17 * p, xb)})); })();
 const FACES = [
-  {name: "mihrab side, inside", z: ZI - 0.003, ry: Math.PI, color: 0x6f8f7a, tag: "i", note: "Carving known from scans 078, 080 and 082 (new rails turned over)"},
-  {name: "maqsūra side, outside", z: -ZO - 0.003, ry: Math.PI, color: 0x7f86a8, tag: "q", note: "Carving known from scans 078, 080 and 082; this rail has 17 or 18 panels and is drawn as 16"},
-  {name: "maqsūra side, inside", z: -ZI + 0.003, ry: 0, color: 0x9a8f6a, tag: "qi", note: "Carving known from scans 073, 074 and 075; this rail has 17 or 18 panels and is drawn as 16"},
+  {name: "mihrab side, inside", face: 2, rail: RAIL, z: ZI - 0.003, ry: Math.PI, color: 0x6f8f7a, tag: "i", note: "Photograph of the new rail laid flat in 1907–10 (fonds Poinssot, scans 078, 080 and 082)"},
+  {name: "maqsūra side, outside", face: 4, rail: RAILQ, z: -ZO - 0.003, ry: Math.PI, color: 0x7f86a8, tag: "q", note: "Photograph of the new rail laid flat in 1907–10 (fonds Poinssot, scans 078, 080 and 082); the panels are set out evenly"},
+  {name: "maqsūra side, inside", face: 3, rail: RAILQ, z: -ZI + 0.003, ry: 0, color: 0x9a8f6a, tag: "qi", note: "Photograph of the new rail laid flat in 1907–10 (fonds Poinssot, scans 073, 074 and 075); the panels are set out evenly"},
 ];
-FACES.forEach(f => RAIL.forEach(s => {
-  const m = new THREE.Mesh(new THREE.ShapeGeometry(shapeOf(s.pts)), new THREE.MeshStandardMaterial({color: f.color, roughness: 0.9, side: THREE.DoubleSide}));
-  m.position.z = f.z; m.userData = {info: `Stair rail, ${f.name}: position ${s.pos} from the top as drawn${s.pos === 16 ? ", double width" : ""}. ${f.note}; position in the frame assumed`, base: f.color};
-  scene.add(m); pick.push(m);
-  const c = centroid(s.pts), lb = label(f.tag + s.pos, 0.08, "#fff");
+FACES.forEach(f => f.rail.forEach(s => {
+  const plain = new THREE.MeshStandardMaterial({color: f.color, roughness: 0.9, side: THREE.DoubleSide}), m = new THREE.Mesh(railGeo(s, f.rail.length), plain);
+  const rear = f.face !== 4, own = f.face === 2 ? null : "q" + s.pos + (rear ? "r" : ""), where = `Stair rail, ${f.name}: position ${s.pos} of ${f.rail.length} from the top${s.pos === f.rail.length ? ", double width" : ""}`;
+  m.position.z = f.z; m.userData = {base: f.color, face: f.face, plain, photo: railMat(f.face)};
+  Object.defineProperty(m.userData, "info", {get: () => own ? `${where}. Numbered ${own} here; Saladin and Golvin did not number this rail. ${f.note}`
+    : `${where}. Rear of ${salText("b" + s.pos) === "N" ? "the new panel" : "Saladin no. " + salText("b" + s.pos)}: ${salText("b" + s.pos)}r, Golvin ${GOLVIN["b" + s.pos]}r. ${f.note}`});
+  scene.add(m); pick.push(m); railFaces.push(m);
+  const c = centroid(s.pts), lb = label(own || "r", 0.08, "#fff"); if (!own) lb.userData.num = {id: "b" + s.pos, rear: true};
   lb.position.set(mx(c[0]), my(c[1]), f.z + (f.ry ? -0.003 : 0.003)); lb.rotation.y = f.ry; scene.add(lb);
 }));
 // a note on the face that has no photograph
@@ -257,19 +285,26 @@ const post = (x, z, h, r = 0.035) => { const m = new THREE.Mesh(new THREE.BoxGeo
 
 // ---- controls on the page
 const $ = id => document.getElementById(id);
-let photoOn = true, numOn = false, drawOn = true, hot = null, cmpOn = false, markId = null;
+let photoOn = true, numMode = "off", drawOn = true, railOn = true, hot = null, cmpOn = false, markId = null;
+const railOf = m => railOn && railReady[1] && m.userData.rail;
 function paint() {
   photo.visible = photoOn;
   schematic.forEach(m => { const mk = cmpOn && m.userData.id === markId && m !== hot;
-    m.material.opacity = mk ? 0.5 : photoOn || drawingOf(m) ? (m === hot ? (drawingOf(m) ? 0.3 : 0.45) : 0) : 1; m.material.color.set(mk ? 0x5fd0ff : m === hot ? HL : m.userData.base); });
+    m.material.opacity = mk ? 0.5 : photoOn || drawingOf(m) || railOf(m) ? (m === hot ? (drawingOf(m) || railOf(m) ? 0.3 : 0.45) : 0) : 1; m.material.color.set(mk ? 0x5fd0ff : m === hot ? HL : m.userData.base); });
   Object.values(drawn).forEach(o => o.mesh.visible = drawOn && o.loaded);
+  railOuter.forEach(m => m.visible = railOn && !!railReady[1]);
+  railFaces.forEach(m => { const ph = railOn && !!railReady[m.userData.face]; m.material = ph ? m.userData.photo : m.userData.plain; m.material.color.set(m === hot ? HL : ph ? RAIL_TINT : m.userData.base); });
+  $("b-rail").setAttribute("aria-pressed", railOn);
   $("b-draw").setAttribute("aria-pressed", drawOn);
-  labels.forEach(l => l.visible = numOn);
-  $("b-photo").setAttribute("aria-pressed", photoOn); $("b-num").setAttribute("aria-pressed", numOn);
+  labels.forEach(l => l.visible = numMode !== "off");
+  $("b-photo").setAttribute("aria-pressed", photoOn); $("b-num").setAttribute("aria-pressed", numMode === "saladin"); $("b-gol").setAttribute("aria-pressed", numMode === "golvin");
 }
 $("b-photo").onclick = () => { photoOn = !photoOn; paint(); };
-$("b-num").onclick = () => { numOn = !numOn; paint(); };
+const setNum = k => { numMode = numMode === k ? "off" : k; relabel(); paint(); };
+$("b-num").onclick = () => setNum("saladin");
+$("b-gol").onclick = () => setNum("golvin");
 $("b-draw").onclick = () => { drawOn = !drawOn; paint(); };
+$("b-rail").onclick = () => { railOn = !railOn; paint(); };
 $("n-draw").textContent = DRAW.length + " panels";
 const VIEWS = {
   mihrab: [[L / 2 - 0.85, 1.75, 6.6], [L / 2 - 0.85, 1.6, 0]],
@@ -281,9 +316,11 @@ const VIEWS = {
 function view(k) { camera.position.set(...VIEWS[k][0]); controls.target.set(...VIEWS[k][1]); controls.update(); }
 document.querySelectorAll("[data-view]").forEach(b => b.onclick = () => view(b.dataset.view));
 view(new URLSearchParams(location.search).get("view") in VIEWS ? new URLSearchParams(location.search).get("view") : "mihrab");
-if (new URLSearchParams(location.search).has("numbers")) numOn = true;
+if (new URLSearchParams(location.search).has("numbers")) numMode = "saladin";
+if (new URLSearchParams(location.search).has("golvin")) numMode = "golvin";
 if (new URLSearchParams(location.search).has("plain")) photoOn = false;
 if (new URLSearchParams(location.search).has("nodraw")) drawOn = false;
+if (new URLSearchParams(location.search).has("norail")) railOn = false;
 
 const ray = new THREE.Raycaster(), mouse = new THREE.Vector2();
 function point(e) {
@@ -322,6 +359,10 @@ const isBal = n => n >= 53 && n <= 69;
 const homeOf = n => isBal(n) ? (BAL[n - 52] ? "b" + BAL[n - 52] : null) : "f" + n;
 const nowOf = n => { const p = E.panels[n] || {}; return p.cre === "no" ? null : p.cre === "moved" ? (SLOT_BY[p.slot] ? p.slot : null) : homeOf(n); };
 const numbersAt = id => NUMS.filter(n => nowOf(n) === id);
+// what the panel site writes on a Creswell position: the Saladin numbers placed there, N for a new panel, ? for none
+const newOf = id => E.slots[id]?.isNew ?? ((id === "b10" || id === "b16") ? "yes" : NUMS.some(n => (E.panels[n] || {}).cre === "yes" && homeOf(n) === id) ? "no" : undefined);
+const salText = id => { const ns = numbersAt(id); return ns.length ? ns.join("/") : newOf(id) === "yes" ? "N" : "?"; };
+function relabel() { labels.forEach(l => { const u = l.userData.num; if (u) l.userData.set((numMode === "golvin" ? String(GOLVIN[u.id]) : salText(u.id)) + (u.rear ? "r" : "")); }); }
 const posName = id => { const s = SLOT_BY[id]; return !s ? "a place not on the model" : s.kind === "rail" ? `rail position ${s.pos} from the top` : s.kind === "tri" ? `the triangle of column ${s.col}` : `column ${s.col}, ${ORD[s.row]} of ${s.of} from the bottom`; };
 function statusOf(n) {
   const p = E.panels[n] || {};
@@ -384,22 +425,23 @@ wrap.addEventListener("pointerdown", e => { drag = {x: e.clientX, y: e.clientY, 
 addEventListener("pointermove", e => { if (!drag) return; if (Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > 4) drag.moved = true; if (drag.moved) { ox = drag.ox + e.clientX - drag.x; oy = drag.oy + e.clientY - drag.y; applyOld(); } });
 addEventListener("pointerup", () => { if (drag && !drag.moved && drag.n) { sel = sel === +drag.n ? null : +drag.n; cmpRefresh(); } drag = null; });
 addEventListener("keydown", e => { if (e.key === "Escape" && sel) { sel = null; cmpRefresh(); } });
-let drawWas = true;
+let drawWas = true, railWas = true;
 function setCmp(on) {
   cmpOn = on; $("cmp").hidden = !on; document.body.classList.toggle("cmp-on", on); $("b-cmp").setAttribute("aria-pressed", on);
-  if (on) { drawWas = drawOn; drawOn = false; } else { drawOn = drawWas; sel = pre = markId = null; }   // the drawings would hide Creswell's panels
+  if (on) { drawWas = drawOn; railWas = railOn; drawOn = railOn = false; } else { drawOn = drawWas; railOn = railWas; sel = pre = markId = null; }   // the drawings and rail photos would hide Creswell's panels
   layout(); view(on ? "compare" : "mihrab"); paint(); cmpRefresh();
 }
 $("b-cmp").onclick = () => setCmp(!cmpOn);
 $("cmp-close").onclick = () => setCmp(false);
 oldImg.addEventListener("load", cmpRefresh); newImg.addEventListener("load", cmpRefresh);
+relabel();
+window.MODEL = {labels, railReady, rails: FACES.map(f => [f.name, f.rail.length]), drawn, hold: n => { sel = n; cmpRefresh(); }, riserPanels, slots: SLOTS.length, seat: SEAT, rise: RISE, run: RUN, top: TOP};
 (async () => {   // the edits saved on the panel site: this browser's own first, then the file in the repository
   try { const ls = localStorage.getItem("kairouan-minbar-edits"); if (ls) { const o = JSON.parse(ls); if (o && o.panels) { E = {panels: o.panels, slots: o.slots || {}}; editsFrom = "browser"; } } } catch (e) {}
   if (editsFrom === "none") try { const o = await (await fetch("../edits.json")).json(); E = {panels: o.panels || {}, slots: o.slots || {}}; editsFrom = "file"; } catch (e) {}
-  window.MODEL.editsFrom = editsFrom; cmpRefresh();
+  window.MODEL.editsFrom = editsFrom; relabel(); cmpRefresh();
   if (new URLSearchParams(location.search).has("compare")) setCmp(true);
 })();
-window.MODEL = {drawn, hold: n => { sel = n; cmpRefresh(); }, riserPanels, slots: SLOTS.length, seat: SEAT, rise: RISE, run: RUN, top: TOP};
 (function loop() { controls.update(); renderer.render(scene, camera); requestAnimationFrame(loop); })();
 </script>
 </body>
