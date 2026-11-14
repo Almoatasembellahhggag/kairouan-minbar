@@ -100,9 +100,12 @@
   <p id="cmp-status"></p>
 </aside>
 <div id="err"></div>
+<script>   // if the scripts stop part-way (most often one file from an older version left in the browser's cache), say so instead of showing nothing
+addEventListener("error", () => { const el = document.getElementById("err"); if (el && !window.MODEL) { el.style.display = "flex"; el.textContent = "The 3D model did not load completely. Reload the page; if it stays like this, clear this site's data in the browser and reload."; } });
+</script>
 <script src="lib/three.min.js"></script>
 <script src="lib/OrbitControls.js"></script>
-<script src="data.js"></script>
+<script src="data.js?v=20261114d"></script>   <!-- the version changes with every update, so the page never runs with older data -->
 <script>
 "use strict";
 // ---- photo space to metres. The frame runs from x = 435 to 2700 px on Creswell's photograph and stands on y = 2095.
@@ -189,7 +192,7 @@ function railGeo(s, n) {
     uv.setXY(i, c0 + cw * (dx * e2[1] - dy * e2[0]) / det, 1 - (e1[0] * dy - e1[1] * dx) / det); }
   return geo;
 }
-const railMat = face => { if (!railTex[face]) railTex[face] = new THREE.TextureLoader().load(`rail/rail${face}.jpg`, t => { t.anisotropy = renderer.capabilities.getMaxAnisotropy(); railReady[face] = true; paint(); });
+const railMat = face => { if (!railTex[face]) railTex[face] = new THREE.TextureLoader().load(`rail/rail${face}.jpg?v=20261114d`, t => { t.anisotropy = renderer.capabilities.getMaxAnisotropy(); railReady[face] = true; paint(); });
   return new THREE.MeshBasicMaterial({map: railTex[face], color: RAIL_TINT, side: THREE.DoubleSide}); };
 SLOTS.filter(s => s.kind === "rail").forEach(s => { const m = new THREE.Mesh(railGeo(s, 16), railMat(1)); m.position.z = ZO + 0.0025; m.visible = false; scene.add(m); railOuter.push(m); });
 SLOTS.forEach(s => {
