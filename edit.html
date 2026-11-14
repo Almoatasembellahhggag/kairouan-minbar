@@ -446,8 +446,15 @@ const golvinLine = id => GOLVIN[id] === 4 ? `<span class="sub">Golvin's no. 4 is
 const idBlock = (big, lab, slot) => `<div class="ids"><div class="id"><b>${big}</b><span>${lab}</span></div>${GOLVIN[slot] ? `<div class="id g"><b>${GOLVIN[slot]}</b><span>Golvin</span></div>` : ""}</div>`;
 let golvinOn = false;
 const defSlot = k => !isBal(k) ? "f" + k : (BAL[k - 52] ? "b" + BAL[k - 52] : null);
+// places on the minbar that Creswell's photograph does not show: the stair rail on the maqsūra side, the risers, the front of the seat,
+// the backrest and the maqsūra-side face. A panel can be recorded as moved to one of them; the 3D model uses the same ids.
+const OFF = {};
+for (let j = 1; j <= 18; j++) OFF["q" + j] = `Stair rail on the maqsūra side, position ${j} from the top`;
+for (let j = 1; j <= 11; j++) for (let k = 1; k <= (j % 2 ? 3 : 4); k++) OFF[`r${j}.${k}`] = `Stair riser ${j} from the bottom, panel ${k} from the mihrab side`;
+Object.assign(OFF, {s1: "Front of the seat, mihrab-side panel", s2: "Front of the seat, maqsūra-side panel", k: "Backrest", o: "Maqsūra-side face"});
 const slotName = id => {
   if (!id) return "Not on his photograph";
+  if (OFF[id]) return OFF[id];
   if (id[0] === "b") return `Balustrade, position ${id.slice(1)} from the top`;
   const k = +id.slice(1), i = info(k);
   return TRI[k] ? `Triangle ${i.where.replace("under the stair string, ", "")}` : `Column ${i.where.replace("column ", "")}`;
@@ -469,7 +476,7 @@ const clean = raw => {
     const q = {};
     if (p.num === "yes" || p.num === "no") q.num = p.num;
     if (p.cre === "yes" || p.cre === "no" || p.cre === "moved") q.cre = p.cre;
-    if (p.cre === "moved" && SLOT[p.slot]) q.slot = p.slot;
+    if (p.cre === "moved" && (SLOT[p.slot] || OFF[p.slot])) q.slot = p.slot;
     if (Object.keys(q).length) out.panels[+n] = q;
   });
   Object.entries(raw.slots || {}).forEach(([id, s]) => {
@@ -617,7 +624,7 @@ function focusView(v, p) {
   sc.scrollLeft = st.offsetLeft + (x0 + x1) / 2 * s - W / 2;
   sc.scrollTop = st.offsetTop + (y0 + y1) / 2 * s - H / 2;
 }
-const polyFor = (v, n) => v === "before" ? POLY.before[outlineOf(n)] : v === "saladin" ? POLY.saladin[n] : (shownSlot(n) ? SLOT[shownSlot(n)] : null);
+const polyFor = (v, n) => v === "before" ? POLY.before[outlineOf(n)] : v === "saladin" ? POLY.saladin[n] : (SLOT[shownSlot(n)] || null);
 let focusKey = "";
 let follow = null;   // the panel a double-click zoomed to, kept in view when the layout changes
 function focusPanel(force) {
@@ -705,7 +712,7 @@ function paintSelection() {
   const ob = document.querySelector("#stage-before .outline"), oa = document.querySelector("#stage-after .outline");
   const sid = current ? shownSlot(current) : currentSlot;
   ob.setAttribute("points", current ? pts(POLY.before[outlineOf(current)]) : "");
-  oa.setAttribute("points", sid ? pts(SLOT[sid]) : "");
+  oa.setAttribute("points", SLOT[sid] ? pts(SLOT[sid]) : "");      // a place off Creswell's photograph has no outline there
   document.querySelector("#stage-saladin .outline").setAttribute("points", current ? pts(POLY.saladin[current]) : "");
   if (current) marks.before[current]?.classList.add("sel");
   if (sid) marks.after[sid]?.classList.add("sel");
@@ -716,7 +723,7 @@ function applyFilter() {
   VW.forEach(v => $("stage-" + v).classList.toggle("filtering", shown ? shown.length + shownNew.length > 0 : !!filter));
   const found = shown ?? (filter ? NUMS.filter(n => flags(n)[filter]) : []);
   document.querySelector("#stage-before .holes").innerHTML = found.map(n => `<polygon points="${pts(POLY.before[outlineOf(n)])}"/>`).join("");
-  const afterIds = geoView ? geoSlots() : !shown && filter === "newp" ? Object.keys(SLOT).filter(id => newOf(id) === "yes") : [...found.map(n => slotOf(n)).filter(Boolean), ...shownNew];
+  const afterIds = geoView ? geoSlots() : !shown && filter === "newp" ? Object.keys(SLOT).filter(id => newOf(id) === "yes") : [...found.map(n => slotOf(n)).filter(id => SLOT[id]), ...shownNew];
   document.querySelector("#stage-saladin .holes").innerHTML = found.map(n => `<polygon points="${pts(POLY.saladin[n])}"/>`).join("");
   document.querySelector("#stage-after .holes").innerHTML = afterIds.map(id => `<polygon points="${pts(SLOT[id])}"/>`).join("");
   found.forEach(n => marks.before[n]?.classList.add("hit"));
@@ -729,7 +736,7 @@ const YESNO = [["yes", "Yes"], ["no", "No"]];
 function editForm(n) {
   const p = P(n), h = homeOf(n), k = outlineOf(n);
   const creOpts = (h ? [["yes", "Yes"]] : []).concat([["no", "No"], ["moved", "Yes, in a different position"]]);
-  const others = p.cre === "moved" && p.slot ? numbersAt(p.slot).filter(m => m !== n) : [];
+  const others = p.cre === "moved" && p.slot && p.slot !== "k" && p.slot !== "o" ? numbersAt(p.slot).filter(m => m !== n) : [];
   return `<form class="edit" id="edit">
     <div class="field"><span class="lab">Is the Saladin number correct?</span>${seg("num", p.num, YESNO)}
       ${p.num === "no" ? `<div class="row"><label for="e-num">Correct number</label><input id="e-num" type="number" min="1" max="79"><button type="button" id="e-numgo">Set</button></div>
@@ -737,7 +744,8 @@ function editForm(n) {
       ${k !== n ? `<span class="hint-t">Corrected: this position started as no. ${k}.</span>` : ""}</div>
     <div class="field"><span class="lab">Does it exist in Creswell?</span>${seg("cre", p.cre, creOpts)}
       ${p.cre === "moved" ? `<label for="e-slot">Its position in Creswell</label>
-      <select id="e-slot"><option value="">Choose a position</option>${SLOT_ORDER.map(id => `<option value="${id}" ${id === p.slot ? "selected" : ""}>${slotName(id)}</option>`).join("")}</select>
+      <select id="e-slot"><option value="">Choose a position</option>${SLOT_ORDER.map(id => `<option value="${id}" ${id === p.slot ? "selected" : ""}>${slotName(id)}</option>`).join("")}
+        <optgroup label="Not in Creswell's photograph">${Object.keys(OFF).map(id => `<option value="${id}" ${id === p.slot ? "selected" : ""}>${slotName(id)}</option>`).join("")}</optgroup></select>
       <button type="button" id="e-pick">${picking ? "Now click a number on Creswell's photograph" : "Pick on the photograph"}</button>
       ${others.length ? `<span class="warn">Panel ${others.join(", ")} is at this position too.</span>` : ""}` : ""}</div>
     ${h ? `<div class="field"><span class="lab">Is the Creswell panel at its original position new?</span>${seg("isNew", newOf(h), YESNO)}
@@ -796,6 +804,7 @@ function afterNote(n) {
   const c = P(n).cre, s = slotOf(n);
   const h = homeOf(n), nw = h && newOf(h) === "yes" ? " A new panel stands at its position." : "";
   if (c === "no") return `Not in Creswell's photograph.${nw}`;
+  if (c === "moved" && OFF[s]) return `Moved to a place Creswell's photograph does not show: ${slotName(s)}.${nw}`;
   if (c === "moved") return s ? `Moved. In Creswell's photograph it is at: ${slotName(s)}.${nw}` : `In a different position in Creswell's photograph; the position is not chosen yet.`;
   if (c === "yes") return isBal(n) ? `Still present, at his position ${BAL[n - 52]} from the top, following Creswell's table.` : `The same panel, in the same position.`;
   if (!s) return `Creswell says this panel <q>has disappeared</q>, so nothing is outlined on his photograph.`;
@@ -816,7 +825,7 @@ function renderCard() {
       <span class="kind">${i.kind}${isGeoPanel(n) ? ", geometric" : ""}</span>
       <span class="sub">${i.where[0].toUpperCase() + i.where.slice(1)}</span>
       ${plates.length ? `<span class="sub">Saladin Pl. ${plates.join(" and ")}</span>` : ""}
-      ${slotOf(n) ? golvinLine(slotOf(n)) : `<span class="sub">No Golvin number: not in Creswell's photograph</span>`}
+      ${SLOT[slotOf(n)] ? golvinLine(slotOf(n)) : `<span class="sub">No Golvin number: not in Creswell's photograph</span>`}
     </div></div>
     ${editing ? editForm(n) : ""}
     ${figs.length ? `<div class="figs">${figs.join("")}</div>` : ""}
