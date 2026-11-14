@@ -439,7 +439,8 @@ const railOf = m => rail1On && railReady[1] && m.userData.rail;
 // a part that can be pointed at is shown in one of four ways: pointed at; the place chosen by a click (while comparing);
 // the place where the held panel is recorded; or plain
 const MARK = 0x5fd0ff, CHOSEN = 0x7be08a;
-const stateOf = m => m === hot || (hot && m.userData.twin === hot) ? "hot" : cmpOn && chosen && m.userData.place === chosen ? "chosen" : (cmpOn || EMBED) && markId && m.userData.place === markId ? "mark" : "";
+let markSet = new Set();      // framed in the panel site's Photos view: the places of the panels marked for the current photograph
+const stateOf = m => m === hot || (hot && m.userData.twin === hot) ? "hot" : cmpOn && chosen && m.userData.place === chosen ? "chosen" : (cmpOn || EMBED) && (markId && m.userData.place === markId || markSet.has(m.userData.place)) ? "mark" : "";
 function tone(m) {
   const u = m.userData, mat = m.material, st = stateOf(m), flag = st === "chosen" ? CHOSEN : st === "mark" ? MARK : null;
   if (u.overlay) { mat.opacity = flag ? (st === "mark" ? 0.3 : 0.5) : photoOn || drawingOf(m) || railOf(m) ? (st ? (drawingOf(m) || railOf(m) ? 0.3 : 0.45) : 0) : 1; paintC(mat, flag ?? (st ? HL : u.base)); }
@@ -766,11 +767,11 @@ window.MODEL = {faceOn, labels, railReady, rails: FACES.map(f => [f.name, f.rail
     embedSynced = true; const e = adopt(o.edits); if (e) E = e;
     const nm = o.quiet ? "off" : o.golvin ? "golvin" : "saladin"; if (nm !== embedGolvin) embedGolvin = numMode = nm;      // the numbering follows the panel site when that changes
     $("ui").style.top = (8 + (o.top || 0)) + "px";                                                                              // below the panel site's own bar
-    const id = o.n ? nowOf(o.n) : o.slot || null, key = id + "|" + !!o.zoom; markId = id; relabel(); paint();
+    const id = o.n ? nowOf(o.n) : o.slot || null, key = id + "|" + !!o.zoom; markId = id; markSet = new Set(o.marks || []); relabel(); paint();
     if (id && key !== embedKey && id !== clicked && (o.zoom || OFF[id])) { const m = pick.find(q => q.userData.place === id); if (m) faceOn(m); }
     else if (!id && embedKey && !embedKey.startsWith("null|") && backView) { fly(backView[0], backView[1]); backView = null; }
     embedKey = key; clicked = null;
-    idle = o.pick ? `Click the place where no. ${o.pick} is now` : "Point at a panel"; if (!hot) $("info-t").textContent = idle;      // the Edit page is waiting for a place
+    idle = o.pick ? `Click the place where no. ${o.pick} is now` : o.photo ? "Click the panels this photograph shows" : "Point at a panel"; if (!hot) $("info-t").textContent = idle;      // the Edit page is waiting for a place
   }, riserPanels, slots: SLOTS.length, seat: SEAT, rise: RISE, run: RUN, top: TOP};
 (async () => {   // the edits saved on the panel site: the file in the repository, with what this browser has changed laid over it
   let local = null, pub = null;

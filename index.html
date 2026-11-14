@@ -466,7 +466,7 @@ const ALL_PHOTOS = [
   ph("q15", "ph/q15.jpg", G_Q, "Scanned catalogue page with three fragments, 10 Aug 2026"),
   ph("q16", "ph/q16.jpg", G_Q, "Stair detail of the minbar, Alamy (watermarked)"),
   ph("pd01", "ph/pd01.jpg", G_P, "Fig. 11.1, the minbar, present state, from Sculptures et peintures kairouanaises, 47", [], false, true),
-  ph("pd02", "ph/pd02.jpg", G_P, "Fig. 11.2, left face, Garrigues, Tunis, late 19th c. Bibliothèque de l'INHA, Collection Jacques Doucet, fonds Poinssot, Archives 060, carton 10"),
+  ph("pd02", "ph/pd02.jpg", G_P, "Fig. 11.2, left face, Garrigues, Tunis, late 19th c. (their print: Bibliothèque de l'INHA, Collection Jacques Doucet, fonds Poinssot, Archives 060, carton 10), shown from the larger scan of the same photograph, Garrigues no. 271 (Wikimedia Commons)"),
   ph("pd03", "ph/pd03.jpg", G_P, "Fig. 11.3, Saladin's drawing of the left face, 1896, from Saladin and Gauckler, Les monuments historiques, 105"),
   ph("pd04a", "ph/pd04a.jpg", G_P, "Fig. 11.4a, inscription on the new backrest, 1909-10", [], false, true),
   ph("pd04b", "ph/pd04b.jpg", G_P, "Fig. 11.4b, transcription of that inscription", [], false, true),
@@ -478,7 +478,7 @@ const ALL_PHOTOS = [
   ph("pd07b", "ph/pd07b.jpg", G_P, "Fig. 11.7, fragments, Musée de Raqqada (b)", [], false, true),
   ph("pd07c", "ph/pd07c.jpg", G_P, "Fig. 11.7, fragments, Musée de Raqqada (c)", [], false, true),
   ph("pd08", "ph/pd08.jpg", G_P, "Fig. 11.8, upper left face, annotated 2578, about 1907. Bibliothèque de l'INHA, Collection Jacques Doucet, fonds Poinssot, Archives 106, 130, 03, scan 065"),
-  ph("pd09", "ph/pd09.jpg", G_P, "Fig. 11.9, left face, Sadoux, probably 1907, from Saladin, Les Villes d'Art célèbres, 126"),
+  ph("pd09", "ph/pd09.jpg", G_P, "Fig. 11.9, left face, Sadoux, probably 1907, from Saladin, Les Villes d'Art célèbres, 126; the same photograph as Saladin's Pl. XXVII of 1899, shown from the original print (INHA, fonds Poinssot, Archives 106, 130, 03, scan 057)"),
   ph("pd10", "ph/pd10.jpg", G_P, "Fig. 11.10, original backrest, probably after its removal in 1907. Bibliothèque de l'INHA, Collection Jacques Doucet, fonds Poinssot, Archives 106, 130, 03, scan 079"),
   ph("pd11", "ph/pd11.jpg", G_P, "Fig. 11.11, the minbar, undated. Bibliothèque de l'INHA, Collection Jacques Doucet, fonds Poinssot, Archives 106, 130, 03, scan 052"),
   ph("pd12a", "ph/pd12a.jpg", G_P, "Fig. 11.12a, risers, Lehnert and Landrock, from Strzygowski, Altai-Iran, Abb. 169"),
@@ -824,13 +824,19 @@ function renderMarks() {
 function sync3d() {
   const M = $("pane-3d").hidden ? null : $("f3d").contentWindow?.MODEL; if (!M || !M.embed) return;
   try { M.embed({edits: JSON.parse(JSON.stringify(E)), n: current, slot: currentSlot, golvin: golvinOn, pick: picking && partner === "3d" ? current : null, quiet: $("stage-before").classList.contains("quiet"),
+    marks: photoMode && curPhoto ? [...assignedOf(curPhoto).map(n => slotOf(n)), ...newsOf(curPhoto), ...(otherOf(curPhoto) ? ["o"] : [])].filter(Boolean) : [], photo: !!(photoMode && curPhoto),
     top: Math.max(0, document.querySelector(".tools").getBoundingClientRect().bottom - $("pane-3d").getBoundingClientRect().top), zoom: true}); } catch (e) {}      // the model zooms to the place of every panel selected here
 }
 $("f3d").addEventListener("load", sync3d);
 window.from3d = id => {
   if (geoMode || !(SLOT[id] || OFF[id])) return;
   const ns = numbersAt(id);
-  if (photoMode) { if (curPhoto) { if (ns.length) togglePanel(ns[0]); else toggleNew(id); } return; }
+  if (photoMode) {      // the panel at the place clicked is added to the current photograph or taken off it; the maqsūra-side face marks the photograph as showing that side
+    if (!curPhoto) return;
+    if (id === "o") { setPhoto(curPhoto, assignedOf(curPhoto), wholeOf(curPhoto), newsOf(curPhoto), sidesOf(curPhoto), !otherOf(curPhoto)); changed(); }
+    else if (ns.length) togglePanel(ns[0]); else toggleNew(id);
+    return;
+  }
   if (picking && current) { assign(current, id); stopPick(); changed(); return; }
   if (ns.length) select(ns[0], false); else showSlot(id);
 };
@@ -1042,7 +1048,7 @@ function setView(v) {
   const show = w => v === w || (v === "both" && (w === "before" || w === partner));
   VW.forEach(w => { $("pane-" + w).hidden = !show(w); });
   const on3 = v === "both" && partner === "3d";      // the 3D model is loaded the first time it is asked for
-  $("pane-3d").hidden = !on3; if (on3 && !$("f3d").getAttribute("src")) $("f3d").src = "3d/?embed&v=20261114m"; if (on3) sync3d();
+  $("pane-3d").hidden = !on3; if (on3 && !$("f3d").getAttribute("src")) $("f3d").src = "3d/?embed&v=20261114n"; if (on3) sync3d();
   $("withseg").hidden = v !== "both";
   syncSave();
   document.querySelectorAll("#withseg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.w === partner));
@@ -1263,7 +1269,8 @@ function renderPhotoCard() {
   const nw = newsOf(curPhoto), free = SLOT_ORDER.concat(Object.keys(OFF)).filter(id => !numbersAt(id).length && !nw.includes(id));
   card.innerHTML = `<figure class="fig"><img src="${p.file}" alt="${p.title}"><figcaption>${p.group}: ${p.title}. Click the photo to enlarge it.</figcaption></figure>
     <div class="edit">
-      <div class="field"><span class="lab">Panels in this photo: click numbers on the images to add or remove</span>
+      <div class="field"><span class="lab">Panels in this photo: click numbers on the images, or panels on the 3D model, to add or remove</span>
+        <div class="row"><button type="button" id="p-pick3" aria-pressed="${view === "both" && partner === "3d"}">${view === "both" && partner === "3d" ? "Choosing on the 3D model (press again for Creswell's photograph)" : "Choose on the 3D model"}</button></div>
         <div class="chips">${a.length ? a.map(n => `<button type="button" class="chip" data-rm="${n}" aria-label="Remove panel ${n}">${n} ×</button>`).join("") : `<span class="hint-t">None yet</span>`}</div></div>
       <div class="row"><input id="p-add" aria-label="Panel numbers to add" placeholder="12, 40-45"><button type="button" id="p-addgo">Add</button></div>
       <div class="field"><span class="lab">New panels in this photo: click an N on Creswell's photograph, or choose one</span>
@@ -1281,6 +1288,7 @@ function renderPhotoCard() {
   card.scrollTop = top;
   const add = () => { const n = parsePanels($("p-add").value); if (n.length) { setPhoto(curPhoto, [...assignedOf(curPhoto), ...n], wholeOf(curPhoto)); changed(); } };
   $("p-addgo").onclick = add;
+  $("p-pick3").onclick = () => { partner = view === "both" && partner === "3d" ? "after" : "3d"; setView("both"); renderAll(); };
   $("p-add").onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); add(); } };
   $("p-whole").onclick = () => { setPhoto(curPhoto, assignedOf(curPhoto), !wholeOf(curPhoto)); changed(); };
   $("p-other").onclick = () => { setPhoto(curPhoto, assignedOf(curPhoto), wholeOf(curPhoto), newsOf(curPhoto), sidesOf(curPhoto), !otherOf(curPhoto)); changed(); };
