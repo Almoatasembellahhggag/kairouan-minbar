@@ -568,7 +568,30 @@ for (let j = 1; j <= 11; j++) for (let k = 1; k <= (j % 2 ? 3 : 4); k++) OFF[`r$
 Object.assign(OFF, {s1: "the front of the seat, mihrab-side panel", s2: "the front of the seat, maqsūra-side panel", k: "the backrest", o: "the maqsūra-side face"});
 const blank = () => ({v: 2, numbers: {}, panels: {}, slots: {}, photos: {}, geo: {panels: [], slots: []}});
 const adopt = o => o && o.v === 2 && o.panels && typeof o.panels === "object" ? Object.assign(blank(), o) : null;      // the whole saved object is kept, so that saving here loses nothing
-let E = blank(), editsFrom = "none", savedNote = "";
+let E = blank(), editsFrom = "none", savedNote = "", pubBase = null;
+// ---- the browser's copy of the edits and the site's file. The copy keeps what was changed in this browser and everything else follows the file,
+// so an older copy never hides a newer edits.json. The file the copy was last matched with is kept beside it as its base.
+const LSB = "kairouan-minbar-base", SECS = ["numbers", "panels", "slots", "photos"];
+const canon = v => JSON.stringify(v, (k, x) => x && typeof x === "object" && !Array.isArray(x) ? Object.fromEntries(Object.keys(x).sort().map(q => [q, x[q]])) : x);
+const sameEdits = (a, b) => canon(a) === canon(b);
+const keysOf = (a, b, sec) => [...new Set([...Object.keys(a[sec] || {}), ...Object.keys(b[sec] || {})])];
+const editsApart = (a, b) => SECS.reduce((n, sec) => n + keysOf(a, b, sec).filter(k => !sameEdits((a[sec] || {})[k], (b[sec] || {})[k])).length, sameEdits(a.geo, b.geo) ? 0 : 1);
+function merge3(base, local, pub) {
+  const out = {...pub, v: 2, geo: sameEdits(local.geo, base.geo) ? pub.geo : local.geo};
+  SECS.forEach(sec => { out[sec] = {}; keysOf(pub, local, sec).forEach(k => { const v = sameEdits((local[sec] || {})[k], (base[sec] || {})[k]) ? (pub[sec] || {})[k] : (local[sec] || {})[k]; if (v !== undefined) out[sec][k] = v; }); });
+  return out;
+}
+async function reconcile(local, pub, histUrl, norm) {
+  let base = null; try { base = JSON.parse(localStorage.getItem(LSB)); } catch (e) {}
+  if (base) base = norm(base);
+  else {      // a copy from before bases were kept: it started from the earlier published file it differs from least
+    let hist; try { hist = (await (await fetch(histUrl)).json()).map(norm); } catch (e) { return local; }
+    base = [pub, ...hist].map(h => [editsApart(local, h), h]).sort((a, b) => a[0] - b[0])[0][1];
+  }
+  const out = norm(merge3(base, local, pub));
+  try { if (sameEdits(out, pub)) { localStorage.removeItem(LS); localStorage.removeItem(LSB); } else { localStorage.setItem(LS, JSON.stringify(out)); localStorage.setItem(LSB, JSON.stringify(pub)); } } catch (e) {}
+  return out;
+}
 const isBal = n => n >= 53 && n <= 69;
 const numberAt = k => E.numbers[k] ?? k, outlineOf = n => NUMS.find(k => numberAt(k) === n) ?? n;      // Saladin numbers corrected on the panel site
 const defSlot = k => isBal(k) ? (BAL[k - 52] ? "b" + BAL[k - 52] : null) : "f" + k;
@@ -596,7 +619,7 @@ function judge(n, what, id) {
   else if (what === "here") { if (!SLOT_BY[id] && !OFF[id]) return; setP(n, {cre: "moved", slot: id}); if (newOf(id) === "yes") E.slots[id] = {isNew: "no"}; }
   else if (what === "gone") setP(n, {cre: "no", slot: undefined});
   else setP(n, {cre: undefined, slot: undefined});
-  let ok = true; try { localStorage.setItem(LS, JSON.stringify(E)); } catch (e) { ok = false; }
+  let ok = true; try { localStorage.setItem(LS, JSON.stringify(E)); if (pubBase) localStorage.setItem(LSB, pubBase); } catch (e) { ok = false; }
   editsFrom = "browser"; if (window.MODEL) window.MODEL.editsFrom = editsFrom;
   savedNote = ok ? "Saved in this browser only; Save file writes edits.json for the site." : "Not saved in this browser: use Save file.";
   chosen = null; relabel(); paint(); cmpRefresh();
@@ -725,10 +748,16 @@ window.MODEL = {faceOn, labels, railReady, rails: FACES.map(f => [f.name, f.rail
     embedKey = key; clicked = null;
     idle = o.pick ? `Click the place where no. ${o.pick} is now` : "Point at a panel"; if (!hot) $("info-t").textContent = idle;      // the Edit page is waiting for a place
   }, riserPanels, slots: SLOTS.length, seat: SEAT, rise: RISE, run: RUN, top: TOP};
-(async () => {   // the edits saved on the panel site: this browser's own first, then the file in the repository
-  try { const o = adopt(JSON.parse(localStorage.getItem(LS))); if (o) { E = o; editsFrom = "browser"; } } catch (e) {}
-  if (editsFrom === "none") try { const o = adopt(await (await fetch("../edits.json", {cache: "no-store"})).json()); if (o && !embedSynced) { E = o; editsFrom = "file"; } } catch (e) {}
+(async () => {   // the edits saved on the panel site: the file in the repository, with what this browser has changed laid over it
+  let local = null, pub = null;
+  try { local = adopt(JSON.parse(localStorage.getItem(LS))); } catch (e) {}
+  if (local) { E = local; editsFrom = "browser"; }
+  if (!local || !EMBED) try { pub = adopt(await (await fetch("../edits.json", {cache: "no-store"})).json()); } catch (e) {}
   if (embedSynced) return;      // in a frame the panel site's own edits have arrived meanwhile
+  if (pub) pubBase = JSON.stringify(pub);      // as text: E is changed in place and must not take the loaded file along
+  if (pub && !local) { E = pub; editsFrom = "file"; }
+  else if (pub && !EMBED) { E = await reconcile(E, pub, "../edits-history.json", o => adopt(o) || blank()); editsFrom = sameEdits(E, pub) ? "file" : "browser"; }
+  if (embedSynced) return;
   window.MODEL.editsFrom = editsFrom; drawOld(); relabel(); paint(); cmpRefresh();
   if (new URLSearchParams(location.search).has("compare")) setCmp(true);
 })();

@@ -264,7 +264,8 @@
     },
     "66": {
       "num": "yes",
-      "cre": "no"
+      "cre": "moved",
+      "slot": "b4r"
     },
     "67": {
       "num": "yes",
@@ -365,6 +366,9 @@
     },
     "f13": {
       "isNew": "yes"
+    },
+    "b4r": {
+      "isNew": "no"
     }
   },
   "photos": {

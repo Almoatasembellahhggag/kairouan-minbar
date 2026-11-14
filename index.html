@@ -546,7 +546,31 @@ const savedLabel = () => `${savedCount()}/79, photos ${PHOTOS.filter(p => placed
 let db = null, editsDoc = null, saveTimer = null;
 const LS = "kairouan-minbar-edits";
 const lsGet = () => { try { const s = localStorage.getItem(LS); return s ? JSON.parse(s) : null; } catch (e) { return null; } };
-const lsSet = () => { try { localStorage.setItem(LS, JSON.stringify(E)); return true; } catch (e) { return false; } };
+const lsSet = () => { try { localStorage.setItem(LS, JSON.stringify(E)); if (pubBase) localStorage.setItem(LSB, pubBase); return true; } catch (e) { return false; } };
+let pubBase = null;      // the site's edits.json as loaded this time, as text: E is changed in place and must not take it along
+// ---- the browser's copy of the edits and the site's file. The copy keeps what was changed in this browser and everything else follows the file,
+// so an older copy never hides a newer edits.json. The file the copy was last matched with is kept beside it as its base.
+const LSB = "kairouan-minbar-base", SECS = ["numbers", "panels", "slots", "photos"];
+const canon = v => JSON.stringify(v, (k, x) => x && typeof x === "object" && !Array.isArray(x) ? Object.fromEntries(Object.keys(x).sort().map(q => [q, x[q]])) : x);
+const sameEdits = (a, b) => canon(a) === canon(b);
+const keysOf = (a, b, sec) => [...new Set([...Object.keys(a[sec] || {}), ...Object.keys(b[sec] || {})])];
+const editsApart = (a, b) => SECS.reduce((n, sec) => n + keysOf(a, b, sec).filter(k => !sameEdits((a[sec] || {})[k], (b[sec] || {})[k])).length, sameEdits(a.geo, b.geo) ? 0 : 1);
+function merge3(base, local, pub) {
+  const out = {...pub, v: 2, geo: sameEdits(local.geo, base.geo) ? pub.geo : local.geo};
+  SECS.forEach(sec => { out[sec] = {}; keysOf(pub, local, sec).forEach(k => { const v = sameEdits((local[sec] || {})[k], (base[sec] || {})[k]) ? (pub[sec] || {})[k] : (local[sec] || {})[k]; if (v !== undefined) out[sec][k] = v; }); });
+  return out;
+}
+async function reconcile(local, pub, histUrl, norm) {
+  let base = null; try { base = JSON.parse(localStorage.getItem(LSB)); } catch (e) {}
+  if (base) base = norm(base);
+  else {      // a copy from before bases were kept: it started from the earlier published file it differs from least
+    let hist; try { hist = (await (await fetch(histUrl)).json()).map(norm); } catch (e) { return local; }
+    base = [pub, ...hist].map(h => [editsApart(local, h), h]).sort((a, b) => a[0] - b[0])[0][1];
+  }
+  const out = norm(merge3(base, local, pub));
+  try { if (sameEdits(out, pub)) { localStorage.removeItem(LS); localStorage.removeItem(LSB); } else { localStorage.setItem(LS, JSON.stringify(out)); localStorage.setItem(LSB, JSON.stringify(pub)); } } catch (e) {}
+  return out;
+}
 const status = t => { $("saved").textContent = t; };
 function changed() { renderAll(); persist(); }
 function persist() {
@@ -573,7 +597,11 @@ async function loadEdits() {
   if (local) { E = clean(local); renderAll(); status(`Saved ${savedLabel()} in this browser only`); }
   try {
     const r = await fetch("edits.json", {cache: "no-store"});
-    if (r.ok && !local) { E = clean(await r.json()); renderAll(); status(`Saved ${savedLabel()} on the site`); }
+    if (r.ok) {
+      const pub = clean(await r.json()); pubBase = JSON.stringify(pub);
+      E = local ? await reconcile(E, pub, "edits-history.json", clean) : pub;
+      renderAll(); status(sameEdits(E, pub) ? `Saved ${savedLabel()} on the site` : `Saved ${savedLabel()} in this browser only`);
+    }
   } catch (e) {}
   if (!window.claude?.use) return;
   db = await window.claude.use("db");
@@ -929,7 +957,7 @@ function setView(v) {
   const show = w => v === w || (v === "both" && (w === "before" || w === partner));
   VW.forEach(w => { $("pane-" + w).hidden = !show(w); });
   const on3 = v === "both" && partner === "3d";      // the 3D model is loaded the first time it is asked for
-  $("pane-3d").hidden = !on3; if (on3 && !$("f3d").getAttribute("src")) $("f3d").src = "3d/?embed&v=20261114k"; if (on3) sync3d();
+  $("pane-3d").hidden = !on3; if (on3 && !$("f3d").getAttribute("src")) $("f3d").src = "3d/?embed&v=20261114l"; if (on3) sync3d();
   $("withseg").hidden = v !== "both";
   syncSave();
   document.querySelectorAll("#withseg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.w === partner));
