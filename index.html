@@ -712,7 +712,7 @@ function renderMarks() {
 function sync3d() {
   const M = $("pane-3d").hidden ? null : $("f3d").contentWindow?.MODEL; if (!M || !M.embed) return;
   try { M.embed({edits: JSON.parse(JSON.stringify(E)), n: current, slot: currentSlot, golvin: golvinOn, pick: picking && partner === "3d" ? current : null, quiet: $("stage-before").classList.contains("quiet"),
-    top: Math.max(0, document.querySelector(".tools").getBoundingClientRect().bottom - $("pane-3d").getBoundingClientRect().top), zoom: editing || (follow !== null && follow === (current ?? currentSlot))}); } catch (e) {}
+    top: Math.max(0, document.querySelector(".tools").getBoundingClientRect().bottom - $("pane-3d").getBoundingClientRect().top), zoom: true}); } catch (e) {}      // the model zooms to the place of every panel selected here
 }
 $("f3d").addEventListener("load", sync3d);
 window.from3d = id => {
@@ -929,7 +929,7 @@ function setView(v) {
   const show = w => v === w || (v === "both" && (w === "before" || w === partner));
   VW.forEach(w => { $("pane-" + w).hidden = !show(w); });
   const on3 = v === "both" && partner === "3d";      // the 3D model is loaded the first time it is asked for
-  $("pane-3d").hidden = !on3; if (on3 && !$("f3d").getAttribute("src")) $("f3d").src = "3d/?embed&v=20261114j"; if (on3) sync3d();
+  $("pane-3d").hidden = !on3; if (on3 && !$("f3d").getAttribute("src")) $("f3d").src = "3d/?embed&v=20261114k"; if (on3) sync3d();
   $("withseg").hidden = v !== "both";
   syncSave();
   document.querySelectorAll("#withseg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.w === partner));

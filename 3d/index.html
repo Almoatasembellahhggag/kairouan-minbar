@@ -121,7 +121,7 @@
 </div>
 <div id="info"><span id="info-t">Point at a panel</span></div>
 <aside id="cmp" hidden>
-  <div class="cmp-head"><b>Before 1907</b><span>Garrigues no. 271. Click a panel to hold it, then point at places on the model or click one. Scroll to zoom, drag to move.</span><button id="cmp-close">Close</button></div>
+  <div class="cmp-head"><b>Before 1907</b><span>Garrigues no. 271. Click a panel to hold it: the model zooms to its place. Then point at places on the model or click one. Scroll to zoom, drag to move.</span><button id="cmp-close">Close</button></div>
   <div id="old-wrap"><div id="old-stage"><img id="old-img" src="../minbar.jpg" alt="The minbar from its mihrab side before 1907, Garrigues photograph no. 271"><svg id="old-svg" viewBox="0 0 3600 2629" preserveAspectRatio="none"></svg></div></div>
   <div class="cmp-pair">
     <figure><canvas id="c-old" width="560" height="640"></canvas><figcaption id="cap-old">Before 1907</figcaption></figure>
@@ -442,7 +442,7 @@ const MARK = 0x5fd0ff, CHOSEN = 0x7be08a;
 const stateOf = m => m === hot || (hot && m.userData.twin === hot) ? "hot" : cmpOn && chosen && m.userData.place === chosen ? "chosen" : (cmpOn || EMBED) && markId && m.userData.place === markId ? "mark" : "";
 function tone(m) {
   const u = m.userData, mat = m.material, st = stateOf(m), flag = st === "chosen" ? CHOSEN : st === "mark" ? MARK : null;
-  if (u.overlay) { mat.opacity = flag ? 0.5 : photoOn || drawingOf(m) || railOf(m) ? (st ? (drawingOf(m) || railOf(m) ? 0.3 : 0.45) : 0) : 1; paintC(mat, flag ?? (st ? HL : u.base)); }
+  if (u.overlay) { mat.opacity = flag ? (st === "mark" ? 0.3 : 0.5) : photoOn || drawingOf(m) || railOf(m) ? (st ? (drawingOf(m) || railOf(m) ? 0.3 : 0.45) : 0) : 1; paintC(mat, flag ?? (st ? HL : u.base)); }
   else if (u.veil) { mat.opacity = st ? 0.3 : 0; paintC(mat, flag ?? u.base); }
   else if (mat.userData.tint) { mat.emissiveIntensity = st ? 0.9 : EM; mat.color.copy(mat.userData.tint).multiplyScalar(st === "hot" ? 1.35 : 1); if (flag) mat.emissive.set(flag).convertSRGBToLinear(); else mat.emissive.copy(mat.userData.tint); }
   else { paintC(mat, flag ?? (st ? HL : u.base)); mat.emissive.copy(st === "hot" ? HL_GLOW : BLACK); }
@@ -692,8 +692,9 @@ wrap.addEventListener("wheel", e => { e.preventDefault(); const r = wrap.getBoun
   ox = mxp - (mxp - ox) * z / oz; oy = myp - (myp - oy) * z / oz; oz = z; applyOld(); }, {passive: false});
 wrap.addEventListener("pointerdown", e => { drag = {x: e.clientX, y: e.clientY, ox, oy, moved: false, n: e.target.closest?.("polygon")?.dataset.n}; });
 addEventListener("pointermove", e => { if (!drag) return; if (Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > 4) drag.moved = true; if (drag.moved) { ox = drag.ox + e.clientX - drag.x; oy = drag.oy + e.clientY - drag.y; applyOld(); } });
-addEventListener("pointerup", () => { if (drag && !drag.moved && drag.n) { sel = sel === +drag.n ? null : +drag.n; cmpRefresh(); } drag = null; });
-addEventListener("keydown", e => { if (e.key !== "Escape") return; if (chosen) { chosen = null; paint(); cmpRefresh(); } else if (sel) { sel = null; cmpRefresh(); } });
+function goHeld() { const id = sel ? nowOf(sel) : null, m = id && pick.find(q => q.userData.place === id); if (m) faceOn(m); else if (!sel && backView) { fly(backView[0], backView[1]); backView = null; } }
+addEventListener("pointerup", () => { if (drag && !drag.moved && drag.n) { sel = sel === +drag.n ? null : +drag.n; cmpRefresh(); goHeld(); } drag = null; });
+addEventListener("keydown", e => { if (e.key !== "Escape") return; if (chosen) { chosen = null; paint(); cmpRefresh(); } else if (sel) { sel = null; cmpRefresh(); goHeld(); } });
 $("e-here").onclick = () => sel && chosen && judge(sel, "here", chosen);
 $("e-same").onclick = () => sel && judge(sel, "same");
 $("e-gone").onclick = () => sel && judge(sel, "gone");
@@ -709,17 +710,18 @@ $("b-cmp").onclick = () => setCmp(!cmpOn);
 $("cmp-close").onclick = () => setCmp(false);
 oldImg.addEventListener("load", cmpRefresh); newImg.addEventListener("load", cmpRefresh);
 relabel();
-window.MODEL = {faceOn, labels, railReady, rails: FACES.map(f => [f.name, f.rail.length]), drawn, hold: n => { sel = n; cmpRefresh(); }, choose: id => { chosen = id; paint(); cmpRefresh(); }, judge, get edits() { return E; }, home: () => view("mihrab"),
+window.MODEL = {faceOn, labels, railReady, rails: FACES.map(f => [f.name, f.rail.length]), drawn, hold: n => { sel = n; cmpRefresh(); goHeld(); }, choose: id => { chosen = id; paint(); cmpRefresh(); }, judge, get edits() { return E; }, home: () => view("mihrab"),
   shot(id) {      // a picture of a place for the panel site's card: the same straightened detail as in the compare panel
     const sh = shotOf(id); if (!sh || sh.creswell) return null;
     const c = document.createElement("canvas"); c.width = 360; c.height = Math.round(360 * sh.shape[1] / sh.shape[0]); detail(c, sh.img, sh.quad, 1, 1, sh.shape);
     try { return c.toDataURL("image/jpeg", 0.85); } catch (e) { return null; } },
-  embed(o) {      // from the panel site: mark the place of its selected panel, and turn to it when it is not on the mihrab side or the site is zoomed on it
+  embed(o) {      // from the panel site: mark the place of its selected panel and zoom to it; when the selection is dropped, go back to the view before
     embedSynced = true; const e = adopt(o.edits); if (e) E = e;
     const nm = o.quiet ? "off" : o.golvin ? "golvin" : "saladin"; if (nm !== embedGolvin) embedGolvin = numMode = nm;      // the numbering follows the panel site when that changes
     $("ui").style.top = (8 + (o.top || 0)) + "px";                                                                              // below the panel site's own bar
     const id = o.n ? nowOf(o.n) : o.slot || null, key = id + "|" + !!o.zoom; markId = id; relabel(); paint();
     if (id && key !== embedKey && id !== clicked && (o.zoom || OFF[id])) { const m = pick.find(q => q.userData.place === id); if (m) faceOn(m); }
+    else if (!id && embedKey && !embedKey.startsWith("null|") && backView) { fly(backView[0], backView[1]); backView = null; }
     embedKey = key; clicked = null;
     idle = o.pick ? `Click the place where no. ${o.pick} is now` : "Point at a panel"; if (!hot) $("info-t").textContent = idle;      // the Edit page is waiting for a place
   }, riserPanels, slots: SLOTS.length, seat: SEAT, rise: RISE, run: RUN, top: TOP};
