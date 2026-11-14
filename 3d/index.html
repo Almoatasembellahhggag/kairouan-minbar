@@ -310,7 +310,7 @@ FACES.forEach(f => f.rail.forEach(s => {
   const rear = f.face !== 4, front = (f.face === 2 ? "b" : "q") + s.pos, place = front + (rear ? "r" : ""), own = f.face === 2 ? null : place, where = `Stair rail, ${f.name}: position ${s.pos} of ${f.rail.length} from the top${s.pos === f.rail.length ? ", double width" : ""}`;
   m.position.z = f.z; m.receiveShadow = true; m.userData = {base: f.color, face: f.face, place, slot: s, of: f.rail.length, side: f.name, own, plain, photo: railMat(f.face), normal: new THREE.Vector3(0, 0, f.ry ? -1 : 1), reach: f.face === 4 ? 0 : 2 * ZI - 0.08};
   Object.defineProperty(m.userData, "info", {get: () => own ? `${where}. Numbered ${own} here; Saladin and Golvin did not number this rail. ${f.note}`
-    : `${where}. Behind ${salText(front) === "N" ? "the new panel" : "Saladin no. " + salText(front)}, so named ${salText(front)}r, Golvin ${GOLVIN[front]}r; it is a panel of its own. ${f.note}`});
+    : `${where}. A panel of its own: it shares only its position with ${salText(front) === "N" ? "the new panel" : "Saladin no. " + salText(front)} on the outside, and is named ${salText(front)}r after it (Golvin ${GOLVIN[front]}r). ${f.note}`});
   scene.add(m); pick.push(m); railFaces.push(m);
   const c = centroid(s.pts), lb = label(own || "r", 0.08, "#fff"); lb.userData.num = rear ? {id: place, front} : {id: place, own};
   lb.position.set(mx(c[0]), my(c[1]), f.lz); lb.rotation.y = f.ry; scene.add(lb);
@@ -679,6 +679,10 @@ $("cmp-close").onclick = () => setCmp(false);
 oldImg.addEventListener("load", cmpRefresh); newImg.addEventListener("load", cmpRefresh);
 relabel();
 window.MODEL = {faceOn, labels, railReady, rails: FACES.map(f => [f.name, f.rail.length]), drawn, hold: n => { sel = n; cmpRefresh(); }, choose: id => { chosen = id; paint(); cmpRefresh(); }, judge, get edits() { return E; }, home: () => view("mihrab"),
+  shot(id) {      // a picture of a place for the panel site's card: the same straightened detail as in the compare panel
+    const sh = shotOf(id); if (!sh || sh.creswell) return null;
+    const c = document.createElement("canvas"); c.width = 360; c.height = Math.round(360 * sh.shape[1] / sh.shape[0]); detail(c, sh.img, sh.quad, 1, 1, sh.shape);
+    try { return c.toDataURL("image/jpeg", 0.85); } catch (e) { return null; } },
   embed(o) {      // from the panel site: mark the place of its selected panel, and turn to it when it is not on the mihrab side or the site is zoomed on it
     embedSynced = true; const e = adopt(o.edits); if (e) E = e;
     const nm = o.quiet ? "off" : o.golvin ? "golvin" : "saladin"; if (nm !== embedGolvin) embedGolvin = numMode = nm;      // the numbering follows the panel site when that changes

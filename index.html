@@ -485,7 +485,7 @@ const clean = raw => {
     if (Object.keys(q).length) out.panels[+n] = q;
   });
   Object.entries(raw.slots || {}).forEach(([id, s]) => {
-    if (SLOT[id] && s && (s.isNew === "yes" || s.isNew === "no")) out.slots[id] = {isNew: s.isNew};
+    if ((SLOT[id] || OFF[id]) && s && (s.isNew === "yes" || s.isNew === "no")) out.slots[id] = {isNew: s.isNew};
   });
   if (raw.geo && typeof raw.geo === "object") {
     out.geo.panels = [...new Set((raw.geo.panels || []).map(Number).filter(isN))].sort((a, b) => a - b);
@@ -494,7 +494,7 @@ const clean = raw => {
   Object.entries(raw.photos || {}).forEach(([id, p]) => {
     if (!/^[a-z0-9]{1,8}$/.test(id) || !p || !Array.isArray(p.panels)) return;
     out.photos[id] = {panels: [...new Set(p.panels.map(Number).filter(isN))].sort((a, b) => a - b), whole: p.whole === true};
-    const news = (Array.isArray(p.news) ? p.news : []).filter(s => SLOT[s]);
+    const news = (Array.isArray(p.news) ? p.news : []).filter(s => SLOT[s] || OFF[s]);
     if (news.length) out.photos[id].news = [...new Set(news)];
   });
   return out;
@@ -716,11 +716,20 @@ function sync3d() {
 }
 $("f3d").addEventListener("load", sync3d);
 window.from3d = id => {
-  if (photoMode || geoMode) return;
-  if (picking && current) { assign(current, id); stopPick(); changed(); return; }
+  if (geoMode || !(SLOT[id] || OFF[id])) return;
   const ns = numbersAt(id);
-  if (ns.length) select(ns[0], false); else if (SLOT[id]) showSlot(id);
+  if (photoMode) { if (curPhoto) { if (ns.length) togglePanel(ns[0]); else toggleNew(id); } return; }
+  if (picking && current) { assign(current, id); stopPick(); changed(); return; }
+  if (ns.length) select(ns[0], false); else showSlot(id);
 };
+// a panel of after 1907 that Creswell's photograph does not show. The inside of a rail shares only its position with the panel on the outside:
+// it is named after that one, with r, and is a different panel.
+const offLabel = id => { const m = /^([bq]\d+)r$/.exec(id);
+  if (!m) return id[0] === "q" ? id : id[0] === "r" ? id.slice(1) : id === "k" ? "back" : id === "o" ? "side" : "seat";
+  const ns = numbersAt(m[1]); return (ns.length ? ns.join("/") : SLOT[m[1]] ? (newOf(m[1]) === "yes" ? "N" : "?") : m[1]) + "r"; };
+const offNote = id => { const m = /^([bq]\d+)r$/.exec(id);
+  return m ? `On the inside of the rail, at the position of ${offLabel(id).slice(0, -1)} on its outside: the two share a position and are different panels.` : "Not in Creswell's photograph."; };
+const shot3d = id => { try { return $("f3d").contentWindow?.MODEL?.shot?.(id) || null; } catch (e) { return null; } };      // its photograph, where the 3D model has one
 function clickSlot(id) {
   if (picking) { assign(current, id); stopPick(); changed(); return; }
   const ns = numbersAt(id);
@@ -741,7 +750,7 @@ function applyFilter() {
   VW.forEach(v => $("stage-" + v).classList.toggle("filtering", shown ? shown.length + shownNew.length > 0 : !!filter));
   const found = shown ?? (filter ? NUMS.filter(n => flags(n)[filter]) : []);
   document.querySelector("#stage-before .holes").innerHTML = found.map(n => `<polygon points="${pts(POLY.before[outlineOf(n)])}"/>`).join("");
-  const afterIds = geoView ? geoSlots() : !shown && filter === "newp" ? Object.keys(SLOT).filter(id => newOf(id) === "yes") : [...found.map(n => slotOf(n)).filter(id => SLOT[id]), ...shownNew];
+  const afterIds = geoView ? geoSlots() : !shown && filter === "newp" ? Object.keys(SLOT).filter(id => newOf(id) === "yes") : [...found.map(n => slotOf(n)), ...shownNew].filter(id => SLOT[id]);      // only Creswell positions have an outline on his photograph
   document.querySelector("#stage-saladin .holes").innerHTML = found.map(n => `<polygon points="${pts(POLY.saladin[n])}"/>`).join("");
   document.querySelector("#stage-after .holes").innerHTML = afterIds.map(id => `<polygon points="${pts(SLOT[id])}"/>`).join("");
   found.forEach(n => marks.before[n]?.classList.add("hit"));
@@ -866,14 +875,15 @@ function renderCard() {
 function showSlot(id) {
   current = null; currentSlot = id;
   renderMarks();
-  const isNew = newOf(id), ns = numbersAt(id);
+  const isNew = newOf(id), ns = numbersAt(id), off = !!OFF[id], shot = off ? shot3d(id) : null;
   card.hidden = false; card.scrollTop = 0;
   card.innerHTML = `<button class="close" id="close">Close</button>
-    <div class="head">${idBlock(isNew === "yes" ? "N" : "?", isNew === "yes" ? "New" : "Saladin", id)}<div><span class="kind">${isNew === "yes" ? "New panel" : "No panel assigned"}</span><span class="sub">${slotName(id)}, after 1907</span>${golvinLine(id)}</div></div>
+    <div class="head">${off ? idBlock(offLabel(id), isNew === "yes" ? "New" : "After 1907", id) : idBlock(isNew === "yes" ? "N" : "?", isNew === "yes" ? "New" : "Saladin", id)}<div><span class="kind">${isNew === "yes" ? "New panel" : off ? "Panel of after 1907" : "No panel assigned"}</span><span class="sub">${slotName(id)}, after 1907</span>${off ? `<span class="sub">${offNote(id)}</span>` : golvinLine(id)}</div></div>
     ${editing ? `<form class="edit" id="edit">
-      <div class="field"><span class="lab">Is this Creswell panel new?</span>${seg("isNew", isNew, YESNO)}</div>
+      <div class="field"><span class="lab">${off ? "Is this panel new, made in 1907–10?" : "Is this Creswell panel new?"}</span>${seg("isNew", isNew, YESNO)}</div>
       <div class="field"><label for="e-as">If not, its Saladin number</label><div class="row"><input id="e-as" type="number" min="1" max="79"><button type="button" id="e-asgo">Assign</button></div></div>
     </form>` : ""}
+    ${shot ? `<div class="figs"><figure class="fig"><img src="${shot}" alt="${slotName(id)}"><figcaption>${slotName(id)}: from the photographs of the new rails laid flat in 1907–10, straightened, as on the 3D model</figcaption></figure></div>` : ""}
     ${photosOfSlot(id).length ? `<div class="figs">${photosOfSlot(id).map(p => `<figure class="fig"><img src="${p.file}" alt="${p.title}" loading="lazy"><figcaption>${p.group}: ${p.title}</figcaption></figure>`).join("")}</div>` : ""}
     ${(id === "b10" || id === "b16") ? `<div class="note"><span class="src">${S.CRE}</span><p>The balustrade <q>now consists of sixteen only, of which Nos. 10 and 16 are new, the latter being twice the width of the rest</q>; p. 317.</p></div>` : ""}
     ${id === "b16" ? `<div class="note"><span class="src">${S.PD}</span><p>The two original panels nos. 68 and 69 of the left face were replaced by a single one; p. 223.</p></div>` : ""}
@@ -919,7 +929,7 @@ function setView(v) {
   const show = w => v === w || (v === "both" && (w === "before" || w === partner));
   VW.forEach(w => { $("pane-" + w).hidden = !show(w); });
   const on3 = v === "both" && partner === "3d";      // the 3D model is loaded the first time it is asked for
-  $("pane-3d").hidden = !on3; if (on3 && !$("f3d").getAttribute("src")) $("f3d").src = "3d/?embed"; if (on3) sync3d();
+  $("pane-3d").hidden = !on3; if (on3 && !$("f3d").getAttribute("src")) $("f3d").src = "3d/?embed&v=20261114h"; if (on3) sync3d();
   $("withseg").hidden = v !== "both";
   syncSave();
   document.querySelectorAll("#withseg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.w === partner));
@@ -1129,7 +1139,7 @@ function parsePanels(t) {
 function renderPhotoCard() {
   const p = PHOTO[curPhoto], a = assignedOf(curPhoto), w = wholeOf(curPhoto), top = card.scrollTop;
   const groups = [...new Set(PHOTOS.map(q => q.group))];
-  const nw = newsOf(curPhoto), free = SLOT_ORDER.filter(id => !numbersAt(id).length && !nw.includes(id));
+  const nw = newsOf(curPhoto), free = SLOT_ORDER.concat(Object.keys(OFF)).filter(id => !numbersAt(id).length && !nw.includes(id));
   card.innerHTML = `<figure class="fig"><img src="${p.file}" alt="${p.title}"><figcaption>${p.group}: ${p.title}. Click the photo to enlarge it.</figcaption></figure>
     <div class="edit">
       <div class="field"><span class="lab">Panels in this photo: click numbers on the images to add or remove</span>
