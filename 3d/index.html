@@ -50,6 +50,8 @@
   #old-svg polygon.at { stroke: #5fd0ff; stroke-width: 9; fill: rgba(95,208,255,.25); } #old-svg polygon.sel { stroke: #e0b070; stroke-width: 10; fill: rgba(224,176,112,.35); }
   .cmp-on #ui table, .cmp-on #ui details, .cmp-on #ui .sub { display: none; }
   .cmp-on #ui { width: auto; max-width: calc(52vw - 24px); }
+  .embed #ui h1, .embed #ui .sub, .embed #ui table, .embed #ui details, .embed #b-cmp { display: none; }
+  .embed #ui { width: auto; max-width: calc(100vw - 16px); left: 8px; top: 8px; padding: 6px 8px; } .embed #info { bottom: 44px; } .embed #ui .row { margin: 0 0 4px; } .embed #ui .row:last-of-type { margin: 0; }
   @media (max-width: 760px) { #cmp { width: 100vw; top: 46vh; border-left: 0; border-top: 1px solid var(--line); } }
 </style>
 </head>
@@ -415,7 +417,7 @@ const railOf = m => railOn && railReady[1] && m.userData.rail;
 // a part that can be pointed at is shown in one of four ways: pointed at; the place chosen by a click (while comparing);
 // the place where the held panel is recorded; or plain
 const MARK = 0x5fd0ff, CHOSEN = 0x7be08a;
-const stateOf = m => m === hot || (hot && m.userData.twin === hot) ? "hot" : cmpOn && chosen && m.userData.place === chosen ? "chosen" : cmpOn && markId && m.userData.place === markId ? "mark" : "";
+const stateOf = m => m === hot || (hot && m.userData.twin === hot) ? "hot" : cmpOn && chosen && m.userData.place === chosen ? "chosen" : (cmpOn || EMBED) && markId && m.userData.place === markId ? "mark" : "";
 function tone(m) {
   const u = m.userData, mat = m.material, st = stateOf(m), flag = st === "chosen" ? CHOSEN : st === "mark" ? MARK : null;
   if (u.overlay) { mat.opacity = flag ? 0.5 : photoOn || drawingOf(m) || railOf(m) ? (st ? (drawingOf(m) || railOf(m) ? 0.3 : 0.45) : 0) : 1; paintC(mat, flag ?? (st ? HL : u.base)); }
@@ -441,6 +443,11 @@ $("b-gol").onclick = () => setNum("golvin");
 $("b-draw").onclick = () => { drawOn = !drawOn; paint(); };
 $("b-rail").onclick = () => { railOn = !railOn; paint(); };
 $("n-draw").textContent = DRAW.length + " panels";
+// ?embed: the page sits in a frame of the panel site's compare view. That page sends its edits, its selection and its numbering
+// (MODEL.embed) and is told which place was clicked here (its from3d).
+const EMBED = new URLSearchParams(location.search).has("embed");
+let embedSynced = false, embedKey = "", embedGolvin = null, clicked = null;
+if (EMBED) document.body.classList.add("embed");
 const VIEWS = {
   mihrab: [[L / 2 - 0.85, 1.75, 6.6], [L / 2 - 0.85, 1.6, 0]],
   front: [[L + 4.6, 2.9, 1.5], [L - 1.5, 1.2, 0]],
@@ -448,7 +455,10 @@ const VIEWS = {
   maqsura: [[L / 2 + 0.85, 1.75, -6.6], [L / 2 + 0.85, 1.6, 0]],
   compare: [[L / 2, 2.25, 8.4], [L / 2, 2.25, 0]],
 };
-function view(k) { flight = backView = null; camera.position.set(...VIEWS[k][0]); controls.target.set(...VIEWS[k][1]); controls.update(); }
+function view(k) { flight = backView = null; let [p, t] = VIEWS[k];
+  if (EMBED && (k === "mihrab" || k === "maqsura")) {      // in a frame the pane is often narrow: stand back far enough to see the whole length
+    const d = Math.min(15.5, Math.max(6.6, (L / 2 + 0.3) / (Math.tan(camera.fov * Math.PI / 360) * camera.aspect))); p = [L / 2, 1.9, k === "mihrab" ? d : -d]; t = [L / 2, 1.9, 0]; }
+  camera.position.set(...p); controls.target.set(...t); controls.update(); }
 // ---- double-click a panel: the camera moves in front of it and looks at it square on
 let flight = null, backView = null;
 function fly(pos, tgt, ms = 550) { flight = {p0: camera.position.clone(), t0: controls.target.clone(), p1: pos, t1: tgt, start: performance.now(), ms}; }
@@ -475,7 +485,7 @@ if (new URLSearchParams(location.search).has("golvin")) numMode = "golvin";
 if (new URLSearchParams(location.search).has("plain")) photoOn = false;
 if (new URLSearchParams(location.search).has("nodraw")) drawOn = false;
 if (new URLSearchParams(location.search).has("norail")) railOn = false;
-
+if (EMBED) numMode = "saladin";
 const ray = new THREE.Raycaster(), mouse = new THREE.Vector2();
 function point(e) {
   const r = renderer.domElement.getBoundingClientRect();
@@ -499,6 +509,7 @@ renderer.domElement.addEventListener("pointerup", e => {   // a click, not a dra
   if (dbl) {                                                         // the second click of a double-click (or double tap)
     if (hot) faceOn(hot); else if (backView) { fly(backView[0], backView[1]); backView = null; }
   }
+  if (EMBED && !dbl && hot && hot.userData.place) { clicked = hot.userData.place; try { parent.from3d && parent.from3d(clicked); } catch (e) {} }
   if (cmpOn && !dbl) {                                               // while comparing, a click chooses a place; a click beside the minbar lets it go
     const pl = hot ? hot.userData.place : null;
     if (pl || chosen) { chosen = pl || null; chosenFace = hot ? hot.userData.face || 0 : 0; paint(); cmpRefresh(); }
@@ -660,10 +671,19 @@ $("b-cmp").onclick = () => setCmp(!cmpOn);
 $("cmp-close").onclick = () => setCmp(false);
 oldImg.addEventListener("load", cmpRefresh); newImg.addEventListener("load", cmpRefresh);
 relabel();
-window.MODEL = {faceOn, labels, railReady, rails: FACES.map(f => [f.name, f.rail.length]), drawn, hold: n => { sel = n; cmpRefresh(); }, choose: (id, face = 0) => { chosen = id; chosenFace = face; paint(); cmpRefresh(); }, judge, get edits() { return E; }, riserPanels, slots: SLOTS.length, seat: SEAT, rise: RISE, run: RUN, top: TOP};
+window.MODEL = {faceOn, labels, railReady, rails: FACES.map(f => [f.name, f.rail.length]), drawn, hold: n => { sel = n; cmpRefresh(); }, choose: (id, face = 0) => { chosen = id; chosenFace = face; paint(); cmpRefresh(); }, judge, get edits() { return E; }, home: () => view("mihrab"),
+  embed(o) {      // from the panel site: mark the place of its selected panel, and turn to it when it is not on the mihrab side or the site is zoomed on it
+    embedSynced = true; const e = adopt(o.edits); if (e) E = e;
+    const nm = o.quiet ? "off" : o.golvin ? "golvin" : "saladin"; if (nm !== embedGolvin) embedGolvin = numMode = nm;      // the numbering follows the panel site when that changes
+    $("ui").style.top = (8 + (o.top || 0)) + "px";                                                                              // below the panel site's own bar
+    const id = o.n ? nowOf(o.n) : o.slot || null, key = id + "|" + !!o.zoom; markId = id; relabel(); paint();
+    if (id && key !== embedKey && id !== clicked && (o.zoom || OFF[id])) { const m = pick.find(q => q.userData.place === id); if (m) faceOn(m); }
+    embedKey = key; clicked = null;
+  }, riserPanels, slots: SLOTS.length, seat: SEAT, rise: RISE, run: RUN, top: TOP};
 (async () => {   // the edits saved on the panel site: this browser's own first, then the file in the repository
   try { const o = adopt(JSON.parse(localStorage.getItem(LS))); if (o) { E = o; editsFrom = "browser"; } } catch (e) {}
-  if (editsFrom === "none") try { const o = adopt(await (await fetch("../edits.json", {cache: "no-store"})).json()); if (o) { E = o; editsFrom = "file"; } } catch (e) {}
+  if (editsFrom === "none") try { const o = adopt(await (await fetch("../edits.json", {cache: "no-store"})).json()); if (o && !embedSynced) { E = o; editsFrom = "file"; } } catch (e) {}
+  if (embedSynced) return;      // in a frame the panel site's own edits have arrived meanwhile
   window.MODEL.editsFrom = editsFrom; drawOld(); relabel(); paint(); cmpRefresh();
   if (new URLSearchParams(location.search).has("compare")) setCmp(true);
 })();
