@@ -452,7 +452,9 @@ const defSlot = k => !isBal(k) ? "f" + k : (BAL[k - 52] ? "b" + BAL[k - 52] : nu
 // places on the minbar that Creswell's photograph does not show: the stair rail on the maqsūra side, the risers, the front of the seat,
 // the backrest and the maqsūra-side face. A panel can be recorded as moved to one of them; the 3D model uses the same ids.
 const OFF = {};
-for (let j = 1; j <= 18; j++) OFF["q" + j] = `Stair rail on the maqsūra side, position ${j} from the top`;
+for (let j = 1; j <= 16; j++) OFF["b" + j + "r"] = `Stair rail on the mihrab side, inside, position ${j} from the top`;      // the inside of a rail holds other panels than its outside
+for (let j = 1; j <= 18; j++) OFF["q" + j] = `Stair rail on the maqsūra side, outside, position ${j} from the top`;
+for (let j = 1; j <= 18; j++) OFF["q" + j + "r"] = `Stair rail on the maqsūra side, inside, position ${j} from the top`;
 for (let j = 1; j <= 11; j++) for (let k = 1; k <= (j % 2 ? 3 : 4); k++) OFF[`r${j}.${k}`] = `Stair riser ${j} from the bottom, panel ${k} from the mihrab side`;
 Object.assign(OFF, {s1: "Front of the seat, mihrab-side panel", s2: "Front of the seat, maqsūra-side panel", k: "Backrest", o: "Maqsūra-side face"});
 const slotName = id => {
