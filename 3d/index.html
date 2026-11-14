@@ -12,7 +12,7 @@
   #ui { position: absolute; left: 12px; top: 12px; width: min(360px, calc(100vw - 24px)); max-height: calc(100vh - 24px); overflow: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
   h1 { font-size: 1.15rem; font-weight: normal; margin: 0 0 2px; }
   .sub { color: var(--dim); font-size: .85rem; margin: 0 0 10px; }
-  table { border-collapse: collapse; width: 100%; font-size: .9rem; margin: 0 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: .9rem; margin: 6px 0 0; color: var(--fg); }
   td { padding: 3px 0; vertical-align: top; border-top: 1px solid var(--line); }
   td:last-child { text-align: right; white-space: nowrap; padding-left: 8px; color: var(--accent); }
   td small { color: var(--dim); display: block; }
@@ -22,7 +22,14 @@
   #info { position: absolute; left: 12px; right: 12px; bottom: 12px; text-align: center; pointer-events: none; }
   #info span { display: inline-block; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 5px 12px; max-width: 100%; }
   #err { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; padding: 24px; text-align: center; }
-  details { margin-top: 8px; font-size: .85rem; color: var(--dim); }
+  details.more { margin-top: 8px; font-size: .85rem; color: var(--dim); }
+  /* the controls: three menus that open a short list of buttons, so the bar stays one row */
+  .menu > summary { list-style: none; font-size: .85rem; background: #2a231c; border: 1px solid var(--line); border-radius: 6px; padding: 4px 9px; user-select: none; white-space: nowrap; }
+  .menu > summary::-webkit-details-marker { display: none; }
+  .menu > summary::after { content: " ▾"; color: var(--dim); }
+  .menu[open] > summary { border-color: var(--accent); }
+  .pop { position: fixed; z-index: 6; display: flex; flex-direction: column; gap: 4px; padding: 6px; background: #1c1712; border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 8px 24px rgba(0, 0, 0, .55); }
+  .pop button { text-align: left; white-space: nowrap; }
   summary { cursor: pointer; color: var(--fg); }
   @media (max-width: 640px) { #ui { font-size: 13px; max-height: 46vh; } }
   #cmp { position: absolute; right: 0; top: 0; bottom: 0; width: min(48vw, 680px); background: #1a1511; border-left: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; }
@@ -48,10 +55,10 @@
   #e-note { margin: 4px 0 0; font-size: .8rem; color: var(--dim); min-height: 1.3em; }
   #old-svg polygon.j-yes { stroke: rgba(140,220,150,.75); } #old-svg polygon.j-moved { stroke: rgba(255,190,90,.95); stroke-width: 5; } #old-svg polygon.j-no { stroke: rgba(255,120,110,.8); }
   #old-svg polygon.at { stroke: #5fd0ff; stroke-width: 9; fill: rgba(95,208,255,.25); } #old-svg polygon.sel { stroke: #e0b070; stroke-width: 10; fill: rgba(224,176,112,.35); }
-  .cmp-on #ui table, .cmp-on #ui details, .cmp-on #ui .sub { display: none; }
+  .cmp-on #ui details.more, .cmp-on #ui .sub { display: none; }
   .cmp-on #ui { width: auto; max-width: calc(52vw - 24px); }
-  .embed #ui h1, .embed #ui .sub, .embed #ui table, .embed #ui details, .embed #b-cmp { display: none; }
-  .embed #ui { width: auto; max-width: calc(100vw - 16px); left: 8px; top: 8px; padding: 6px 8px; } .embed #info { bottom: 44px; } .embed #ui .row { margin: 0 0 4px; } .embed #ui .row:last-of-type { margin: 0; }
+  .embed #ui h1, .embed #ui .sub, .embed #ui details.more, .embed #b-cmp, .embed #m-num { display: none; }      /* in a frame the numbering is set by the page around it */
+  .embed #ui { width: auto; max-width: calc(100vw - 16px); left: 8px; top: 8px; padding: 6px 8px; } .embed #info { bottom: 44px; } .embed #ui .row { margin: 0; }
   @media (max-width: 760px) { #cmp { width: 100vw; top: 46vh; border-left: 0; border-top: 1px solid var(--line); } }
 </style>
 </head>
@@ -59,40 +66,52 @@
 <div id="ui">
   <p class="sub" style="margin:0 0 4px"><a href="../" style="color:inherit">← Panel site</a></p>
   <h1>Minbar of the Great Mosque of Kairouan</h1>
-  <p class="sub">Schematic 3D model, state after the restoration of 1907–10. Drag to turn, scroll to zoom, right-drag to move. Double-click a panel to face it square on; double-click beside the minbar to go back.</p>
-  <table>
-    <tr><td>Mihrab side, panels<small>13 columns: 8, 8, 6, 5, 5, 4, 4, 3, 3, 2, 2, 1, 1</small></td><td>52</td></tr>
-    <tr><td>Mihrab side, triangles under the stair string</td><td>10</td></tr>
-    <tr><td>Stair rail, mihrab side, each face<small>15 single and one of double width at the foot; Creswell's count on the rail in place, and counted on both faces in the restoration photographs; 17 before 1907</small></td><td>16</td></tr>
-    <tr><td>Stair rail, maqsūra side, each face<small>17 single and one of double width at the foot; counted on both faces in the restoration photographs</small></td><td>18</td></tr>
-    <tr><td>Stair risers<small>11 risers: six of 3 panels, five of 4</small></td><td>38</td></tr>
-    <tr><td>Front of the seat<small>two panels with a lozenge</small></td><td>2</td></tr>
-    <tr><td>Maqsūra side<small>no photograph of it in place on this site</small></td><td>not modelled</td></tr>
-    <tr><td>Reconstruction drawings in place<small>click a panel with two versions to switch</small></td><td id="n-draw"></td></tr>
-  </table>
-  <div class="row">
-    <button id="b-photo" aria-pressed="true">Photograph</button>
-    <button id="b-draw" aria-pressed="true">Drawings</button>
-    <button id="b-rail" aria-pressed="true" title="The photographs of the new rails of 1907–10 on the three rail faces Creswell's photograph does not show">Rail photos</button>
-    <button id="b-rail1" aria-pressed="false" title="The photographs of the new rails of 1907–10 on the outside of the mihrab-side rail, in place of Creswell's photograph">Rail photos, mihrab face</button>
-    <button id="b-num" aria-pressed="false">Saladin's numbers</button>
-    <button id="b-gol" aria-pressed="false">Golvin's numbers</button>
-    <button id="b-cmp" aria-pressed="false">Compare with the old photo</button>
+  <p class="sub">Schematic 3D model, after the restoration of 1907–10.</p>
+  <div class="row" id="bar">
+    <details class="menu" id="m-show"><summary>Show</summary><div class="pop">
+      <button id="b-photo" aria-pressed="true">Photograph</button>
+      <button id="b-draw" aria-pressed="true">Drawings</button>
+      <button id="b-rail" aria-pressed="true" title="The photographs of the new rails of 1907–10 on the three rail faces Creswell's photograph does not show">Rail photos</button>
+      <button id="b-rail1" aria-pressed="false" title="The photographs of the new rails of 1907–10 on the outside of the mihrab-side rail, in place of Creswell's photograph">Rail photos, mihrab face</button>
+    </div></details>
+    <details class="menu" id="m-num"><summary>Numbers</summary><div class="pop">
+      <button id="b-num" aria-pressed="false">Saladin's numbers</button>
+      <button id="b-gol" aria-pressed="false">Golvin's numbers</button>
+    </div></details>
+    <details class="menu" id="m-view"><summary>View</summary><div class="pop">
+      <button data-view="mihrab">Mihrab side</button>
+      <button data-view="front">Stairs</button>
+      <button data-view="inside">Mihrab rail, inside</button>
+      <button data-view="inside2">Maqsūra rail, inside</button>
+      <button data-view="maqsura">Maqsūra side</button>
+    </div></details>
+    <button id="b-cmp" aria-pressed="false" title="Set Garrigues's photograph of before 1907 beside the model">Compare</button>
   </div>
-  <p class="sub" style="margin:6px 0 0">Numbers are those of the panel site: Saladin's, placed by the saved edits (N is a new panel, ? a place with no panel assigned), or Golvin's. They run over the side and the outside of the mihrab-side rail. The inside of that rail holds other panels: each is named after the one in front of it, with r. The maqsūra-side rail, which neither of them numbered, is q1 to q18 from the top, with r on its inside. Stairs: riser.panel. A panel recorded at one of these places shows its Saladin number there.</p>
-  <div class="row">
-    <button data-view="mihrab">Mihrab side</button>
-    <button data-view="front">Stairs</button>
-    <button data-view="inside">Mihrab rail, inside</button>
-    <button data-view="inside2">Maqsūra rail, inside</button>
-    <button data-view="maqsura">Maqsūra side</button>
-  </div>
-  <details>
+  <details class="more">
+    <summary>How to use</summary>
+    <p>Drag to turn, scroll to zoom, right-drag to move. Double-click a panel to face it square on; double-click beside the minbar to go back.</p>
+    <p>Show turns the photograph, the drawings and the rail photographs on the model on or off. View turns the model to one of its faces. Compare sets the photograph of before 1907 beside the model.</p>
+    <p>Numbers are those of the panel site: Saladin's, placed by the saved edits (N is a new panel, ? a place with no panel assigned), or Golvin's. They run over the side and the outside of the mihrab-side rail. The inside of that rail holds other panels: each is named after the one in front of it, with r. The maqsūra-side rail, which neither of them numbered, is q1 to q18 from the top, with r on its inside. Stairs: riser.panel. A panel recorded at one of these places shows its Saladin number there.</p>
+  </details>
+  <details class="more">
+    <summary>Panel counts</summary>
+    <table>
+      <tr><td>Mihrab side, panels<small>13 columns: 8, 8, 6, 5, 5, 4, 4, 3, 3, 2, 2, 1, 1</small></td><td>52</td></tr>
+      <tr><td>Mihrab side, triangles under the stair string</td><td>10</td></tr>
+      <tr><td>Stair rail, mihrab side, each face<small>15 single and one of double width at the foot; Creswell's count on the rail in place, and counted on both faces in the restoration photographs; 17 before 1907</small></td><td>16</td></tr>
+      <tr><td>Stair rail, maqsūra side, each face<small>17 single and one of double width at the foot; counted on both faces in the restoration photographs</small></td><td>18</td></tr>
+      <tr><td>Stair risers<small>11 risers: six of 3 panels, five of 4</small></td><td>38</td></tr>
+      <tr><td>Front of the seat<small>two panels with a lozenge</small></td><td>2</td></tr>
+      <tr><td>Maqsūra side<small>no photograph of it in place on this site</small></td><td>not modelled</td></tr>
+      <tr><td>Reconstruction drawings in place<small>click a panel with two versions to switch</small></td><td id="n-draw"></td></tr>
+    </table>
+  </details>
+  <details class="more">
     <summary>What this is built from</summary>
     <p>The mihrab-side face is Creswell's photograph (1940, Pl. 89a) laid flat and scaled to his length of 3.93 m; that gives a height of 3.35 m against his 3.31 m. Panel outlines are the ones traced on that photograph for the panel site, and the numbers are Saladin's (1899, fig. 52).</p>
     <p>The stair has eleven steps, one over each of columns 3 to 13; their rise follows the slope of the stair string. Riser panels are counted from the fonds Poinssot photographs taken after 1910 (scans 013, 015, 018).</p>
     <p>The reconstruction drawings are the ones on the panel site, drawn from photographs and not measured. Each is fitted to the traced outline of its panel, so its proportions follow the panel on Creswell's photograph and can differ a little from the drawing itself. The drawing of panel 50 stands where that panel was before 1907. The drawing of rail panel 66 is left out: that panel is not on the rail after 1907.</p>
-    <p>Compare with the old photo puts Garrigues's photograph of before 1907 beside the model. Each pair of details is straightened to the same shape, so a panel can be checked against any place on the model. The stair rails count as places too, on all four faces: with Rail photos on, a rail panel is shown from the photographs of the new rails laid flat in 1907–10; the outside of the mihrab-side rail is shown from Creswell's photograph unless Rail photos, mihrab face is on. Where a panel is now is read from the edits saved on the panel site, in this browser if there are any. On the old photograph the outline of a panel is green where it is recorded in the same place, orange where it is recorded as moved and red where it is recorded as gone.</p>
+    <p>Compare puts Garrigues's photograph of before 1907 beside the model. Each pair of details is straightened to the same shape, so a panel can be checked against any place on the model. The stair rails count as places too, on all four faces: with Rail photos on, a rail panel is shown from the photographs of the new rails laid flat in 1907–10; the outside of the mihrab-side rail is shown from Creswell's photograph unless Rail photos, mihrab face is on. Where a panel is now is read from the edits saved on the panel site, in this browser if there are any. On the old photograph the outline of a panel is green where it is recorded in the same place, orange where it is recorded as moved and red where it is recorded as gone.</p>
     <p>The place of a panel can be changed here: hold the panel, click its place on the model (it turns green) and press Now at the place clicked. A place is any panel of the side, of the two stair rails (the outside and the inside of a rail are separate places, with different panels), of the risers or of the seat front, the backrest, or the maqsūra-side face as a whole, so a panel that left the mihrab side can be followed. The change is saved in this browser, where the panel site's Edit page reads it too; Save file writes edits.json for the site's folder.</p>
     <p>The model is lit and casts shadows, and the photographs take that light. They are black and white: each is tinted to the same wood colour so that they sit together, and its light and dark areas also give the carving a slight relief. Photograph, off, shows the plain model.</p>
     <p>Estimated, not measured: the width (1.0 m), the height of the seat, the thickness of the sides and of the treads, and how far the panels sit back in their frames (8 mm). The posts at the foot of the rails and the spindles on top of the sides are measured on Creswell's photograph. The backrest of 1909–10, its columns and its urns follow the photographs taken after 1910 (fonds Poinssot, prints 012, 016 and 018) in outline only; their carving, and that of the risers and of the front of the seat, is not drawn. The maqsūra-side face is left blank.</p>
@@ -436,6 +455,7 @@ function paint() {
   railFaces.forEach(m => { const ph = railOn && !!railReady[m.userData.face]; m.material = ph ? m.userData.photo : m.userData.plain; });
   pick.forEach(tone);
   $("b-rail").setAttribute("aria-pressed", railOn); $("b-rail1").setAttribute("aria-pressed", rail1On);
+  $("m-num").firstElementChild.textContent = numMode === "off" ? "Numbers" : numMode === "golvin" ? "Numbers: Golvin" : "Numbers: Saladin";
   $("b-draw").setAttribute("aria-pressed", drawOn);
   labels.forEach(l => l.visible = numMode !== "off");
   $("b-photo").setAttribute("aria-pressed", photoOn); $("b-num").setAttribute("aria-pressed", numMode === "saladin"); $("b-gol").setAttribute("aria-pressed", numMode === "golvin");
@@ -484,7 +504,14 @@ function stepFlight() {
   const k = Math.min(1, (performance.now() - flight.start) / flight.ms), e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
   camera.position.lerpVectors(flight.p0, flight.p1, e); controls.target.lerpVectors(flight.t0, flight.t1, e); if (k === 1) flight = null;
 }
-document.querySelectorAll("[data-view]").forEach(b => b.onclick = () => view(b.dataset.view));
+document.querySelectorAll("[data-view]").forEach(b => b.onclick = () => { view(b.dataset.view); b.closest("details").open = false; });
+// the menus: one open at a time, its list set under its button (and kept inside the window); a click elsewhere or Escape closes it
+const menus = [...document.querySelectorAll("details.menu")], shut = () => menus.forEach(d => d.open = false);
+const setPop = d => { const r = d.firstElementChild.getBoundingClientRect(), p = d.lastElementChild; p.style.top = (r.bottom + 4) + "px"; p.style.left = Math.max(4, Math.min(r.left, innerWidth - p.offsetWidth - 4)) + "px"; };
+menus.forEach(d => d.addEventListener("toggle", () => { if (d.open) { menus.forEach(o => { if (o !== d) o.open = false; }); setPop(d); } }));
+addEventListener("pointerdown", e => { if (!e.target.closest || !e.target.closest("details.menu")) shut(); }, true);
+addEventListener("keydown", e => { if (e.key === "Escape") shut(); });
+addEventListener("resize", shut); $("ui").addEventListener("scroll", shut);
 view(new URLSearchParams(location.search).get("view") in VIEWS ? new URLSearchParams(location.search).get("view") : "mihrab");
 if (new URLSearchParams(location.search).has("numbers")) numMode = "saladin";
 if (new URLSearchParams(location.search).has("golvin")) numMode = "golvin";
