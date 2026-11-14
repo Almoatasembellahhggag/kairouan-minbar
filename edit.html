@@ -164,6 +164,7 @@ body { background: var(--stage); color: var(--fg); font-family: var(--serif); fo
 .edit .hint-t { color: var(--muted); font-size: .8rem; }
 .edit .warn { color: #b3261e; font-size: .85rem; }
 .edit .quiet-b { align-self: flex-start; color: var(--muted); }
+.edit .side-l { min-width: 7.5em; }
 .seg.small { align-self: flex-start; font-size: .85rem; }
 .tools .saved { color: var(--muted); }
 .tools > #saveb { background: var(--accent); border-color: var(--accent); color: var(--surface); font-weight: 600; }
@@ -368,13 +369,83 @@ function info(n) {
 // every photograph of the minbar, with the panels its source caption names
 const HIDE_PRIVATE = true;
 const ph = (id, file, group, title, def = [], whole = false, priv = false) => ({id, file, thumb: `th/${id}.jpg`, group, title, def, whole, priv});
-const G_S = "Saladin 1899", G_C = "Creswell 1940", G_V = "Creswell's prints, V&A", G_Q = "Qayrawan folder", G_P = "Picotin and Déléry 2018", G_X = "Social media";
+const G_S = "Saladin 1899", G_C = "Creswell 1940", G_V = "Creswell's prints, V&A", G_Q = "Qayrawan folder", G_P = "Picotin and Déléry 2018", G_X = "Social media", G_I = "INHA, fonds Poinssot, after 1910",
+  G_IB = "INHA, fonds Poinssot, before 1907", G_IR = "INHA, fonds Poinssot, restoration of 1907–10", G_I39 = "INHA, fonds Poinssot, Bernard Poinssot 1939";
+// Fonds Poinssot, Archives 106, 130, 03: one series of 13 × 18 cm prints showing the minbar after the 1907-10 restoration
+// (new backrest, stair posts and triangles). Undated; no panels are named, so each starts unassigned.
+const IP = [
+  ["007", "maqsūra, upper part, with the new stair posts in front"],
+  ["009", "upper part of the minbar, oblique view"],
+  ["010", "balustrade and stair string, close oblique view"],
+  ["011", "face of the minbar, several columns of panels"],
+  ["012", "the new backrest"],
+  ["013", "stair risers seen from the front"],
+  ["014", "panel with two openwork lozenges, at the top of the stair"],
+  ["015", "the stair seen from the front, lower risers"],
+  ["016", "top of the stair and backrest, from the front"],
+  ["017", "top of the stair and backrest, from the front"],
+  ["018", "the stair from the front, with the new posts and backrest"],
+  ["019", "balustrade, oblique view (faint print)"],
+  ["020", "upper part of a face, with the balustrade"],
+  ["021", "face and balustrade, oblique view (faint print)"],
+  ["022", "balustrade and a triangle, seen from below"],
+  ["023", "stair string with balustrade panels, triangles and panels below"],
+  ["024", "two panels: a grille above a vine-scroll panel"],
+  ["025", "two panels with paired leaves"],
+  ["026", "stair string with a key-pattern grille and an arched scroll panel"],
+  ["027", "panel of interlaced knots"],
+  ["028", "geometric lattice panel"],
+  ["029", "arched panel below a leaf panel"],
+  ["030", "key-pattern lattice panel"],
+  ["031", "panel of heart-shaped leaves in rows"],
+  ["032", "panel of interlaced roundels"],
+  ["033", "tree panel with pine-cones"],
+  ["034", "vine-scroll panel with rosettes"],
+  ["035", "key-pattern lattice in a looped frame"],
+  ["036", "star lattice panel in a plaited frame"],
+  ["037", "panel divided into compartments"],
+  ["050", "balustrade panels, close oblique view (faint print)"],
+  ["063", "stair string with two arched panels and triangles"],
+  ["064", "small arched panel between scroll bands"],
+];
+// the same file's earlier and later prints. Scans left out: the backs of prints and cards, and second prints of a photograph already shown.
+const IPB = [
+  ["054", "left face seen obliquely, with the old balustrade at the upper right"],
+  ["055", "the maqsūra between two columns; the photograph of Saladin 1899, Pl. XXIV. The minbar is not in it"],
+  ["056", "the maqsūra, side with the door; the photograph of Saladin 1899, Pl. XXV. The minbar is not in it"],
+  ["001", "postcard LL 33, “Kairouan. Grande Mosquée. La Chaire”"],
+  ["003", "postcard LL 31, “Kairouan. La Grande Mosquée. Le Mihrab et la Chaire”"],
+  ["005", "postcard LL 100, “Kairouan. Le Mihrab et la chaire”"],
+];
+const IPR = [
+  ["083", "the face against the maqsūra, dismantled: three columns of panels, cut out on the print. Printed in Strzygowski 1917 as part of Abb. 168; probably 1907"],
+  ["061", "dismantled panels in their frames (print from a cracked glass plate)"],
+  ["062", "dismantled panels: a grille of squares above an interlace panel, with a 10 cm scale"],
+  ["076", "dismantled panels with vine scrolls and lattices (faded print from a cracked glass plate)"],
+  ["077", "dismantled panels: a hexagonal interlace and a grille of squares, with a 10 cm scale"],
+  ["081", "dismantled panels: key-pattern grilles and an arched panel with a tree"],
+  ...["067", "068", "069", "070", "071", "072"].map(k => [k, "new triangle panels being made: six boards, each cut with two triangles"]),
+  ["074", "new balustrades being made: two rails"],
+  ["075", "new balustrades being made: two rails (faint print)"],
+  ["078", "new balustrades being made: two rails, with an end post"],
+  ["080", "new balustrades being made: two rails, with an end post"],
+  ["082", "new balustrades being made: two rails"],
+];
+const IP39 = [
+  ["038", "geometric grille with a central lozenge, oblique view"],
+  ["040", "lattice of stepped crosses and four-petal flowers, with scroll bands"],
+  ["042", "two geometric grilles side by side"],
+  ["044", "lattice of interlaced circles and crosses"],
+  ["046", "interlace panel with knots (faint print)"],
+  ["048", "lattice of stepped crosses and four-petal flowers, oblique view"],
+];
+const ipPhotos = (list, group) => list.map(([k, t]) => ph("ip" + k, `ph/ip${k}.jpg`, group, `Archives 106, 130, 03, scan ${k}: ${t}`));
 const WM = "Wikimedia Commons, Grande Mosquée de Kairouan, détails du minbar ";
 const ALL_PHOTOS = [
   ph("s52", "saladin.jpg", G_S, "Fig. 52, Saladin's numbered diagram, signed 1896", [], true),
   ph("s21", "ph/s21.jpg", G_S, "Pl. XXI, mihrab, minbar and maqsūra", [], true),
-  ph("s26", "ph/s26.jpg", G_S, "Pl. XXVI, detail of the minbar", PL26),
-  ph("s27", "ph/s27.jpg", G_S, "Pl. XXVII, detail of the minbar", PL27),
+  ph("s26", "ph/s26.jpg", G_S, "Pl. XXVI, detail of the minbar, shown from the original print (INHA, fonds Poinssot, Archives 106, 130, 03, scan 058)", PL26),
+  ph("s27", "ph/s27.jpg", G_S, "Pl. XXVII, detail of the minbar, shown from the original print (INHA, fonds Poinssot, Archives 106, 130, 03, scan 057)", PL27),
   ph("c83c", "ph/c83c.jpg", G_C, "Pl. 83c, central aisle with mihrab, pulpit and maqsūra", [], true),
   ph("c89a", "cres-89a.jpg", G_C, "Pl. 89a, the pulpit", [], true),
   ph("c89b", "cres-89b.jpg", G_C, "Pl. 89b, “Column 3, 5th panel”", CP["89b"].panels),
@@ -406,15 +477,16 @@ const ALL_PHOTOS = [
   ph("pd07a", "ph/pd07a.jpg", G_P, "Fig. 11.7, fragments, Musée de Raqqada (a)", [], false, true),
   ph("pd07b", "ph/pd07b.jpg", G_P, "Fig. 11.7, fragments, Musée de Raqqada (b)", [], false, true),
   ph("pd07c", "ph/pd07c.jpg", G_P, "Fig. 11.7, fragments, Musée de Raqqada (c)", [], false, true),
-  ph("pd08", "ph/pd08.jpg", G_P, "Fig. 11.8, upper left face, annotated 2578, about 1907. Bibliothèque de l'INHA, Collection Jacques Doucet, fonds Poinssot, Archives 106, 130, 03"),
+  ph("pd08", "ph/pd08.jpg", G_P, "Fig. 11.8, upper left face, annotated 2578, about 1907. Bibliothèque de l'INHA, Collection Jacques Doucet, fonds Poinssot, Archives 106, 130, 03, scan 065"),
   ph("pd09", "ph/pd09.jpg", G_P, "Fig. 11.9, left face, Sadoux, probably 1907, from Saladin, Les Villes d'Art célèbres, 126"),
-  ph("pd10", "ph/pd10.jpg", G_P, "Fig. 11.10, original backrest, probably after its removal in 1907. Bibliothèque de l'INHA, Collection Jacques Doucet, fonds Poinssot, Archives 106, 130, 03"),
-  ph("pd11", "ph/pd11.jpg", G_P, "Fig. 11.11, the minbar, undated. Bibliothèque de l'INHA, Collection Jacques Doucet, fonds Poinssot, Archives 106, 130, 03"),
+  ph("pd10", "ph/pd10.jpg", G_P, "Fig. 11.10, original backrest, probably after its removal in 1907. Bibliothèque de l'INHA, Collection Jacques Doucet, fonds Poinssot, Archives 106, 130, 03, scan 079"),
+  ph("pd11", "ph/pd11.jpg", G_P, "Fig. 11.11, the minbar, undated. Bibliothèque de l'INHA, Collection Jacques Doucet, fonds Poinssot, Archives 106, 130, 03, scan 052"),
   ph("pd12a", "ph/pd12a.jpg", G_P, "Fig. 11.12a, risers, Lehnert and Landrock, from Strzygowski, Altai-Iran, Abb. 169"),
   ph("pd12b", "ph/pd12b.jpg", G_P, "Fig. 11.12b, risers, Lehnert and Landrock, from Strzygowski, Altai-Iran, Abb. 170"),
-  ph("pd13", "ph/pd13.jpg", G_P, "Fig. 11.13, new decoration being made. Bibliothèque de l'INHA, Collection Jacques Doucet, fonds Poinssot, Archives 106, 130, 03"),
+  ph("pd13", "ph/pd13.jpg", G_P, "Fig. 11.13, new decoration being made. Bibliothèque de l'INHA, Collection Jacques Doucet, fonds Poinssot, Archives 106, 130, 03, scan 066"),
   ph("pd14", "ph/pd14.jpg", G_P, "Fig. 11.14, face against the maqsūra, Lehnert and Landrock, from Strzygowski, Altai-Iran, Abb. 167"),
-  ph("pd15", "ph/pd15.jpg", G_P, "Fig. 11.15, new balustrades being made. Bibliothèque de l'INHA, Collection Jacques Doucet, fonds Poinssot, Archives 106, 130, 03"),
+  ph("pd15", "ph/pd15.jpg", G_P, "Fig. 11.15, new balustrades being made. Bibliothèque de l'INHA, Collection Jacques Doucet, fonds Poinssot, Archives 106, 130, 03, scan 073"),
+  ...ipPhotos(IPB, G_IB), ...ipPhotos(IPR, G_IR), ...ipPhotos(IP, G_I), ...ipPhotos(IP39, G_I39),
   ph("x01", "ph/x01.jpg", G_X, "@HistoireTn, pine-cone and leaf panel, detail"),
   ph("x02", "ph/x02.jpg", G_X, "@HistoireTn, lattice, vine-scroll strip and braided panel below the stair rail, detail"),
   ph("x03", "ph/x03.jpg", G_X, "@HistoireTn, geometric openwork panels, detail"),
@@ -496,6 +568,9 @@ const clean = raw => {
     out.photos[id] = {panels: [...new Set(p.panels.map(Number).filter(isN))].sort((a, b) => a - b), whole: p.whole === true};
     const news = (Array.isArray(p.news) ? p.news : []).filter(s => SLOT[s] || OFF[s]);
     if (news.length) out.photos[id].news = [...new Set(news)];
+    const sides = Array.isArray(p.sides) ? p.sides : [];
+    if (sides.some(k => SIDE[k])) out.photos[id].sides = SIDES.map(s => s[0]).filter(k => sides.includes(k));
+    if (p.other === true) out.photos[id].other = true;
   });
   return out;
 };
@@ -522,13 +597,22 @@ const savedCount = () => NUMS.filter(touched).length;
 const assignedOf = id => E.photos[id]?.panels ?? PHOTO[id].def;
 const wholeOf = id => E.photos[id]?.whole ?? PHOTO[id].whole;
 const newsOf = id => E.photos[id]?.news ?? [];
-const setPhoto = (id, panels, whole, news = newsOf(id)) => {
+// the two stair rails, beside the mihrab and beside the maqsūra, each seen from outside or from the stair
+const SIDES = [["mo", "mihrab side", "outside"], ["mi", "mihrab side", "inside"], ["qo", "maqsūra side", "outside"], ["qi", "maqsūra side", "inside"]];
+const SIDE = Object.fromEntries(SIDES.map(([k, a, b]) => [k, `${a}, ${b}`]));
+const sidesOf = id => E.photos[id]?.sides ?? [];
+// the flank facing the maqsūra, which Saladin did not number: a photo is only marked as showing it
+const OTHER = "the other side of the minbar, facing the maqsūra";
+const otherOf = id => E.photos[id]?.other === true;
+const setPhoto = (id, panels, whole, news = newsOf(id), sides = sidesOf(id), other = otherOf(id)) => {
   E.photos[id] = {panels: [...new Set(panels)].sort((a, b) => a - b), whole: !!whole};
   if (news.length) E.photos[id].news = [...new Set(news)];
+  if (sides.length) E.photos[id].sides = SIDES.map(s => s[0]).filter(k => sides.includes(k));
+  if (other) E.photos[id].other = true;
 };
 const photosOfSlot = id => PHOTOS.filter(p => newsOf(p.id).includes(id));
 const photosOf = n => PHOTOS.filter(p => assignedOf(p.id).includes(n));
-const placed = id => assignedOf(id).length > 0 || newsOf(id).length > 0 || wholeOf(id);
+const placed = id => assignedOf(id).length > 0 || newsOf(id).length > 0 || sidesOf(id).length > 0 || otherOf(id) || wholeOf(id);
 // geometric panels: a Creswell position holding an old panel shares that panel's mark; a new panel has its own
 const isGeoPanel = n => E.geo.panels.includes(n);
 const isGeoSlot = id => { const ns = numbersAt(id); return ns.length ? ns.some(isGeoPanel) : E.geo.slots.includes(id); };
@@ -947,6 +1031,7 @@ const sources = `<details><summary>Sources and caveats</summary><ul>
   <li>Other photographs: Wikimedia Commons (Grande Mosquée de Kairouan, détails du minbar; Un panneau sculpté du minbar); museum photographs and a catalogue page from the site's author.</li>
   <li>Images: Saladin 1899, fig. 52, Pl. XXI, XXVI, XXVII; Garrigues, Tunis, no. 271 (via Wikimedia Commons); Creswell, Pl. 89a; Creswell prints, Victoria and Albert Museum. Reproduced for research and study.</li>
   <li>Picotin and Déléry 2018, figs. 11.2, 11.3, 11.8–11.15: historic photographs and drawings, credited in their captions. Reproduced for research and study.</li>
+  <li>INHA, fonds Poinssot: 62 prints and postcards from Bibliothèque de l'INHA, Collection Jacques Doucet, fonds Poinssot, Archives 106, 130, 03, scanned by INHA in November 2026. Only Bernard Poinssot's six prints carry a date, 1939, pencilled on their backs. Before 1907: prints and three LL postcards that show the old backrest and balustrade, and two views of the maqsūra. Restoration of 1907–10: the minbar taken apart and new parts being made. After 1910: prints that show the backrest, stair posts and triangles made in the restoration; the close views are placed with them because they belong to the same series of prints. Saladin's Pl. XXVI and XXVII and Picotin and Déléry's figs. 11.8, 11.10, 11.11, 11.13 and 11.15 are shown from prints in the same file, which are sharper than the published plates; Saladin's printed plate captions, which list the panel numbers, are therefore not in those two images. Reproduced for research and study.</li>
   </ul><p>Notes marked “Compared with Creswell” record the site author's comparison of the two photographs. Notes marked “Identification” are matches made by comparing photographs, not statements in the sources. Saladin's panel lists were checked against the Heidelberg scan. Outlines were traced separately on each photograph. For rectangles and triangles they mark the same position in the frame, which may now hold a replaced panel; for the balustrade they follow Creswell's table of moved panels.</p></details>`;
 
 function syncSave() {
@@ -1067,6 +1152,9 @@ function idleCard() {
       <p class="empty">Click a number to read about a panel. Double-click a panel to zoom to it. Click a photo below to enlarge it.</p>
       ${E.geo.panels.length || E.geo.slots.length ? (c => `<p class="empty">Geometric panels on this face: ${c.before} of 79 before 1907, ${c.after} of ${c.afterTotal} in Creswell's photograph.</p>`)(geoCounts()) : ""}
       <div class="field"><span class="glabel">Reconstruction drawings</span><div class="chips">${Object.keys(DRAWINGS).map(n => `<button type="button" class="chip" data-drawgo="${n}">Panel ${n}</button>`).join("")}</div></div>
+      ${(l => l.length ? `<div class="field"><span class="glabel">${OTHER[0].toUpperCase() + OTHER.slice(1)}</span><div class="thumbs">${l.map(q => `<button type="button" class="thumb" data-open="${q.id}" title="${q.title}" aria-label="${q.title}"><img src="${q.thumb}" alt="" loading="lazy"></button>`).join("")}</div></div>` : "")(PHOTOS.filter(q => otherOf(q.id)))}
+      ${SIDES.map(([k]) => { const l = PHOTOS.filter(q => sidesOf(q.id).includes(k));
+        return l.length ? `<div class="field"><span class="glabel">Balustrade, ${SIDE[k]}</span><div class="thumbs">${l.map(q => `<button type="button" class="thumb" data-open="${q.id}" title="${q.title}" aria-label="${q.title}"><img src="${q.thumb}" alt="" loading="lazy"></button>`).join("")}</div></div>` : ""; }).join("")}
       ${groups.map(g => `<div class="field"><span class="glabel">${g}</span><div class="thumbs">${PHOTOS.filter(q => q.group === g).map(q => `<button type="button" class="thumb" data-open="${q.id}" title="${q.title}" aria-label="${q.title}"><img src="${q.thumb}" alt="" loading="lazy"></button>`).join("")}</div></div>`).join("")}
       ${sources}`;
   }
@@ -1155,6 +1243,11 @@ function toggleNew(id) {
   setPhoto(curPhoto, assignedOf(curPhoto), wholeOf(curPhoto), a.includes(id) ? a.filter(s => s !== id) : [...a, id]);
   changed();
 }
+function toggleSide(k) {
+  const a = sidesOf(curPhoto);
+  setPhoto(curPhoto, assignedOf(curPhoto), wholeOf(curPhoto), newsOf(curPhoto), a.includes(k) ? a.filter(s => s !== k) : [...a, k]);
+  changed();
+}
 function parsePanels(t) {
   const out = [];
   t.split(/[\s,;]+/).filter(Boolean).forEach(x => {
@@ -1176,18 +1269,22 @@ function renderPhotoCard() {
       <div class="field"><span class="lab">New panels in this photo: click an N on Creswell's photograph, or choose one</span>
         ${nw.length ? `<div class="chips">${nw.map(id => `<button type="button" class="chip" data-rmn="${id}" aria-label="Remove new panel, ${slotName(id)}">N: ${slotName(id)} ×</button>`).join("")}</div>` : ""}
         ${free.length ? `<select id="p-new" aria-label="Add a new panel"><option value="">Add a new panel…</option>${free.map(id => `<option value="${id}">${slotName(id)}</option>`).join("")}</select>` : ""}</div>
+      <div class="field"><span class="lab">Balustrade in this photo: which rail, and which face of it</span>
+        ${[["m", "Mihrab side"], ["q", "Maqsūra side"]].map(([r, t]) => `<div class="row"><span class="side-l">${t}</span><div class="seg small" role="group" aria-label="Balustrade, ${t.toLowerCase()}">${[["o", "Outside"], ["i", "Inside"]].map(([f, ft]) => `<button type="button" data-side="${r + f}" aria-pressed="${sidesOf(curPhoto).includes(r + f)}">${ft}</button>`).join("")}</div></div>`).join("")}</div>
+      <div class="row"><button type="button" id="p-other" aria-pressed="${otherOf(curPhoto)}">Shows the other side, facing the maqsūra${otherOf(curPhoto) ? " ✓" : ""}</button></div>
       <div class="row"><button type="button" id="p-whole" aria-pressed="${w}">${w ? "Shows the whole minbar ✓" : "Shows the whole minbar"}</button><button type="button" id="p-clear">Clear</button>${E.photos[curPhoto] ? `<button type="button" id="p-reset">Reset</button>` : ""}</div>
     </div>
     <div class="nav"><button id="p-prev">← Previous</button><button id="p-next">Next →</button></div>
     <div class="seg small" role="group" aria-label="Which photos to list"><button type="button" data-pf="all" aria-pressed="${photoFilter === "all"}">All ${PHOTOS.length}</button><button type="button" data-pf="todo" aria-pressed="${photoFilter === "todo"}">Not assigned ${PHOTOS.filter(q => !placed(q.id)).length}</button></div>
     ${groups.map(g => { const l = PHOTOS.filter(q => q.group === g && (photoFilter === "all" || !placed(q.id) || q.id === curPhoto));
-      return l.length ? `<div class="field"><span class="lab">${g}</span><div class="thumbs">${l.map(q => `<button type="button" class="thumb${q.id === curPhoto ? " on" : ""}" data-ph="${q.id}" title="${q.title}" aria-label="${q.title}"><img src="${q.thumb}" alt="" loading="lazy"><span class="n${placed(q.id) ? "" : " zero"}">${wholeOf(q.id) ? "all" : assignedOf(q.id).length + newsOf(q.id).length}</span></button>`).join("")}</div></div>` : ""; }).join("")}`;
+      return l.length ? `<div class="field"><span class="lab">${g}</span><div class="thumbs">${l.map(q => `<button type="button" class="thumb${q.id === curPhoto ? " on" : ""}" data-ph="${q.id}" title="${q.title}" aria-label="${q.title}"><img src="${q.thumb}" alt="" loading="lazy"><span class="n${placed(q.id) ? "" : " zero"}">${wholeOf(q.id) ? "all" : assignedOf(q.id).length + newsOf(q.id).length + sidesOf(q.id).length + otherOf(q.id)}</span></button>`).join("")}</div></div>` : ""; }).join("")}`;
   card.scrollTop = top;
   const add = () => { const n = parsePanels($("p-add").value); if (n.length) { setPhoto(curPhoto, [...assignedOf(curPhoto), ...n], wholeOf(curPhoto)); changed(); } };
   $("p-addgo").onclick = add;
   $("p-add").onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); add(); } };
   $("p-whole").onclick = () => { setPhoto(curPhoto, assignedOf(curPhoto), !wholeOf(curPhoto)); changed(); };
-  $("p-clear").onclick = () => { setPhoto(curPhoto, [], false, []); changed(); };
+  $("p-other").onclick = () => { setPhoto(curPhoto, assignedOf(curPhoto), wholeOf(curPhoto), newsOf(curPhoto), sidesOf(curPhoto), !otherOf(curPhoto)); changed(); };
+  $("p-clear").onclick = () => { setPhoto(curPhoto, [], false, [], [], false); changed(); };
   if ($("p-new")) $("p-new").onchange = e => { if (e.target.value) toggleNew(e.target.value); };
   if ($("p-reset")) $("p-reset").onclick = () => { delete E.photos[curPhoto]; changed(); };
   $("p-prev").onclick = () => stepPhoto(-1);
@@ -1198,6 +1295,8 @@ card.addEventListener("click", e => {
   const gp = el.closest?.("[data-gp]"), gs = el.closest?.("[data-gs]");
   if (gp) { toggleGeoPanel(+gp.dataset.gp); return; }
   if (gs) { toggleGeoSlot(gs.dataset.gs); return; }
+  const sd = el.closest?.("[data-side]");
+  if (sd) { toggleSide(sd.dataset.side); return; }
   const pick = el.closest?.("[data-ph]"), rm = el.closest?.("[data-rm]"), pf = el.closest?.("[data-pf]"), rmn = el.closest?.("[data-rmn]");
   if (pick) { curPhoto = pick.dataset.ph; card.scrollTop = 0; renderAll(); return; }
   if (rm) { togglePanel(+rm.dataset.rm); return; }
@@ -1213,7 +1312,7 @@ card.addEventListener("click", e => {
 function openPhoto(id) {
   const p = PHOTO[id], l = $("lb"), a = assignedOf(id), nw = newsOf(id);
   l.classList.remove("big"); l.querySelector("img").src = p.file;
-  l.querySelector("p").textContent = `${p.group}: ${p.title}${wholeOf(id) ? ". Shows the whole minbar" : ""}`;
+  l.querySelector("p").textContent = `${p.group}: ${p.title}${wholeOf(id) ? ". Shows the whole minbar" : ""}${otherOf(id) ? `. Shows ${OTHER}` : ""}${sidesOf(id).length ? `. Balustrade: ${sidesOf(id).map(k => SIDE[k]).join("; ")}` : ""}`;
   $("lbchips").innerHTML = editing ? "" : a.map(n => `<button type="button" class="chip" data-go="${n}">Panel ${n}</button>`).join("")
     + nw.map(s => `<button type="button" class="chip" data-goslot="${s}">New panel: ${slotName(s)}</button>`).join("");
   l.hidden = false; l.scrollTop = 0;
