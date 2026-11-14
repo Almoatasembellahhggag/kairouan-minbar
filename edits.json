@@ -630,7 +630,17 @@
    ],
    "whole": false,
    "news": [
-    "b16"
+    "b16",
+    "q13r",
+    "q14r",
+    "q15r",
+    "q16r",
+    "q17r",
+    "q18r"
+   ],
+   "sides": [
+    "mo",
+    "qi"
    ]
   },
   "x01": {
@@ -1240,6 +1250,122 @@
    "panels": [],
    "whole": false,
    "other": true
+  },
+  "ip074": {
+   "panels": [
+    56,
+    57,
+    58,
+    59,
+    61,
+    62,
+    63
+   ],
+   "whole": false,
+   "news": [
+    "b10",
+    "q6r",
+    "q7r",
+    "q8r",
+    "q9r",
+    "q10r",
+    "q11r",
+    "q12r",
+    "q13r"
+   ],
+   "sides": [
+    "mo",
+    "qi"
+   ]
+  },
+  "ip075": {
+   "panels": [
+    60,
+    64,
+    65,
+    67,
+    68
+   ],
+   "whole": false,
+   "news": [
+    "q1r",
+    "q2r",
+    "q3r",
+    "q4r",
+    "q5r"
+   ],
+   "sides": [
+    "mo",
+    "qi"
+   ]
+  },
+  "ip080": {
+   "panels": [],
+   "whole": false,
+   "news": [
+    "b11r",
+    "b12r",
+    "b13r",
+    "b14r",
+    "b15r",
+    "b16r",
+    "q13",
+    "q14",
+    "q15",
+    "q16",
+    "q17",
+    "q18"
+   ],
+   "sides": [
+    "mi",
+    "qo"
+   ]
+  },
+  "ip082": {
+   "panels": [],
+   "whole": false,
+   "news": [
+    "b5r",
+    "b6r",
+    "b7r",
+    "b8r",
+    "b9r",
+    "b10r",
+    "b11r",
+    "q6",
+    "q7",
+    "q8",
+    "q9",
+    "q10",
+    "q11",
+    "q12",
+    "q13"
+   ],
+   "sides": [
+    "mi",
+    "qo"
+   ]
+  },
+  "ip078": {
+   "panels": [
+    66
+   ],
+   "whole": false,
+   "news": [
+    "b1r",
+    "b2r",
+    "b3r",
+    "b5r",
+    "q1",
+    "q2",
+    "q3",
+    "q4",
+    "q5"
+   ],
+   "sides": [
+    "mi",
+    "qo"
+   ]
   }
  },
  "geo": {
