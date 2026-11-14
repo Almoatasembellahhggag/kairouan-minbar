@@ -52,7 +52,7 @@
 <div id="ui">
   <p class="sub" style="margin:0 0 4px"><a href="../" style="color:inherit">← Panel site</a></p>
   <h1>Minbar of the Great Mosque of Kairouan</h1>
-  <p class="sub">Schematic 3D model, state after the restoration of 1907–10. Drag to turn, scroll to zoom, right-drag to move.</p>
+  <p class="sub">Schematic 3D model, state after the restoration of 1907–10. Drag to turn, scroll to zoom, right-drag to move. Double-click a panel to face it square on; double-click beside the minbar to go back.</p>
   <table>
     <tr><td>Mihrab side, panels<small>13 columns: 8, 8, 6, 5, 5, 4, 4, 3, 3, 2, 2, 1, 1</small></td><td>52</td></tr>
     <tr><td>Mihrab side, triangles under the stair string</td><td>10</td></tr>
@@ -131,7 +131,7 @@ renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.setSize(innerWidth, innerHeight);
 document.body.appendChild(renderer.domElement);
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true; controls.maxPolarAngle = Math.PI * 0.52; controls.minDistance = 0.6; controls.maxDistance = 16;
+controls.enableDamping = true; controls.maxPolarAngle = Math.PI * 0.52; controls.minDistance = 0.25; controls.maxDistance = 16;
 
 scene.add(new THREE.AmbientLight(0xffffff, 0.72));
 const sun = new THREE.DirectionalLight(0xfff2dd, 0.75); sun.position.set(4, 7, 6); scene.add(sun);
@@ -233,7 +233,7 @@ const FACES = [
 FACES.forEach(f => f.rail.forEach(s => {
   const plain = new THREE.MeshStandardMaterial({color: f.color, roughness: 0.9, side: THREE.DoubleSide}), m = new THREE.Mesh(railGeo(s, f.rail.length), plain);
   const rear = f.face !== 4, own = f.face === 2 ? null : "q" + s.pos + (rear ? "r" : ""), where = `Stair rail, ${f.name}: position ${s.pos} of ${f.rail.length} from the top${s.pos === f.rail.length ? ", double width" : ""}`;
-  m.position.z = f.z; m.userData = {base: f.color, face: f.face, plain, photo: railMat(f.face)};
+  m.position.z = f.z; m.userData = {base: f.color, face: f.face, plain, photo: railMat(f.face), normal: new THREE.Vector3(0, 0, f.ry ? -1 : 1), reach: f.face === 4 ? 0 : 2 * ZI - 0.08};
   Object.defineProperty(m.userData, "info", {get: () => own ? `${where}. Numbered ${own} here; Saladin and Golvin did not number this rail. ${f.note}`
     : `${where}. Rear of ${salText("b" + s.pos) === "N" ? "the new panel" : "Saladin no. " + salText("b" + s.pos)}: ${salText("b" + s.pos)}r, Golvin ${GOLVIN["b" + s.pos]}r. ${f.note}`});
   scene.add(m); pick.push(m); railFaces.push(m);
@@ -277,7 +277,7 @@ for (let k = 0; k < 2; k++) {   // front of the seat
   s.moveTo(z0, y0); s.lineTo(z1, y0); s.lineTo(z1, y1); s.quadraticCurveTo(z1 * 0.45, y1, z1 * 0.3, y1 + 0.16); s.quadraticCurveTo(0.08, y1 + 0.3, 0, y1 + 0.34);
   s.quadraticCurveTo(-0.08, y1 + 0.3, z0 * 0.3, y1 + 0.16); s.quadraticCurveTo(z0 * 0.45, y1, z0, y1); s.closePath();
   const b = new THREE.Mesh(new THREE.ExtrudeGeometry(s, {depth: 0.04, bevelEnabled: false}), WOOD); b.rotation.y = -Math.PI / 2; b.position.x = 0.07;
-  b.userData = {info: "Backrest, new in 1909–10 (shape estimated)", base: 0x6b4a30}; scene.add(b); pick.push(b); }
+  b.userData = {info: "Backrest, new in 1909–10 (shape estimated)", base: 0x6b4a30, normal: new THREE.Vector3(1, 0, 0)}; scene.add(b); pick.push(b); }
 const post = (x, z, h, r = 0.035) => { const m = new THREE.Mesh(new THREE.BoxGeometry(r * 2, h, r * 2), WOOD_D); m.position.set(x, h / 2, z); scene.add(m);
   const f = new THREE.Mesh(new THREE.ConeGeometry(r * 1.3, r * 4, 8), WOOD_D); f.position.set(x, h + r * 2, z); scene.add(f); };
 [ZO - 0.035, -ZO + 0.035].forEach(z => { post(L + 0.035, z, 1.72); post(0.035, z, TOP + 0.45); post(X_SEAT, z, TOP + 0.4, 0.028); });
@@ -312,7 +312,26 @@ const VIEWS = {
   maqsura: [[L / 2 + 0.85, 1.75, -6.6], [L / 2 + 0.85, 1.6, 0]],
   compare: [[L / 2, 2.25, 8.4], [L / 2, 2.25, 0]],
 };
-function view(k) { camera.position.set(...VIEWS[k][0]); controls.target.set(...VIEWS[k][1]); controls.update(); }
+function view(k) { flight = backView = null; camera.position.set(...VIEWS[k][0]); controls.target.set(...VIEWS[k][1]); controls.update(); }
+// ---- double-click a panel: the camera moves in front of it and looks at it square on
+let flight = null, backView = null;
+function fly(pos, tgt, ms = 550) { flight = {p0: camera.position.clone(), t0: controls.target.clone(), p1: pos, t1: tgt, start: performance.now(), ms}; }
+function faceOn(m) {
+  const g = m.geometry; if (!g.boundingBox) g.computeBoundingBox();
+  const c = g.boundingBox.getCenter(new THREE.Vector3()), size = g.boundingBox.getSize(new THREE.Vector3());
+  m.updateWorldMatrix(true, false); m.localToWorld(c);
+  const n = m.userData.normal ? m.userData.normal.clone() : new THREE.Vector3(0, 0, 1).transformDirection(m.matrixWorld);
+  const t = Math.tan(camera.fov * Math.PI / 360), fill = 0.6;      // the panel takes about three fifths of the view
+  let d = Math.max(size.y * m.scale.y / (2 * t * fill), size.x * m.scale.x / (2 * t * camera.aspect * fill), 0.3);
+  if (m.userData.reach) d = Math.min(d, m.userData.reach);         // inside faces: stay between the two rails
+  if (!backView) backView = [camera.position.clone(), controls.target.clone()];
+  fly(c.clone().addScaledVector(n, d), c);
+}
+function stepFlight() {
+  if (!flight) return;
+  const k = Math.min(1, (performance.now() - flight.start) / flight.ms), e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+  camera.position.lerpVectors(flight.p0, flight.p1, e); controls.target.lerpVectors(flight.t0, flight.t1, e); if (k === 1) flight = null;
+}
 document.querySelectorAll("[data-view]").forEach(b => b.onclick = () => view(b.dataset.view));
 view(new URLSearchParams(location.search).get("view") in VIEWS ? new URLSearchParams(location.search).get("view") : "mihrab");
 if (new URLSearchParams(location.search).has("numbers")) numMode = "saladin";
@@ -333,14 +352,19 @@ function point(e) {
   $("info-t").textContent = hot ? infoOf(hot) : "Point at a panel";
   paint(); cmpRefresh();
 }
-let downAt = null;
+let downAt = null, lastTap = null;
 renderer.domElement.addEventListener("pointerleave", () => {   // off the model: nothing is pointed at any more
   if (!hot) return; if (!hot.userData.overlay) hot.material.color.set(hot.userData.base);
   hot = null; $("info-t").textContent = "Point at a panel"; paint(); cmpRefresh(); });
 renderer.domElement.addEventListener("pointermove", point);
-renderer.domElement.addEventListener("pointerdown", e => { downAt = [e.clientX, e.clientY]; point(e); });
+renderer.domElement.addEventListener("pointerdown", e => { downAt = [e.clientX, e.clientY]; flight = null; point(e); });
 renderer.domElement.addEventListener("pointerup", e => {   // a click, not a drag: switch to the panel's other drawing
-  if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 5) return;
+  if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 5) { lastTap = null; return; }
+  const now = performance.now(), dbl = lastTap && now - lastTap[0] < 400 && Math.hypot(e.clientX - lastTap[1], e.clientY - lastTap[2]) < 24;
+  lastTap = dbl ? null : [now, e.clientX, e.clientY];
+  if (dbl) {                                                         // the second click of a double-click (or double tap)
+    if (hot) faceOn(hot); else if (backView) { fly(backView[0], backView[1]); backView = null; }
+  }
   const o = drawingOf(hot);
   if (o && o.d.v.length > 1) { o.i = (o.i + 1) % o.d.v.length; showDrawing(o); $("info-t").textContent = infoOf(hot); }
 });
@@ -434,14 +458,14 @@ $("b-cmp").onclick = () => setCmp(!cmpOn);
 $("cmp-close").onclick = () => setCmp(false);
 oldImg.addEventListener("load", cmpRefresh); newImg.addEventListener("load", cmpRefresh);
 relabel();
-window.MODEL = {labels, railReady, rails: FACES.map(f => [f.name, f.rail.length]), drawn, hold: n => { sel = n; cmpRefresh(); }, riserPanels, slots: SLOTS.length, seat: SEAT, rise: RISE, run: RUN, top: TOP};
+window.MODEL = {faceOn, labels, railReady, rails: FACES.map(f => [f.name, f.rail.length]), drawn, hold: n => { sel = n; cmpRefresh(); }, riserPanels, slots: SLOTS.length, seat: SEAT, rise: RISE, run: RUN, top: TOP};
 (async () => {   // the edits saved on the panel site: this browser's own first, then the file in the repository
   try { const ls = localStorage.getItem("kairouan-minbar-edits"); if (ls) { const o = JSON.parse(ls); if (o && o.panels) { E = {panels: o.panels, slots: o.slots || {}}; editsFrom = "browser"; } } } catch (e) {}
   if (editsFrom === "none") try { const o = await (await fetch("../edits.json")).json(); E = {panels: o.panels || {}, slots: o.slots || {}}; editsFrom = "file"; } catch (e) {}
   window.MODEL.editsFrom = editsFrom; relabel(); cmpRefresh();
   if (new URLSearchParams(location.search).has("compare")) setCmp(true);
 })();
-(function loop() { controls.update(); renderer.render(scene, camera); requestAnimationFrame(loop); })();
+(function loop() { stepFlight(); controls.update(); renderer.render(scene, camera); requestAnimationFrame(loop); })();
 </script>
 </body>
 </html>
