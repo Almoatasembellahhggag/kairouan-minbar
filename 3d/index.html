@@ -73,7 +73,8 @@
   <div class="row">
     <button id="b-photo" aria-pressed="true">Photograph</button>
     <button id="b-draw" aria-pressed="true">Drawings</button>
-    <button id="b-rail" aria-pressed="true">Rail photos</button>
+    <button id="b-rail" aria-pressed="true" title="The photographs of the new rails of 1907–10 on the three rail faces Creswell's photograph does not show">Rail photos</button>
+    <button id="b-rail1" aria-pressed="false" title="The photographs of the new rails of 1907–10 on the outside of the mihrab-side rail, in place of Creswell's photograph">Rail photos, mihrab face</button>
     <button id="b-num" aria-pressed="false">Saladin's numbers</button>
     <button id="b-gol" aria-pressed="false">Golvin's numbers</button>
     <button id="b-cmp" aria-pressed="false">Compare with the old photo</button>
@@ -91,11 +92,11 @@
     <p>The mihrab-side face is Creswell's photograph (1940, Pl. 89a) laid flat and scaled to his length of 3.93 m; that gives a height of 3.35 m against his 3.31 m. Panel outlines are the ones traced on that photograph for the panel site, and the numbers are Saladin's (1899, fig. 52).</p>
     <p>The stair has eleven steps, one over each of columns 3 to 13; their rise follows the slope of the stair string. Riser panels are counted from the fonds Poinssot photographs taken after 1910 (scans 013, 015, 018).</p>
     <p>The reconstruction drawings are the ones on the panel site, drawn from photographs and not measured. Each is fitted to the traced outline of its panel, so its proportions follow the panel on Creswell's photograph and can differ a little from the drawing itself. The drawing of panel 50 stands where that panel was before 1907. The drawing of rail panel 66 is left out: that panel is not on the rail after 1907.</p>
-    <p>Compare with the old photo puts Garrigues's photograph of before 1907 beside the model. Each pair of details is straightened to the same shape, so a panel can be checked against any place on the model. The stair rails count as places too, on all four faces: with Rail photos on, a rail panel is shown from the photographs of the new rails laid flat in 1907–10, and with Rail photos off the outside of the mihrab-side rail is shown from Creswell's photograph. Where a panel is now is read from the edits saved on the panel site, in this browser if there are any. On the old photograph the outline of a panel is green where it is recorded in the same place, orange where it is recorded as moved and red where it is recorded as gone.</p>
+    <p>Compare with the old photo puts Garrigues's photograph of before 1907 beside the model. Each pair of details is straightened to the same shape, so a panel can be checked against any place on the model. The stair rails count as places too, on all four faces: with Rail photos on, a rail panel is shown from the photographs of the new rails laid flat in 1907–10; the outside of the mihrab-side rail is shown from Creswell's photograph unless Rail photos, mihrab face is on. Where a panel is now is read from the edits saved on the panel site, in this browser if there are any. On the old photograph the outline of a panel is green where it is recorded in the same place, orange where it is recorded as moved and red where it is recorded as gone.</p>
     <p>The place of a panel can be changed here: hold the panel, click its place on the model (it turns green) and press Now at the place clicked. A place is any panel of the side, of the two stair rails (the outside and the inside of a rail are separate places, with different panels), of the risers or of the seat front, the backrest, or the maqsūra-side face as a whole, so a panel that left the mihrab side can be followed. The change is saved in this browser, where the panel site's Edit page reads it too; Save file writes edits.json for the site's folder.</p>
     <p>The model is lit and casts shadows, and the photographs take that light. They are black and white: each is tinted to the same wood colour so that they sit together, and its light and dark areas also give the carving a slight relief. Photograph, off, shows the plain model.</p>
     <p>Estimated, not measured: the width (1.0 m), the height of the seat, the thickness of the sides and of the treads, and how far the panels sit back in their frames (8 mm). The posts at the foot of the rails and the spindles on top of the sides are measured on Creswell's photograph. The backrest of 1909–10, its columns and its urns follow the photographs taken after 1910 (fonds Poinssot, prints 012, 016 and 018) in outline only; their carving, and that of the risers and of the front of the seat, is not drawn. The maqsūra-side face is left blank.</p>
-    <p>Rail photos puts a photograph on every rail panel, cut from the six photographs of the new rails laid flat during the restoration (Bibliothèque de l'INHA, Collection Jacques Doucet, fonds Poinssot, Archives 106, 130, 03, scans 073 to 075, 078, 080 and 082; reproduced for research and study). Each is straightened and set on its panel at the panel's own size: on the mihrab-side rail the panels are measured on Creswell's photograph, and on the maqsūra-side rail their widths and the uprights between them are measured on the restoration photographs. Black or white patches are breaks in the prints. With Rail photos off, the outside of the mihrab-side rail shows Creswell's photograph and the other three faces are plain panels.</p>
+    <p>Rail photos puts a photograph on every rail panel of the three faces Creswell's photograph does not show, cut from the six photographs of the new rails laid flat during the restoration (Bibliothèque de l'INHA, Collection Jacques Doucet, fonds Poinssot, Archives 106, 130, 03, scans 073 to 075, 078, 080 and 082; reproduced for research and study). Each is straightened and set on its panel at the panel's own size: on the mihrab-side rail the panels are measured on Creswell's photograph, and on the maqsūra-side rail their widths and the uprights between them are measured on the restoration photographs. Black or white patches are breaks in the prints. The outside of the mihrab-side rail, the face towards the mihrab, keeps Creswell's photograph. Rail photos, mihrab face, off at first, puts the photographs of 1907–10 there as well; they differ from Creswell's at position 13. With Rail photos off, the other three faces are plain panels.</p>
     <p>The rail counts come from six photographs of the two new rails laid flat during the restoration (fonds Poinssot, scans 073 to 075, 078, 080 and 082), three for each face, joined into one image per face. Each rail was counted on both of its faces from a different set of photographs, and the two counts agree: 16 on the mihrab-side rail, which is also Creswell's count, and 18 on the maqsūra-side rail. The 18 are narrower, so both rails come out the same length. On the model the panels on the inside of the mihrab-side rail have the positions and sizes of those on its outside, and the 18 of the maqsūra-side rail are set on the same length of rail by their measured widths, good to about a fifth of a panel.</p>
   </details>
 </div>
@@ -269,7 +270,7 @@ function railGeo(s, n) {
 }
 const railMat = face => { if (!railTex[face]) railTex[face] = srgb(new THREE.TextureLoader().load(`rail/rail${face}.jpg?v=20261114d`, () => { railReady[face] = true; paint(); cmpRefresh(); }));
   return photoMaterial(railTex[face], face, 0.0012, {side: THREE.DoubleSide}); };
-RAIL.forEach(s => { const m = new THREE.Mesh(railGeo(s, 16), railMat(1)); m.position.z = ZO - REC + 0.0012; m.visible = false; m.receiveShadow = true; scene.add(m); railOuter.push(m); });
+RAIL.forEach(s => { const m = new THREE.Mesh(railGeo(s, 16)); m.position.z = ZO - REC + 0.0012; m.visible = false; m.receiveShadow = true; scene.add(m); railOuter.push(m); });
 SLOTS.forEach(s => {
   const geo = new THREE.ShapeGeometry(shapeOf(s.pts));
   const base = s.kind === "rail" ? (s.new ? COL.railNew : COL.rail) : COL[s.kind];
@@ -414,8 +415,8 @@ const urn = stem => [[0.009, 0], [0.009, stem], [0.015, stem + 0.005], [0.011, s
 
 // ---- controls on the page
 const $ = id => document.getElementById(id);
-let photoOn = true, numMode = "off", drawOn = true, railOn = true, hot = null, cmpOn = false, markId = null, chosen = null;
-const railOf = m => railOn && railReady[1] && m.userData.rail;
+let photoOn = true, numMode = "off", drawOn = true, railOn = true, rail1On = false, rail1Set = false, hot = null, cmpOn = false, markId = null, chosen = null;
+const railOf = m => rail1On && railReady[1] && m.userData.rail;
 // a part that can be pointed at is shown in one of four ways: pointed at; the place chosen by a click (while comparing);
 // the place where the held panel is recorded; or plain
 const MARK = 0x5fd0ff, CHOSEN = 0x7be08a;
@@ -430,10 +431,11 @@ function tone(m) {
 function paint() {
   photo.visible = photoOn; skinM.material[0] = photoOn ? photoMat : WOOD_P;
   Object.values(drawn).forEach(o => o.mesh.visible = drawOn && o.loaded);
-  railOuter.forEach(m => m.visible = railOn && !!railReady[1]);
+  if (rail1On && !rail1Set) { rail1Set = true; railOuter.forEach(m => m.material = railMat(1)); }
+  railOuter.forEach(m => m.visible = rail1On && !!railReady[1]);      // the mihrab face keeps Creswell's photograph unless its own button is on
   railFaces.forEach(m => { const ph = railOn && !!railReady[m.userData.face]; m.material = ph ? m.userData.photo : m.userData.plain; });
   pick.forEach(tone);
-  $("b-rail").setAttribute("aria-pressed", railOn);
+  $("b-rail").setAttribute("aria-pressed", railOn); $("b-rail1").setAttribute("aria-pressed", rail1On);
   $("b-draw").setAttribute("aria-pressed", drawOn);
   labels.forEach(l => l.visible = numMode !== "off");
   $("b-photo").setAttribute("aria-pressed", photoOn); $("b-num").setAttribute("aria-pressed", numMode === "saladin"); $("b-gol").setAttribute("aria-pressed", numMode === "golvin");
@@ -444,6 +446,7 @@ $("b-num").onclick = () => setNum("saladin");
 $("b-gol").onclick = () => setNum("golvin");
 $("b-draw").onclick = () => { drawOn = !drawOn; paint(); };
 $("b-rail").onclick = () => { railOn = !railOn; paint(); };
+$("b-rail1").onclick = () => { rail1On = !rail1On; paint(); cmpRefresh(); };
 $("n-draw").textContent = DRAW.length + " panels";
 // ?embed: the page sits in a frame of the panel site's compare view. That page sends its edits, its selection and its numbering
 // (MODEL.embed) and is told which place was clicked here (its from3d).
@@ -488,6 +491,7 @@ if (new URLSearchParams(location.search).has("golvin")) numMode = "golvin";
 if (new URLSearchParams(location.search).has("plain")) photoOn = false;
 if (new URLSearchParams(location.search).has("nodraw")) drawOn = false;
 if (new URLSearchParams(location.search).has("norail")) railOn = false;
+if (new URLSearchParams(location.search).has("rail1")) rail1On = true;
 if (EMBED) numMode = "saladin";
 const ray = new THREE.Raycaster(), mouse = new THREE.Vector2();
 function point(e) {
@@ -621,7 +625,7 @@ function sheetOf(face, slot, n) {
 // from Creswell's photograph, nothing for the parts that carry no photograph
 function shotOf(id) {
   const s = SLOT_BY[id];
-  if (s) return (s.kind === "rail" && railOn && sheetOf(1, s, 16)) || {img: newImg, quad: s.pts, k: newImg.naturalWidth / PW, grow: 1.16, creswell: true};
+  if (s) return (s.kind === "rail" && rail1On && sheetOf(1, s, 16)) || {img: newImg, quad: s.pts, k: newImg.naturalWidth / PW, grow: 1.16, creswell: true};
   const m = /^([bq])(\d+)(r?)$/.exec(id); if (!m) return null;      // a face of a rail
   return m[1] === "b" ? sheetOf(2, SLOT_BY["b" + m[2]], 16) : sheetOf(m[3] ? 3 : 4, RAILQ[+m[2] - 1], RAILQ.length);
 }
