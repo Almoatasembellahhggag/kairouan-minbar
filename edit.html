@@ -709,7 +709,7 @@ function renderMarks() {
 // the 3D model in the compare view gets the edits, the selection and the numbering of this page, and reports the place clicked in it
 function sync3d() {
   const M = $("pane-3d").hidden ? null : $("f3d").contentWindow?.MODEL; if (!M || !M.embed) return;
-  try { M.embed({edits: JSON.parse(JSON.stringify(E)), n: current, slot: currentSlot, golvin: golvinOn, quiet: $("stage-before").classList.contains("quiet"),
+  try { M.embed({edits: JSON.parse(JSON.stringify(E)), n: current, slot: currentSlot, golvin: golvinOn, pick: picking && partner === "3d" ? current : null, quiet: $("stage-before").classList.contains("quiet"),
     top: Math.max(0, document.querySelector(".tools").getBoundingClientRect().bottom - $("pane-3d").getBoundingClientRect().top), zoom: editing || (follow !== null && follow === (current ?? currentSlot))}); } catch (e) {}
 }
 $("f3d").addEventListener("load", sync3d);
@@ -751,22 +751,24 @@ const YESNO = [["yes", "Yes"], ["no", "No"]];
 
 function editForm(n) {
   const p = P(n), h = homeOf(n), k = outlineOf(n);
-  const creOpts = (h ? [["yes", "Yes"]] : []).concat([["no", "No"], ["moved", "Yes, in a different position"]]);
+  const creOpts = (h ? [["yes", "Same place"]] : []).concat([["moved", "Another place"], ["no", "Not on the minbar"]]);      // stored as cre: yes, moved, no
   const others = p.cre === "moved" && p.slot && p.slot !== "k" && p.slot !== "o" ? numbersAt(p.slot).filter(m => m !== n) : [];
   return `<form class="edit" id="edit">
     <div class="field"><span class="lab">Is the Saladin number correct?</span>${seg("num", p.num, YESNO)}
       ${p.num === "no" ? `<div class="row"><label for="e-num">Correct number</label><input id="e-num" type="number" min="1" max="79"><button type="button" id="e-numgo">Set</button></div>
       <span class="hint-t">If that number is already used, the two panels swap.</span>` : ""}
       ${k !== n ? `<span class="hint-t">Corrected: this position started as no. ${k}.</span>` : ""}</div>
-    <div class="field"><span class="lab">Does it exist in Creswell?</span>${seg("cre", p.cre, creOpts)}
-      ${p.cre === "moved" ? `<label for="e-slot">Its position in Creswell</label>
-      <select id="e-slot"><option value="">Choose a position</option>${SLOT_ORDER.map(id => `<option value="${id}" ${id === p.slot ? "selected" : ""}>${slotName(id)}</option>`).join("")}
-        <optgroup label="Not in Creswell's photograph">${Object.keys(OFF).map(id => `<option value="${id}" ${id === p.slot ? "selected" : ""}>${slotName(id)}</option>`).join("")}</optgroup></select>
-      <button type="button" id="e-pick">${picking && partner !== "3d" ? "Now click a number on Creswell's photograph" : "Pick on the photograph"}</button>
-      <button type="button" id="e-pick3">${picking && partner === "3d" ? "Now click a place on the 3D model" : "Pick on the 3D model"}</button>
-      ${others.length ? `<span class="warn">Panel ${others.join(", ")} is at this position too.</span>` : ""}` : ""}</div>
-    ${h ? `<div class="field"><span class="lab">Is the Creswell panel at its original position new?</span>${seg("isNew", newOf(h), YESNO)}
-      ${newOf(h) === "yes" ? `<span class="hint-t">Labelled N on Creswell's photograph.</span>` : ""}</div>` : ""}
+    <div class="field"><span class="lab">Where is it after 1907?</span>${seg("cre", p.cre, creOpts)}
+      <span class="hint-t">After 1907 is the 3D model: Creswell's photograph, extended to the rails, the stairs, the seat and the backrest.</span>
+      ${p.cre === "moved" ? `<label for="e-slot">Its place</label>
+      <select id="e-slot"><option value="">Choose a place</option><optgroup label="Mihrab side and its rail (Creswell's photograph)">${SLOT_ORDER.map(id => `<option value="${id}" ${id === p.slot ? "selected" : ""}>${slotName(id)}</option>`).join("")}</optgroup>
+        <optgroup label="Rest of the minbar (3D model)">${Object.keys(OFF).map(id => `<option value="${id}" ${id === p.slot ? "selected" : ""}>${slotName(id)}</option>`).join("")}</optgroup></select>
+      <button type="button" id="e-pick">${picking && partner !== "3d" ? "Now click a number on Creswell's photograph" : "Pick on Creswell's photograph"}</button>
+      ${others.length ? `<span class="warn">Panel ${others.join(", ")} is at this position too.</span>` : ""}` : ""}
+      <button type="button" id="e-pick3" aria-pressed="${picking && partner === "3d"}">${picking && partner === "3d" ? "Now click its place on the 3D model (press again to cancel)" : "Select its place in the 3D model"}</button>
+      ${p.cre === "yes" || (p.cre === "moved" && p.slot) ? `<span class="hint-t">Recorded place: ${slotName(slotOf(n))}${p.cre === "yes" ? " (the same as before)" : ""}.</span>` : p.cre === "no" ? `<span class="hint-t">Recorded as not on the minbar after 1907.</span>` : ""}</div>
+    ${h ? `<div class="field"><span class="lab">Is the panel now at its original place new?</span>${seg("isNew", newOf(h), YESNO)}
+      ${newOf(h) === "yes" ? `<span class="hint-t">Labelled N on Creswell's photograph and on the 3D model.</span>` : ""}</div>` : ""}
   </form>`;
 }
 function bindForm(n) {
@@ -778,8 +780,9 @@ function bindForm(n) {
   if ($("e-slot")) {
     $("e-slot").onchange = e => { const v = e.target.value; if (v) assign(n, v); else setP(n, {slot: undefined}); stopPick(); changed(); };
     $("e-pick").onclick = () => { picking = true; partner = "after"; setView("both"); renderCard(); };
-    $("e-pick3").onclick = () => { picking = true; partner = "3d"; setView("both"); renderCard(); };
   }
+  // the 3D model as the way to say where the panel is: the next click on a place of the model records it (its own place counts as "yes")
+  $("e-pick3").onclick = () => { if (picking && partner === "3d") stopPick(); else { picking = true; partner = "3d"; setView("both"); } renderCard(); sync3d(); };
   f.querySelectorAll("[data-set]").forEach(b => b.onclick = () => {
     const name = b.dataset.set, on = b.getAttribute("aria-pressed") === "true", val = on ? undefined : b.dataset.val, h = homeOf(n);
     stopPick();
@@ -788,7 +791,7 @@ function bindForm(n) {
     else {
       setP(n, {cre: val, slot: val === "moved" ? P(n).slot : undefined});
       if (val === "yes" && E.slots[h]) delete E.slots[h];
-      if (val === "moved" && !P(n).slot) { picking = true; if (partner !== "3d") partner = "after"; setView("both"); }
+      if (val === "moved" && !P(n).slot) { picking = true; partner = "3d"; setView("both"); }      // the place is chosen on the 3D model
     }
     changed();
   });
@@ -821,9 +824,9 @@ function stopPick() { picking = false; }
 function afterNote(n) {
   const c = P(n).cre, s = slotOf(n);
   const h = homeOf(n), nw = h && newOf(h) === "yes" ? " A new panel stands at its position." : "";
-  if (c === "no") return `Not in Creswell's photograph.${nw}`;
+  if (c === "no") return `Not in Creswell's photograph, and no other place on the minbar is recorded for it.${nw}`;
   if (c === "moved" && OFF[s]) return `Moved to a place Creswell's photograph does not show: ${slotName(s)}.${nw}`;
-  if (c === "moved") return s ? `Moved. In Creswell's photograph it is at: ${slotName(s)}.${nw}` : `In a different position in Creswell's photograph; the position is not chosen yet.`;
+  if (c === "moved") return s ? `Moved. In Creswell's photograph it is at: ${slotName(s)}.${nw}` : `In another place after 1907; the place is not chosen yet.`;
   if (c === "yes") return isBal(n) ? `Still present, at his position ${BAL[n - 52]} from the top, following Creswell's table.` : `The same panel, in the same position.`;
   if (!s) return `Creswell says this panel <q>has disappeared</q>, so nothing is outlined on his photograph.`;
   if (isBal(n)) return `The balustrade was rebuilt with sixteen panels. Following Creswell's table, this panel now stands at his position ${BAL[n - 52]} from the top, outlined on his photograph.`;

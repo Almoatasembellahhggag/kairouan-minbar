@@ -446,7 +446,7 @@ $("n-draw").textContent = DRAW.length + " panels";
 // ?embed: the page sits in a frame of the panel site's compare view. That page sends its edits, its selection and its numbering
 // (MODEL.embed) and is told which place was clicked here (its from3d).
 const EMBED = new URLSearchParams(location.search).has("embed");
-let embedSynced = false, embedKey = "", embedGolvin = null, clicked = null;
+let embedSynced = false, embedKey = "", embedGolvin = null, clicked = null, idle = "Point at a panel";
 if (EMBED) document.body.classList.add("embed");
 const VIEWS = {
   mihrab: [[L / 2 - 0.85, 1.75, 6.6], [L / 2 - 0.85, 1.6, 0]],
@@ -493,13 +493,13 @@ function point(e) {
   const h = ray.intersectObjects(pick, false)[0]?.object || null;
   if (h === hot) return;
   hot = h;
-  $("info-t").textContent = hot ? infoOf(hot) : "Point at a panel";
+  $("info-t").textContent = hot ? infoOf(hot) : idle;
   paint(); cmpRefresh();
 }
 let downAt = null, lastTap = null;
 renderer.domElement.addEventListener("pointerleave", () => {   // off the model: nothing is pointed at any more
   if (!hot) return;
-  hot = null; $("info-t").textContent = "Point at a panel"; paint(); cmpRefresh(); });
+  hot = null; $("info-t").textContent = idle; paint(); cmpRefresh(); });
 renderer.domElement.addEventListener("pointermove", point);
 renderer.domElement.addEventListener("pointerdown", e => { downAt = [e.clientX, e.clientY]; flight = null; point(e); });
 renderer.domElement.addEventListener("pointerup", e => {   // a click, not a drag: switch to the panel's other drawing
@@ -572,7 +572,7 @@ function statusOf(n) {
   const p = E.panels[n] || {};
   if (p.cre === "yes") return `No. ${n}: the saved edits say it is still in the same place.`;
   if (p.cre === "moved") return nowOf(n) ? `No. ${n}: the saved edits say it moved to ${placeName(nowOf(n))}.` : `No. ${n}: the saved edits say it moved; the new place is not chosen.`;
-  if (p.cre === "no") return `No. ${n}: the saved edits say it is not on the minbar after 1907.`;
+  if (p.cre === "no") return `No. ${n}: the saved edits give it no place on the minbar after 1907.`;
   return homeOf(n) ? `No. ${n}: not judged yet; shown at the same place.` : `No. ${n}: not judged yet; Creswell's table has it gone.`;
 }
 const oldImg = $("old-img"), newImg = new Image(); newImg.src = "../after.jpg";
@@ -679,6 +679,7 @@ window.MODEL = {faceOn, labels, railReady, rails: FACES.map(f => [f.name, f.rail
     const id = o.n ? nowOf(o.n) : o.slot || null, key = id + "|" + !!o.zoom; markId = id; relabel(); paint();
     if (id && key !== embedKey && id !== clicked && (o.zoom || OFF[id])) { const m = pick.find(q => q.userData.place === id); if (m) faceOn(m); }
     embedKey = key; clicked = null;
+    idle = o.pick ? `Click the place where no. ${o.pick} is now` : "Point at a panel"; if (!hot) $("info-t").textContent = idle;      // the Edit page is waiting for a place
   }, riserPanels, slots: SLOTS.length, seat: SEAT, rise: RISE, run: RUN, top: TOP};
 (async () => {   // the edits saved on the panel site: this browser's own first, then the file in the repository
   try { const o = adopt(JSON.parse(localStorage.getItem(LS))); if (o) { E = o; editsFrom = "browser"; } } catch (e) {}
