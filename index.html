@@ -1001,7 +1001,7 @@ function showSlot(id) {
       <div class="field"><span class="lab">${off ? "Is this panel new, made in 1907–10?" : "Is this Creswell panel new?"}</span>${seg("isNew", isNew, YESNO)}</div>
       <div class="field"><label for="e-as">If not, its Saladin number</label><div class="row"><input id="e-as" type="number" min="1" max="79"><button type="button" id="e-asgo">Assign</button></div></div>
     </form>` : ""}
-    ${shot ? `<div class="figs"><figure class="fig"><img src="${shot}" alt="${slotName(id)}"><figcaption>${slotName(id)}: from the photographs of the new rails laid flat in 1907–10, straightened, as on the 3D model</figcaption></figure></div>` : ""}
+    ${shot ? `<div class="figs"><figure class="fig"><img src="${shot}" alt="${slotName(id)}"><figcaption>${slotName(id)}: ${/^(r\d+\.\d+|s[12])$/.test(id) ? "from the photographs of the stair taken after 1910" : "from the photographs of the new rails laid flat in 1907–10"}, straightened, as on the 3D model</figcaption></figure></div>` : ""}
     ${photosOfSlot(id).length ? `<div class="figs">${photosOfSlot(id).map(p => `<figure class="fig"><img src="${p.file}" alt="${p.title}" loading="lazy"><figcaption>${p.group}: ${p.title}</figcaption></figure>`).join("")}</div>` : ""}
     ${(id === "b10" || id === "b16") ? `<div class="note"><span class="src">${S.CRE}</span><p>The balustrade <q>now consists of sixteen only, of which Nos. 10 and 16 are new, the latter being twice the width of the rest</q>; p. 317.</p></div>` : ""}
     ${id === "b16" ? `<div class="note"><span class="src">${S.PD}</span><p>The two original panels nos. 68 and 69 of the left face were replaced by a single one; p. 223.</p></div>` : ""}
@@ -1048,7 +1048,7 @@ function setView(v) {
   const show = w => v === w || (v === "both" && (w === "before" || w === partner));
   VW.forEach(w => { $("pane-" + w).hidden = !show(w); });
   const on3 = v === "both" && partner === "3d";      // the 3D model is loaded the first time it is asked for
-  $("pane-3d").hidden = !on3; if (on3 && !$("f3d").getAttribute("src")) $("f3d").src = "3d/?embed&v=20261114n"; if (on3) sync3d();
+  $("pane-3d").hidden = !on3; if (on3 && !$("f3d").getAttribute("src")) $("f3d").src = "3d/?embed&v=20261115a"; if (on3) sync3d();
   $("withseg").hidden = v !== "both";
   syncSave();
   document.querySelectorAll("#withseg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.w === partner));
