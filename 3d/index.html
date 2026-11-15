@@ -46,7 +46,8 @@
   #old-svg polygon.sel { stroke: #e0b070; stroke-width: 10; fill: rgba(224,176,112,.35); }
   #old-svg text { fill: #fff; font: 600 40px Helvetica, Arial, sans-serif; text-anchor: middle; dominant-baseline: central; paint-order: stroke; stroke: rgba(0,0,0,.85); stroke-width: 8px; pointer-events: none; }
   .cmp-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; flex: 0 0 auto; }
-  .cmp-pair figure { margin: 0; }
+  .cmp-pair.trio { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }      /* a position of the mihrab-side rail: before 1907, 1907-10 and Creswell */
+  .cmp-pair figure { margin: 0; } .cmp-pair figure[hidden] { display: none; }
   .cmp-pair canvas { display: block; width: 100%; height: 30vh; max-height: 300px; object-fit: contain; background: #000; border-radius: 6px; }
   .cmp-pair figcaption { font-size: .82rem; padding-top: 4px; min-height: 2.6em; }
   #cmp-status { margin: 0; font-size: .85rem; color: var(--accent); min-height: 1.4em; }
@@ -72,7 +73,7 @@
       <button id="b-photo" aria-pressed="true">Photograph</button>
       <button id="b-draw" aria-pressed="true">Drawings</button>
       <button id="b-rail" aria-pressed="true" title="The photographs of the new rails of 1907–10 on the three rail faces Creswell's photograph does not show">Rail photos</button>
-      <button id="b-rail1" aria-pressed="false" title="The photographs of the new rails of 1907–10 on the outside of the mihrab-side rail, in place of Creswell's photograph">Rail photos, mihrab face</button>
+      <button id="b-rail1" aria-pressed="false" title="The outside of the mihrab-side rail as photographed in 1907–10, in place of Creswell's photograph: the panels of positions 6 and 13 change places">Rail photos, mihrab face</button>
       <button id="b-stair" aria-pressed="true" title="The photographs of the stair taken after 1910 on the risers and on the front of the seat">Stair photos</button>
     </div></details>
     <details class="menu" id="m-num"><summary>Numbers</summary><div class="pop">
@@ -113,11 +114,11 @@
     <p>The stair has eleven steps, one over each of columns 3 to 13; their rise follows the slope of the stair string. Riser panels are counted from the fonds Poinssot photographs taken after 1910 (scans 013, 015, 018).</p>
     <p>Stair photos puts the photographs taken after 1910 on the eleven risers and on the front of the seat (Bibliothèque de l'INHA, Collection Jacques Doucet, fonds Poinssot, Archives 106, 130, 03; reproduced for research and study): the front of the seat from scan 016, risers 11 and 10 from scan 017, riser 9 from 013, riser 8 from 013 and 015, risers 7 to 3 from 015, risers 2 and 1 from 018. Each board is straightened and stretched to the size of its step, and the frieze and the panels of the model are cut where they are on the photograph. Risers 1 and 2 come from a distant view of the whole minbar and are coarse. The first panel of riser 2 is hidden behind a post in that view and stays plain; so does the foot of riser 9, which the step below hides. The mihrab-side end of risers 3 and 4 is in the dark edge of the print. Shadows are those of the prints. With Stair photos off, the boards are plain.</p>
     <p>The reconstruction drawings are the ones on the panel site, drawn from photographs and not measured. Each is fitted to the traced outline of its panel, so its proportions follow the panel on Creswell's photograph and can differ a little from the drawing itself. The drawing of panel 50 stands where that panel was before 1907. The drawing of rail panel 66 is left out: that panel is not on the rail after 1907.</p>
-    <p>Compare puts Garrigues's photograph of before 1907 beside the model. Each pair of details is straightened to the same shape, so a panel can be checked against any place on the model. The stair rails count as places too, on all four faces: with Rail photos on, a rail panel is shown from the photographs of the new rails laid flat in 1907–10; the outside of the mihrab-side rail is shown from Creswell's photograph unless Rail photos, mihrab face is on. Where a panel is now is read from the edits saved on the panel site, in this browser if there are any. On the old photograph the outline of a panel is green where it is recorded in the same place, orange where it is recorded as moved and red where it is recorded as gone.</p>
+    <p>Compare puts Garrigues's photograph of before 1907 beside the model. Each pair of details is straightened to the same shape, so a panel can be checked against any place on the model. The stair rails count as places too, on all four faces: with Rail photos on, a rail panel is shown from the photographs of the new rails laid flat in 1907–10. A position on the outside of the mihrab-side rail is shown three times: before 1907, in those photographs of 1907–10 and in Creswell's photograph, which shows the rail by 1929. The middle one follows the panel: positions 6 and 13 hold each other's panels in 1907–10, so for these two it is taken from the other position. Where a panel is now is read from the edits saved on the panel site, in this browser if there are any. On the old photograph the outline of a panel is green where it is recorded in the same place, orange where it is recorded as moved and red where it is recorded as gone.</p>
     <p>The place of a panel can be changed here: hold the panel, click its place on the model (it turns green) and press Now at the place clicked. A place is any panel of the side, of the two stair rails (the outside and the inside of a rail are separate places, with different panels), of the risers or of the seat front, the backrest, or the maqsūra-side face as a whole, so a panel that left the mihrab side can be followed. The change is saved in this browser, where the panel site's Edit page reads it too; Save file writes edits.json for the site's folder.</p>
     <p>The model is lit and casts shadows, and the photographs take that light. They are black and white: each is tinted to the same wood colour so that they sit together, and its light and dark areas also give the carving a slight relief. Photograph, off, shows the plain model.</p>
     <p>Estimated, not measured: the width (1.0 m), the height of the seat, the thickness of the sides and of the treads, and how far the panels sit back in their frames (8 mm). The posts at the foot of the rails and the spindles on top of the sides are measured on Creswell's photograph. The backrest of 1909–10, its columns and its urns follow the photographs taken after 1910 (fonds Poinssot, prints 012, 016 and 018) in outline only; their carving is not drawn. How high the frieze and the panels of a riser are is read from the photographs, which look up or down the stair, so it is approximate. The maqsūra-side face is left blank.</p>
-    <p>Rail photos puts a photograph on every rail panel of the three faces Creswell's photograph does not show, cut from the six photographs of the new rails laid flat during the restoration (Bibliothèque de l'INHA, Collection Jacques Doucet, fonds Poinssot, Archives 106, 130, 03, scans 073 to 075, 078, 080 and 082; reproduced for research and study). Each is straightened and set on its panel at the panel's own size: on the mihrab-side rail the panels are measured on Creswell's photograph, and on the maqsūra-side rail their widths and the uprights between them are measured on the restoration photographs. Black or white patches are breaks in the prints. The outside of the mihrab-side rail, the face towards the mihrab, keeps Creswell's photograph. Rail photos, mihrab face, off at first, puts the photographs of 1907–10 there as well; in them the panels of positions 6 and 13 are in each other's places. Two prints of the rail in place taken after 1910 (scans 021 and 026) already show them where Creswell has them. With Rail photos off, the other three faces are plain panels.</p>
+    <p>Rail photos puts a photograph on every rail panel of the three faces Creswell's photograph does not show, cut from the six photographs of the new rails laid flat during the restoration (Bibliothèque de l'INHA, Collection Jacques Doucet, fonds Poinssot, Archives 106, 130, 03, scans 073 to 075, 078, 080 and 082; reproduced for research and study). Each is straightened and set on its panel at the panel's own size: on the mihrab-side rail the panels are measured on Creswell's photograph, and on the maqsūra-side rail their widths and the uprights between them are measured on the restoration photographs. Black or white patches are breaks in the prints. The outside of the mihrab-side rail, the face towards the mihrab, keeps Creswell's photograph. Rail photos, mihrab face, off at first, puts the photographs of 1907–10 there as well; in them the panels of positions 6 and 13 are in each other's places. With it on, the numbers of those two positions, the place a panel is zoomed to and the panel a click selects follow the photographs of 1907–10; where a panel is recorded stays its place by 1929. Two prints of the rail in place taken after 1910 (scans 021 and 026) already show them where Creswell has them, and so does Creswell's print V&A 720-1929. With Rail photos off, the other three faces are plain panels.</p>
     <p>The rail counts come from six photographs of the two new rails laid flat during the restoration (fonds Poinssot, scans 073 to 075, 078, 080 and 082), three for each face, joined into one image per face. Each rail was counted on both of its faces from a different set of photographs, and the two counts agree: 16 on the mihrab-side rail, which is also Creswell's count, and 18 on the maqsūra-side rail. The 18 are narrower, so both rails come out the same length. On the model the panels on the inside of the mihrab-side rail have the positions and sizes of those on its outside, and the 18 of the maqsūra-side rail are set on the same length of rail by their measured widths, good to about a fifth of a panel.</p>
   </details>
 </div>
@@ -125,8 +126,9 @@
 <aside id="cmp" hidden>
   <div class="cmp-head"><b>Before 1907</b><span>Garrigues no. 271. Click a panel to hold it: the model zooms to its place. Then point at places on the model or click one. Scroll to zoom, drag to move.</span><button id="cmp-close">Close</button></div>
   <div id="old-wrap"><div id="old-stage"><img id="old-img" src="../minbar.jpg" alt="The minbar from its mihrab side before 1907, Garrigues photograph no. 271"><svg id="old-svg" viewBox="0 0 3600 2629" preserveAspectRatio="none"></svg></div></div>
-  <div class="cmp-pair">
+  <div class="cmp-pair" id="cmp-pair">
     <figure><canvas id="c-old" width="560" height="640"></canvas><figcaption id="cap-old">Before 1907</figcaption></figure>
+    <figure id="f-mid" hidden><canvas id="c-mid" width="560" height="640"></canvas><figcaption id="cap-mid">1907–10</figcaption></figure>
     <figure><canvas id="c-new" width="560" height="640"></canvas><figcaption id="cap-new">On the model (Creswell, after 1907)</figcaption></figure>
   </div>
   <p id="cmp-status"></p>
@@ -247,6 +249,9 @@ function photoUV(g) { const p = g.attributes.position, uv = g.attributes.uv;
 
 // ---- the two sides. Each is a core with a skin on both faces; the panels lie in openings of the skin, REC behind its face.
 const RAIL = SLOTS.filter(s => s.kind === "rail");
+// the mihrab-side rail, outside: where the panel now at a position stood in the photographs of the new rail laid flat in 1907-10.
+// Positions 6 and 13 hold each other's panels there; prints taken after 1910 and Creswell's of 1929 have the present order.
+const THEN = {b6: "b13", b13: "b6"};
 function skin(holes, z, cap) {
   const sh = shapeOf(OUTLINE); holes.forEach(pts => sh.holes.push(shapeOf(pts)));
   const m = new THREE.Mesh(new THREE.ExtrudeGeometry(sh, {depth: REC, bevelEnabled: false}), [cap, WOOD_D]); m.position.z = z; return solid(m);
@@ -276,7 +281,10 @@ function slotInfo(s) {
   const sal = salText(s.id), num = (sal === "N" ? "New panel" : sal === "?" ? "No panel assigned" : `Saladin no. ${sal}`) + `, Golvin no. ${GOLVIN[s.id]}`;
   if (s.kind === "panel") return `Mihrab side, column ${s.col}, ${ORD[s.row]} panel of ${s.of} from the bottom. ${num}`;
   if (s.kind === "tri") return `Mihrab side, triangle under the stair string, column ${s.col}. ${num}`;
-  return `Stair rail, mihrab side, outside: position ${s.pos} of 16 from the top${s.pos === 16 ? ", double width" : ""}. ${num}`;
+  const where = `Stair rail, mihrab side, outside: position ${s.pos} of 16 from the top${s.pos === 16 ? ", double width" : ""}`, t = THEN[s.id];
+  if (!t) return `${where}. ${num}`;
+  if (then1()) { const p = SLOT_BY[t].pos, sal = salText(t); return `${where}, as photographed in 1907–10. ${sal === "?" ? "No panel assigned" : "Saladin no. " + sal}, Golvin no. ${GOLVIN[t]}: by 1929 (Creswell) this panel is at position ${p}, and position ${s.pos} holds ${salText(s.id) === "?" ? "another" : "no. " + salText(s.id)}.`; }
+  return `${where}. ${num}. In the photographs of 1907–10 this panel is at position ${SLOT_BY[t].pos}.`;
 }
 // ---- photographs of the rail panels: one sheet per face, cut from the photographs of the new rails laid flat in 1907-10 (fonds Poinssot).
 // In a sheet every panel has one cell and the last, wide one has two; each is stretched to the outline of its panel.
@@ -289,8 +297,8 @@ function railGeo(s, n) {
     uv.setXY(i, c0 + cw * (dx * e2[1] - dy * e2[0]) / det, 1 - (e1[0] * dy - e1[1] * dx) / det); }
   return geo;
 }
-const railMat = face => { if (!railTex[face]) railTex[face] = srgb(new THREE.TextureLoader().load(`rail/rail${face}.jpg?v=20261114d`, () => { railReady[face] = true; paint(); cmpRefresh(); }));
-  return photoMaterial(railTex[face], face, 0.0012, {side: THREE.DoubleSide}); };
+const railSheet = face => railTex[face] || (railTex[face] = srgb(new THREE.TextureLoader().load(`rail/rail${face}.jpg?v=20261114d`, () => { railReady[face] = true; paint(); cmpRefresh(); })));
+const railMat = face => photoMaterial(railSheet(face), face, 0.0012, {side: THREE.DoubleSide});
 RAIL.forEach(s => { const m = new THREE.Mesh(railGeo(s, 16)); m.position.z = ZO - REC + 0.0012; m.visible = false; m.receiveShadow = true; scene.add(m); railOuter.push(m); });
 SLOTS.forEach(s => {
   const geo = new THREE.ShapeGeometry(shapeOf(s.pts));
@@ -445,11 +453,14 @@ const urn = stem => [[0.009, 0], [0.009, stem], [0.015, stem + 0.005], [0.011, s
 const $ = id => document.getElementById(id);
 let photoOn = true, numMode = "off", drawOn = true, railOn = true, rail1On = false, rail1Set = false, stairOn = true, hot = null, cmpOn = false, markId = null, chosen = null;
 const railOf = m => rail1On && railReady[1] && m.userData.rail;
+// with the mihrab face shown as in 1907-10, positions 6 and 13 show each other's panels: a part stands for the place its panel has now
+const then1 = () => rail1On && !!railReady[1], phys = id => (then1() && THEN[id]) || id, plOf = m => m && m.userData.place ? phys(m.userData.place) : null;
+let wasThen = false;
 // a part that can be pointed at is shown in one of four ways: pointed at; the place chosen by a click (while comparing);
 // the place where the held panel is recorded; or plain
 const MARK = 0x5fd0ff, CHOSEN = 0x7be08a;
 let markSet = new Set();      // framed in the panel site's Photos view: the places of the panels marked for the current photograph
-const stateOf = m => m === hot || (hot && m.userData.twin === hot) ? "hot" : cmpOn && chosen && m.userData.place === chosen ? "chosen" : (cmpOn || EMBED) && (markId && m.userData.place === markId || markSet.has(m.userData.place)) ? "mark" : "";
+const stateOf = m => { const pl = plOf(m); return m === hot || (hot && m.userData.twin === hot) ? "hot" : cmpOn && chosen && pl === chosen ? "chosen" : (cmpOn || EMBED) && (markId && pl === markId || markSet.has(pl)) ? "mark" : ""; };
 function tone(m) {
   const u = m.userData, mat = m.material, st = stateOf(m), flag = st === "chosen" ? CHOSEN : st === "mark" ? MARK : null;
   if (u.overlay) { mat.opacity = flag ? (st === "mark" ? 0.3 : 0.5) : photoOn || drawingOf(m) || railOf(m) ? (st ? (drawingOf(m) || railOf(m) ? 0.3 : 0.45) : 0) : 1; paintC(mat, flag ?? (st ? HL : u.base)); }
@@ -465,6 +476,7 @@ function paint() {
   railFaces.forEach(m => { const ph = railOn && !!railReady[m.userData.face]; m.material = ph ? m.userData.photo : m.userData.plain; });
   { const sp = stairOn && stairReady; stairCaps.forEach(m => m.visible = sp); seatLoz.forEach(m => m.visible = !sp);      // the stair fronts: their photographs, or plain
     stairFields.forEach(m => m.material = sp && m.userData.photo ? m.userData.photo : m.userData.plain); }
+  if (then1() !== wasThen) { wasThen = then1(); relabel(); if (hot) $("info-t").textContent = infoOf(hot); }      // the numbers of positions 6 and 13 follow the photographs shown
   pick.forEach(tone);
   $("b-rail").setAttribute("aria-pressed", railOn); $("b-rail1").setAttribute("aria-pressed", rail1On); $("b-stair").setAttribute("aria-pressed", stairOn);
   $("m-num").firstElementChild.textContent = numMode === "off" ? "Numbers" : numMode === "golvin" ? "Numbers: Golvin" : "Numbers: Saladin";
@@ -580,9 +592,9 @@ renderer.domElement.addEventListener("pointerup", e => {   // a click, not a dra
   if (dbl) {                                                         // the second click of a double-click (or double tap)
     if (hot) faceOn(hot); else if (backView) { fly(backView[0], backView[1]); backView = null; }
   }
-  if (EMBED && !dbl && hot && hot.userData.place) { clicked = hot.userData.place; try { parent.from3d && parent.from3d(clicked); } catch (e) {} }
+  if (EMBED && !dbl && hot && hot.userData.place) { clicked = plOf(hot); try { parent.from3d && parent.from3d(clicked); } catch (e) {} }
   if (cmpOn && !dbl) {                                               // while comparing, a click chooses a place; a click beside the minbar lets it go
-    const pl = hot ? hot.userData.place : null;
+    const pl = plOf(hot);
     if (pl || chosen) { chosen = pl || null; paint(); cmpRefresh(); }
   }
   const o = drawingOf(hot);
@@ -643,10 +655,10 @@ const salText = id => { const ns = numbersAt(id); return ns.length ? ns.join("/"
 // The inside face of a rail is named after the place in front of it, with r, until a panel is recorded there.
 const nameOf = id => SLOT_BY[id] ? (numMode === "golvin" ? String(GOLVIN[id]) : salText(id)) : numMode !== "golvin" && numbersAt(id).length ? numbersAt(id).join("/") : id;
 function relabel() { labels.forEach(l => { const u = l.userData.num; if (!u) return; const ns = numMode !== "golvin" && !SLOT_BY[u.id] ? numbersAt(u.id) : [];
-  l.userData.set(ns.length ? ns.join("/") : u.front ? nameOf(u.front) + "r" : u.own || nameOf(u.id)); }); }
+  l.userData.set(ns.length ? ns.join("/") : u.front ? nameOf(u.front) + "r" : u.own || nameOf(phys(u.id))); }); }
 const placeName = id => { const s = SLOT_BY[id];
   if (!s) return OFF[id] || "a place not on the model";
-  return s.kind === "rail" ? `rail position ${s.pos} from the top` : s.kind === "tri" ? `the triangle of column ${s.col}` : `column ${s.col}, ${ORD[s.row]} of ${s.of} from the bottom`; };
+  return s.kind === "rail" ? `rail position ${s.pos} from the top` + (THEN[id] ? ` (${SLOT_BY[THEN[id]].pos} in the photographs of 1907–10)` : "") : s.kind === "tri" ? `the triangle of column ${s.col}` : `column ${s.col}, ${ORD[s.row]} of ${s.of} from the bottom`; };
 // ---- editing: where a panel of before 1907 is now. The rules are those of the panel site's Edit page, and the result is saved where that page reads it.
 const setP = (n, patch) => { const q = {...P(n), ...patch}; Object.keys(q).forEach(k => q[k] === undefined && delete q[k]); if (Object.keys(q).length) E.panels[n] = q; else delete E.panels[n]; };
 function judge(n, what, id) {
@@ -712,7 +724,7 @@ function sheetOf(face, slot, n) {
 // from Creswell's photograph, a panel of the stair from the photographs taken after 1910, nothing for the parts that carry no photograph
 function shotOf(id) {
   const s = SLOT_BY[id];
-  if (s) return (s.kind === "rail" && rail1On && sheetOf(1, s, 16)) || {img: newImg, quad: s.pts, k: newImg.naturalWidth / PW, grow: 1.16, creswell: true};
+  if (s) return (s.kind === "rail" && rail1On && sheetOf(1, SLOT_BY[phys(id)], 16)) || {img: newImg, quad: s.pts, k: newImg.naturalWidth / PW, grow: 1.16, creswell: true};
   const t = /^(?:r(\d+)\.(\d+)|s([12]))$/.exec(id);      // a panel of a riser or of the front of the seat
   if (t) { const row = ST.rows[t[3] ? "s" : "r" + t[1]], k = +(t[3] || t[2]), q = row && row.px[k - 1]; if (!q || !(stairOn && stairReady) || (row.none || []).includes(k)) return null;
     const y0 = row.y + row.py[0], y1 = row.y + row.py[1];
@@ -722,18 +734,25 @@ function shotOf(id) {
 }
 function cmpRefresh() {
   if (!cmpOn) return;
-  const u = hot && hot.userData.place ? hot.userData : null, cur = u ? u.place : chosen;      // the place pointed at, or else the one chosen by a click
+  const u = hot && hot.userData.place ? hot.userData : null, cur = u ? plOf(hot) : chosen;      // the place pointed at, or else the one chosen by a click
   const at = cur ? numbersAt(cur) : [];
   const n = sel ?? pre ?? at[0] ?? null, place = sel ? (cur || nowOf(sel)) : pre ? nowOf(pre) : cur;
   const mk = n ? nowOf(n) : null; if (mk !== markId) { markId = mk; paint(); }
   svg.querySelectorAll("polygon").forEach(p => { const k = +p.dataset.n; p.setAttribute("class", [k === sel ? "sel" : at.includes(k) || k === pre ? "at" : "", P(k).cre ? "j-" + P(k).cre : ""].join(" ").trim()); });
   detail($("c-old"), oldImg, n ? BEFORE[outlineOf(n)] : null, oldImg.naturalWidth / 3600);
-  const sh = place ? shotOf(place) : null;
+  // a position of the mihrab-side rail, outside, is shown twice after 1907: in the photographs of the new rail laid flat in 1907-10, where the
+  // panel may stand at another position (THEN), and in Creswell's photograph, by 1929
+  const rs = place && SLOT_BY[place]?.kind === "rail" ? SLOT_BY[place] : null, then = rs && railReady[1] ? SLOT_BY[THEN[place] || place] : null, mid = then && sheetOf(1, then, 16);
+  $("f-mid").hidden = !mid; $("cmp-pair").classList.toggle("trio", !!mid);
+  if (mid) detail($("c-mid"), mid.img, mid.quad, 1, 1, mid.shape);
+  $("cap-mid").textContent = !mid ? "" : then === rs ? `1907–10, the new rail laid flat: the same position` : `1907–10, the new rail laid flat: position ${then.pos} from the top (at ${rs.pos} by 1929)`;
+  const sh = mid ? {img: newImg, quad: rs.pts, k: newImg.naturalWidth / PW, grow: 1.16, creswell: true} : place ? shotOf(place) : null;
   detail($("c-new"), sh ? sh.img : newImg, sh ? sh.quad : null, sh ? sh.k || 1 : 1, sh ? sh.grow || 1 : 1, sh ? sh.shape : undefined);
   const how = !sh ? " (no photograph of this place on the model)" : sh.creswell ? "" : ` (${sh.note || "photograph of the new rail, 1907–10"})`;
   const which = sel && cur && cur !== nowOf(sel) ? (u ? ", the place you are pointing at" : ", the place you clicked") : !sel && !u && cur ? ", the place you clicked" : "";
   $("cap-old").textContent = n ? `Before 1907: Saladin no. ${n}` + (sel ? " (held)" : "") : cur ? "Before 1907: no panel is recorded as being in this place now" : "Before 1907: point at or click a panel";
-  $("cap-new").textContent = place ? `After 1907: ${placeName(place)}` + how + which + (E.slots[place]?.isNew === "yes" ? " (marked new in the saved edits)" : "") : n ? "After 1907: not on the model" : "After 1907: point at or click a place on the model";
+  $("cap-new").textContent = mid ? `Creswell, by 1929: rail position ${rs.pos} from the top` + which + (E.slots[place]?.isNew === "yes" ? " (marked new in the saved edits)" : "")
+    : place ? `After 1907: ${placeName(place)}` + how + which + (E.slots[place]?.isNew === "yes" ? " (marked new in the saved edits)" : "") : n ? "After 1907: not on the model" : "After 1907: point at or click a place on the model";
   $("cmp-status").textContent = n ? statusOf(n) + (sel ? " Click it again to let go." : "") : "";
   // the editing row: what can be recorded for the held panel
   const p = sel ? P(sel) : {}, h = sel ? homeOf(sel) : null, here = chosen && chosen !== h;
@@ -756,7 +775,7 @@ wrap.addEventListener("wheel", e => { e.preventDefault(); const r = wrap.getBoun
   ox = mxp - (mxp - ox) * z / oz; oy = myp - (myp - oy) * z / oz; oz = z; applyOld(); }, {passive: false});
 wrap.addEventListener("pointerdown", e => { drag = {x: e.clientX, y: e.clientY, ox, oy, moved: false, n: e.target.closest?.("polygon")?.dataset.n}; });
 addEventListener("pointermove", e => { if (!drag) return; if (Math.hypot(e.clientX - drag.x, e.clientY - drag.y) > 4) drag.moved = true; if (drag.moved) { ox = drag.ox + e.clientX - drag.x; oy = drag.oy + e.clientY - drag.y; applyOld(); } });
-function goHeld() { const id = sel ? nowOf(sel) : null, m = id && pick.find(q => q.userData.place === id); if (m) faceOn(m); else if (!sel && backView) { fly(backView[0], backView[1]); backView = null; } }
+function goHeld() { const id = sel ? nowOf(sel) : null, m = id && pick.find(q => plOf(q) === id); if (m) faceOn(m); else if (!sel && backView) { fly(backView[0], backView[1]); backView = null; } }
 addEventListener("pointerup", () => { if (drag && !drag.moved && drag.n) { sel = sel === +drag.n ? null : +drag.n; cmpRefresh(); goHeld(); } drag = null; });
 addEventListener("keydown", e => { if (e.key !== "Escape") return; if (chosen) { chosen = null; paint(); cmpRefresh(); } else if (sel) { sel = null; cmpRefresh(); goHeld(); } });
 $("e-here").onclick = () => sel && chosen && judge(sel, "here", chosen);
@@ -767,7 +786,7 @@ $("e-save").onclick = saveFile;
 let drawWas = true;
 function setCmp(on) {
   cmpOn = on; $("cmp").hidden = !on; document.body.classList.toggle("cmp-on", on); $("b-cmp").setAttribute("aria-pressed", on);
-  if (on) { drawWas = drawOn; drawOn = false; } else { drawOn = drawWas; sel = pre = markId = chosen = null; }   // the drawings would hide the panels; the rail photos stay as they are
+  if (on) { drawWas = drawOn; drawOn = false; railSheet(1); } else { drawOn = drawWas; sel = pre = markId = chosen = null; }   // the drawings would hide the panels; the rail photos stay as they are
   layout(); view(on ? "compare" : "mihrab"); paint(); cmpRefresh();
 }
 $("b-cmp").onclick = () => setCmp(!cmpOn);
@@ -784,7 +803,7 @@ window.MODEL = {faceOn, labels, railReady, rails: FACES.map(f => [f.name, f.rail
     const nm = o.quiet ? "off" : o.golvin ? "golvin" : "saladin"; if (nm !== embedGolvin) embedGolvin = numMode = nm;      // the numbering follows the panel site when that changes
     $("ui").style.top = (8 + (o.top || 0)) + "px";                                                                              // below the panel site's own bar
     const id = o.n ? nowOf(o.n) : o.slot || null, key = id + "|" + !!o.zoom; markId = id; markSet = new Set(o.marks || []); relabel(); paint();
-    if (id && key !== embedKey && id !== clicked && (o.zoom || OFF[id])) { const m = pick.find(q => q.userData.place === id); if (m) faceOn(m); }
+    if (id && key !== embedKey && id !== clicked && (o.zoom || OFF[id])) { const m = pick.find(q => plOf(q) === id); if (m) faceOn(m); }
     else if (!id && embedKey && !embedKey.startsWith("null|") && backView) { fly(backView[0], backView[1]); backView = null; }
     embedKey = key; clicked = null;
     idle = o.pick ? `Click the place where no. ${o.pick} is now` : o.photo ? "Click the panels this photograph shows" : "Point at a panel"; if (!hot) $("info-t").textContent = idle;      // the Edit page is waiting for a place
