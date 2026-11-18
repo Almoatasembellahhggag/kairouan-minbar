@@ -542,6 +542,7 @@ for (let j = 1; j <= 16; j++) OFF["b" + j + "r"] = `Stair rail on the mihrab sid
 for (let j = 1; j <= 18; j++) OFF["q" + j] = `Stair rail on the maqsūra side, outside, position ${j} from the top`;
 for (let j = 1; j <= 18; j++) OFF["q" + j + "r"] = `Stair rail on the maqsūra side, inside, position ${j} from the top`;
 for (let j = 1; j <= 11; j++) for (let k = 1; k <= (j % 2 ? 3 : 4); k++) OFF[`r${j}.${k}`] = `Stair riser ${j} from the bottom, panel ${k} from the mihrab side`;
+for (let j = 1; j <= 10; j++) OFF["t" + j] = `Triangle under the stair rail on the maqsūra side, inside, position ${j} from the top`;      // the mihrab side's are the backs of its outside triangles, the same places
 Object.assign(OFF, {s1: "Front of the seat, mihrab-side panel", s2: "Front of the seat, maqsūra-side panel", k: "Backrest", o: "Maqsūra-side face"});
 const slotName = id => {
   if (!id) return "Not on his photograph";
@@ -870,7 +871,7 @@ if (CARD) {
 // a panel of after 1907 that Creswell's photograph does not show. The inside of a rail shares only its position with the panel on the outside:
 // it is named after that one, with r, and is a different panel.
 const offLabel = id => { const m = /^([bq]\d+)r$/.exec(id);
-  if (!m) return id[0] === "q" ? id : id[0] === "r" ? id.slice(1) : id === "k" ? "back" : id === "o" ? "side" : "seat";
+  if (!m) return id[0] === "q" || id[0] === "t" ? id : id[0] === "r" ? id.slice(1) : id === "k" ? "back" : id === "o" ? "side" : "seat";
   const ns = numbersAt(m[1]); return (ns.length ? ns.join("/") : SLOT[m[1]] ? (newOf(m[1]) === "yes" ? "N" : "?") : m[1]) + "r"; };
 const offNote = id => { const m = /^([bq]\d+)r$/.exec(id);
   return m ? `On the inside of the rail, at the position of ${offLabel(id).slice(0, -1)} on its outside: the two share a position and are different panels.` : "Not in Creswell's photograph."; };
@@ -1077,7 +1078,7 @@ function setView(v) {
   const show = w => v === w || (v === "both" && (w === "before" || w === partner));
   VW.forEach(w => { $("pane-" + w).hidden = !show(w); });
   const on3 = v === "both" && partner === "3d";      // the 3D model is loaded the first time it is asked for
-  $("pane-3d").hidden = !on3; if (on3 && !$("f3d").getAttribute("src")) $("f3d").src = "3d/?embed&v=20261118"; if (on3) sync3d();
+  $("pane-3d").hidden = !on3; if (on3 && !$("f3d").getAttribute("src")) $("f3d").src = "3d/?embed&v=20261118b"; if (on3) sync3d();
   $("withseg").hidden = v !== "both";
   syncSave();
   document.querySelectorAll("#withseg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.w === partner));

@@ -107,7 +107,8 @@
     <summary>Panel counts</summary>
     <table>
       <tr><td>Mihrab side, panels<small>13 columns: 8, 8, 6, 5, 5, 4, 4, 3, 3, 2, 2, 1, 1</small></td><td>52</td></tr>
-      <tr><td>Mihrab side, triangles under the stair string</td><td>10</td></tr>
+      <tr><td>Mihrab side, triangles under the stair string<small>one above each tread from the 2nd to the 11th; seen from inside too, the same pieces (pierced or carved on both faces)</small></td><td>10</td></tr>
+      <tr><td>Maqsūra side, triangles under the stair rail, inside<small>t1 to t10 from the top, placed as on the mihrab side; plain</small></td><td>10</td></tr>
       <tr><td>Stair rail, mihrab side, each face<small>15 single and one of double width at the foot; Creswell's count on the rail in place, and counted on both faces in the restoration photographs; 17 before 1907</small></td><td>16</td></tr>
       <tr><td>Stair rail, maqsūra side, each face<small>17 single and one of double width at the foot; counted on both faces in the restoration photographs</small></td><td>18</td></tr>
       <tr><td>Stair risers<small>11 risers: six of 3 panels, five of 4</small></td><td>38</td></tr>
@@ -278,9 +279,10 @@ const photoGeo = new THREE.ShapeGeometry(SLOTS.map(s => shapeOf(s.pts))); photoU
 const photo = new THREE.Mesh(photoGeo, photoMat); photo.position.z = ZO - REC + 0.0005; photo.receiveShadow = true; scene.add(photo);
 new THREE.TextureLoader().load("../after.jpg", t => { const o = photoLook(srgb(t), "creswell", 0.0035); photoMat.color.copy(o.color); photoMat.emissive.copy(o.emissive); delete o.color; delete o.emissive; Object.assign(photoMat, o); photoMat.needsUpdate = true; },
   undefined, () => { document.getElementById("info-t").textContent = "Creswell's photograph did not load."; });
-skin(RAIL.map(s => s.pts), ZI, WOOD_F);                 // mihrab side, inside
-skin(RAILQ.map(s => s.pts), -ZO, WOOD_F);               // maqsūra side, outside
-skin(RAILQ.map(s => s.pts), -ZI - REC, WOOD_F);         // maqsūra side, inside
+{ const tri = SLOTS.filter(s => s.kind === "tri").map(s => s.pts);      // the triangles under the rails show on the inside faces too
+  skin(RAIL.map(s => s.pts).concat(tri), ZI, WOOD_F);                 // mihrab side, inside
+  skin(RAILQ.map(s => s.pts), -ZO, WOOD_F);                           // maqsūra side, outside
+  skin(RAILQ.map(s => s.pts).concat(tri), -ZI - REC, WOOD_F); }       // maqsūra side, inside
 
 // ---- panels of the mihrab side, from the traced outlines
 const HL = lin(0xe0b070), HL_GLOW = lin(0x3a2609), BLACK = new THREE.Color(0);
@@ -353,6 +355,25 @@ FACES.forEach(f => f.rail.forEach(s => {
   scene.add(m); pick.push(m); railFaces.push(m);
   const c = centroid(s.pts), lb = label(own || "r", 0.08, "#fff"); lb.userData.num = rear ? {id: place, front} : {id: place, own};
   lb.position.set(mx(c[0]), my(c[1]), f.lz); lb.rotation.y = f.ry; scene.add(lb);
+}));
+// ---- the triangles under the stair rails, seen from inside: one above each tread from the 2nd to the 11th (none on the 1st, where the post stands).
+// On the mihrab side each is the back of a triangle under the stair string on the outside, the same piece: Picotin and Déléry (2018) take the
+// triangles to have "flanqué les marches et les contremarches"; the one in the Louvre "présente deux faces sculptées", those in the Bardo and at
+// Raqqada are "ajourés". So it is the same place as on the outside. Its inner face is not photographed, so it is plain.
+// The maqsūra side is taken to have ten at the same steps; they are numbered t1 to t10 from the top, as that side's rail is.
+const TRIS = SLOTS.filter(s => s.kind === "tri").sort((a, b) => a.col - b.col), TRI_IN = [];
+const treadOf = s => Math.round(my(Math.max(...s.pts.map(p => p[1]))) / RISE);
+TRIS.forEach((s, i) => [1, -1].forEach(k => {
+  const mihrab = k > 0, place = mihrab ? s.id : "t" + (i + 1), j = treadOf(s);
+  const m = new THREE.Mesh(new THREE.ShapeGeometry(shapeOf(s.pts)), new THREE.MeshStandardMaterial({color: lin(COL.tri), roughness: 0.9, metalness: 0, envMapIntensity: 0.3, side: THREE.DoubleSide}));
+  m.position.z = k * (ZI + REC - 0.0005); m.receiveShadow = true;
+  m.userData = {base: COL.tri, place, slot: s, normal: new THREE.Vector3(0, 0, -k), reach: 2 * ZI - 0.08};
+  Object.defineProperty(m.userData, "info", {get: () => mihrab
+    ? `${slotInfo(s).replace("Mihrab side, triangle", "Mihrab side, inside: the back of the triangle")}. The same piece as on the outside, pierced or carved on both faces; above tread ${j} of 11`
+    : `Maqsūra side, inside: triangle under the stair rail, position ${i + 1} of ${TRIS.length} from the top, above tread ${j} of 11. Numbered t${i + 1} here; no one numbered this side. Placed as on the mihrab side${numbersAt(place).length ? `. Recorded here: Saladin no. ${numbersAt(place).join("/")}` : ""}`});
+  scene.add(m); pick.push(m); TRI_IN.push(m);
+  const c = centroid(s.pts), lb = label(mihrab ? "" : place, 0.08, "#fff"); lb.userData.num = mihrab ? {id: place} : {id: place, own: place};
+  lb.position.set(mx(c[0]), my(c[1]) - 0.02, k * (ZI - 0.002)); lb.rotation.y = mihrab ? Math.PI : 0; scene.add(lb);
 }));
 // a note on the face that has no photograph
 { const c = document.createElement("canvas"); c.width = 1024; c.height = 256; const g = c.getContext("2d");
@@ -639,6 +660,7 @@ const OFF = {};
 RAIL.forEach(s => OFF["b" + s.pos + "r"] = `the stair rail on the mihrab side, inside, position ${s.pos} of ${RAIL.length} from the top`);      // the inside of a rail holds other panels than its outside
 RAILQ.forEach(q => { OFF["q" + q.pos] = `the stair rail on the maqsūra side, outside, position ${q.pos} of ${RAILQ.length} from the top`; OFF["q" + q.pos + "r"] = `the stair rail on the maqsūra side, inside, position ${q.pos} of ${RAILQ.length} from the top`; });
 for (let j = 1; j <= 11; j++) for (let k = 1; k <= (j % 2 ? 3 : 4); k++) OFF[`r${j}.${k}`] = `stair riser ${j} from the bottom, panel ${k} from the mihrab side`;
+TRIS.forEach((s, i) => OFF["t" + (i + 1)] = `the triangle under the stair rail on the maqsūra side, inside, position ${i + 1} of ${TRIS.length} from the top`);
 Object.assign(OFF, {s1: "the front of the seat, mihrab-side panel", s2: "the front of the seat, maqsūra-side panel", k: "the backrest", o: "the maqsūra-side face"});
 const blank = () => ({v: 2, numbers: {}, panels: {}, slots: {}, photos: {}, geo: {panels: [], slots: []}});
 const adopt = o => o && o.v === 2 && o.panels && typeof o.panels === "object" ? Object.assign(blank(), o) : null;      // the whole saved object is kept, so that saving here loses nothing
@@ -823,7 +845,8 @@ addEventListener("keydown", e => { if (e.key === "Escape" && !cmpOn) closeCard()
 window.MODEL = {faceOn, labels, railReady, closeCard,
   cardAt(id) {      // the card beside the model moved to another panel: mark its place and go to it
     if (id === carded) return; carded = id; paint();
-    const m = id && pick.find(q => plOf(q) === id); if (m) faceOn(m); },
+    const near = q => { if (!q.geometry.boundingBox) q.geometry.computeBoundingBox(); return q.localToWorld(q.geometry.boundingBox.getCenter(new THREE.Vector3())).distanceTo(camera.position); };
+    const m = id && pick.filter(q => plOf(q) === id).sort((a, b) => near(a) - near(b))[0]; if (m) faceOn(m); },      // a place seen from both faces: the face nearer the camera
   cardWide(on) { $("side").classList.toggle("wide", !!on); }, rails: FACES.map(f => [f.name, f.rail.length]), drawn, hold: n => { sel = n; cmpRefresh(); goHeld(); }, choose: id => { chosen = id; paint(); cmpRefresh(); }, judge, get edits() { return E; }, home: () => view("mihrab"),
   shot(id) {      // a picture of a place for the panel site's card: the same straightened detail as in the compare panel
     const sh = shotOf(id); if (!sh || sh.creswell) return null;
