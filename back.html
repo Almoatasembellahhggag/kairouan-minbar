@@ -72,6 +72,14 @@ body { background: var(--stage); color: var(--fg); font-family: var(--serif); fo
 .checks { display: flex; flex-direction: column; gap: 4px; font-family: var(--label); font-size: .85rem; }
 .checks label { display: flex; gap: 8px; align-items: flex-start; cursor: pointer; }
 .checks img { width: 54px; height: 40px; object-fit: cover; border-radius: 2px; flex: none; }
+.gal { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.gal button { font: inherit; text-align: left; display: flex; flex-direction: column; gap: 4px; padding: 4px; border: 2px solid transparent; border-radius: 6px; background: transparent; color: var(--fg); cursor: pointer; }
+.gal button:hover, .gal button:focus-visible { border-color: var(--line); outline: none; }
+.gal button.cur { border-color: var(--sel); }
+.gal img { width: 100%; height: 110px; object-fit: cover; border-radius: 3px; background: var(--stage); }
+.gal span { font-family: var(--label); font-size: .78rem; line-height: 1.3; color: var(--muted); }
+.gal b { font-family: var(--label); font-size: .8rem; color: var(--ok); }
+.gal b.none { color: var(--sel); }
 .chips { display: flex; flex-wrap: wrap; gap: 4px; }
 .chip { font-family: var(--label); font-size: .82rem; border: 1px solid var(--line); border-radius: 5px; padding: 1px 7px; background: transparent; color: var(--fg); cursor: pointer; }
 #lb { position: fixed; inset: 0; z-index: 30; display: flex; flex-direction: column; align-items: center; overflow: auto; background: rgba(0,0,0,.93); padding: 12px; }
@@ -93,6 +101,7 @@ body { background: var(--stage); color: var(--fg); font-family: var(--serif); fo
 <div class="tools">
   <h1>Kairouan Minbar: the other face</h1>
   <select id="go" aria-label="Go to panel"><option value="">Panel…</option></select>
+  <button id="allb">All photographs</button>
   <button id="nums" aria-pressed="true">Numbers on</button>
   <a class="linkb" href="./">Mihrab side</a>
   <a class="linkb" href="3d/">3D model</a>
@@ -181,14 +190,14 @@ addEventListener("resize", layout);
 if (window.ResizeObserver) { const ro = new ResizeObserver(() => layout()); ["167", "168"].forEach(f => ro.observe($("pane-" + f))); }          // the card docking changes the panes' size
 
 // ---- selection, card and photographs
-let cardFor = null, curPhoto = "";
+let cardFor = null, curPhoto = "", gallery = EDIT;          // the gallery of all the photographs: open at the start of the Edit page
 function paint() {
   for (const id of Object.keys(polyEl)) {
     const p = polyEl[id]; p.classList.toggle("sel", cardFor === id); p.classList.toggle("has", photosOf(id).length > 0);
     p.classList.toggle("on", !!curPhoto && panelsOf(curPhoto).includes(id));
   }
 }
-function clickPanel(id) { if (EDIT && curPhoto) { toggle(curPhoto, id); return; } cardFor = cardFor === id ? null : id; renderCard(); paint(); }
+function clickPanel(id) { if (EDIT && curPhoto) { toggle(curPhoto, id); return; } curPhoto = ""; gallery = false; cardFor = cardFor === id ? null : id; renderCard(); paint(); }
 function zoomTo(id) {
   const P = PANELS[id]; if (!P.poly) return; const f = P.fig, d = DATA.D[f], sc = $("pane-" + f).querySelector(".scroll"), st = $("stage-" + f);
   if (zf[f] < 2) { zf[f] = 2.5; layout(); }
@@ -198,11 +207,15 @@ function zoomTo(id) {
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
 const fig = pid => `<figure class="fig"><img src="th/${pid}.jpg" alt="${esc(PH[pid].title)}" loading="lazy" data-big="ph/${pid}.jpg"><figcaption>${esc(PH[pid].title)}</figcaption></figure>`;
 function renderCard() {
-  const c = $("card"); $("views").classList.toggle("docked", !!(cardFor || (EDIT && curPhoto)));
-  if (EDIT && curPhoto && !cardFor) {
+  const c = $("card"); $("views").classList.toggle("docked", !!(cardFor || curPhoto || gallery));
+  if (gallery && !curPhoto && !cardFor) {
+    c.innerHTML = `<div class="head"><h2>All photographs of this face (${DATA.PH.length})</h2><button class="x" data-x>Close</button></div>
+      <p class="note">${EDIT ? "Choose a photograph, then click the panels it shows." : "Choose a photograph to see the panels it shows."} Placed ${placedCount()} of ${DATA.PH.length}.</p>
+      <div class="gal">${DATA.PH.map(([pid, t]) => { const n = panelsOf(pid).length; return `<button data-pick="${pid}"><img src="th/${pid}.jpg" alt="" loading="lazy"><b class="${n ? "" : "none"}">${n ? n + (n > 1 ? " panels" : " panel") : "not placed yet"}</b><span>${esc(t)}</span></button>`; }).join("")}</div>`;
+  } else if (curPhoto && !cardFor) {
     const ps = panelsOf(curPhoto);
-    c.innerHTML = `<div class="head"><h2>Assigning a photograph</h2><button class="x" data-x>Close</button></div>${fig(curPhoto)}
-      <p class="note">Click a panel on the plates to add it to this photograph or take it off. Green panels are on it now.</p>
+    c.innerHTML = `<div class="head"><h2>${EDIT ? "Assigning a photograph" : "Photograph"}</h2><button class="x" data-all>All photographs</button><button class="x" data-x>Close</button></div>${fig(curPhoto)}
+      <p class="note">${EDIT ? "Click a panel on the plates to add it to this photograph or take it off. Green panels are on it now." : "The panels it shows are green on the plates."}</p>
       <p><b>Panels on it:</b> ${ps.length ? `<span class="chips">${ps.map(id => `<button class="chip" data-go="${id}">${label(id)}</button>`).join("")}</span>` : "none yet"}</p>`;
   } else if (cardFor) {
     const id = cardFor, P = PANELS[id], [col, n] = id.split("-"), phs = photosOf(id);
@@ -216,22 +229,25 @@ function renderCard() {
 }
 $("card").addEventListener("click", e => {
   const t = e.target;
-  if (t.closest("[data-x]")) { if (cardFor) cardFor = null; else { curPhoto = ""; $("photo").value = ""; } renderCard(); paint(); layout(); return; }
+  if (t.closest("[data-x]")) { if (cardFor) cardFor = null; else { curPhoto = ""; gallery = false; $("photo").value = ""; } renderCard(); paint(); return; }
+  if (t.closest("[data-all]")) { curPhoto = ""; cardFor = null; gallery = true; $("photo").value = ""; renderCard(); paint(); return; }
+  const pk = t.closest("[data-pick]"); if (pk) { curPhoto = pk.dataset.pick; cardFor = null; $("photo").value = EDIT ? curPhoto : ""; renderCard(); paint(); return; }
   if (t.dataset.go) { cardFor = null; zoomTo(t.dataset.go); return; }
   if (t.dataset.big) { const lb = $("lb"); lb.querySelector("img").src = t.dataset.big; lb.querySelector("p").textContent = t.alt; lb.classList.remove("big"); lb.hidden = false; }
 });
 $("card").addEventListener("change", e => { const t = e.target; if (t.dataset.ph) toggle(t.dataset.ph, cardFor); });
 $("lb").addEventListener("click", e => { if (e.target.tagName === "IMG") e.currentTarget.classList.toggle("big"); else e.currentTarget.hidden = true; });
-addEventListener("keydown", e => { if (e.key === "Escape") { if (!$("lb").hidden) $("lb").hidden = true; else if (cardFor || curPhoto) { cardFor = null; curPhoto = ""; $("photo").value = ""; renderCard(); paint(); layout(); } } });
+addEventListener("keydown", e => { if (e.key === "Escape") { if (!$("lb").hidden) $("lb").hidden = true; else if (cardFor || curPhoto || gallery) { cardFor = null; curPhoto = ""; gallery = false; $("photo").value = ""; renderCard(); paint(); } } });
 
 // ---- tools
 for (const id of ORDER) $("go").insertAdjacentHTML("beforeend", `<option value="${id}">${label(id)}${unsure(id) ? "?" : ""}${PANELS[id].poly ? "" : " (cut off in the plate)"}</option>`);
 $("go").addEventListener("change", e => { const id = e.target.value; if (!id) return; cardFor = id; curPhoto = EDIT ? curPhoto : ""; renderCard(); paint(); layout(); zoomTo(id); e.target.value = ""; });
+$("allb").addEventListener("click", () => { curPhoto = ""; cardFor = null; gallery = true; if (EDIT) $("photo").value = ""; renderCard(); paint(); });
 $("nums").addEventListener("click", e => { const on = e.currentTarget.getAttribute("aria-pressed") !== "true"; e.currentTarget.setAttribute("aria-pressed", on); e.currentTarget.textContent = on ? "Numbers on" : "Numbers off"; document.body.classList.toggle("nonums", !on); });
 if (EDIT) {
   document.querySelectorAll(".edit-only").forEach(x => x.hidden = false); $("pagelink").textContent = "View"; $("pagelink").href = "back.html";
   for (const [pid, t] of DATA.PH) $("photo").insertAdjacentHTML("beforeend", `<option value="${pid}">${esc(t.length > 70 ? t.slice(0, 68) + "…" : t)}</option>`);
-  $("photo").addEventListener("change", e => { curPhoto = e.target.value; cardFor = null; renderCard(); paint(); layout(); });
+  $("photo").addEventListener("change", e => { curPhoto = e.target.value; cardFor = null; gallery = !curPhoto; renderCard(); paint(); });
   $("savef").addEventListener("click", () => {
     const blob = new Blob([JSON.stringify(E, null, 1) + "\n"], {type: "application/json"}), a = document.createElement("a");
     a.href = URL.createObjectURL(blob); a.download = "back-edits.json"; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
