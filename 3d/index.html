@@ -273,11 +273,13 @@ const railFoot = (r => x => r[3][1] + (r[2][1] - r[3][1]) / (r[2][0] - r[3][0]) 
 const opening = s => { if (s.kind !== "panel") return s.pts; const top = Math.max(...s.pts.map(p => railFoot(p[0]))); return s.pts.map(p => [p[0], Math.max(p[1], top)]); };
 // mihrab side, outside: Creswell's photograph on the frame and, a little behind it, on the panels
 const photoMat = new THREE.MeshStandardMaterial({color: lin(0x705841), roughness: 0.74, metalness: 0, envMapIntensity: 0.4});
+const triPhotoMat = new THREE.MeshStandardMaterial({color: lin(0x705841), roughness: 0.74, metalness: 0, envMapIntensity: 0.4, side: THREE.DoubleSide});      // the same photograph on the inner face of a pierced triangle
 const WOOD_P = wood(0x785d45, 0.76, (t => { t.repeat.set(8.8, 16); return t; })(grainTexture(false)));   // the same face without the photograph
 const skinM = skin(SLOTS.map(opening), ZO - REC, photoMat); photoUV(skinM.geometry);
 const photoGeo = new THREE.ShapeGeometry(SLOTS.map(s => shapeOf(s.pts))); photoUV(photoGeo);
 const photo = new THREE.Mesh(photoGeo, photoMat); photo.position.z = ZO - REC + 0.0005; photo.receiveShadow = true; scene.add(photo);
-new THREE.TextureLoader().load("../after.jpg", t => { const o = photoLook(srgb(t), "creswell", 0.0035); photoMat.color.copy(o.color); photoMat.emissive.copy(o.emissive); delete o.color; delete o.emissive; Object.assign(photoMat, o); photoMat.needsUpdate = true; },
+new THREE.TextureLoader().load("../after.jpg", t => { const o = photoLook(srgb(t), "creswell", 0.0035), c = o.color, e = o.emissive; delete o.color; delete o.emissive;
+  [photoMat, triPhotoMat].forEach(m => { m.color.copy(c); m.emissive.copy(e); Object.assign(m, o); m.needsUpdate = true; }); },
   undefined, () => { document.getElementById("info-t").textContent = "Creswell's photograph did not load."; });
 { const tri = SLOTS.filter(s => s.kind === "tri").map(s => s.pts);      // the triangles under the rails show on the inside faces too
   skin(RAIL.map(s => s.pts).concat(tri), ZI, WOOD_F);                 // mihrab side, inside
@@ -359,17 +361,24 @@ FACES.forEach(f => f.rail.forEach(s => {
 // ---- the triangles under the stair rails, seen from inside: one above each tread from the 2nd to the 11th (none on the 1st, where the post stands).
 // On the mihrab side each is the back of a triangle under the stair string on the outside, the same piece: Picotin and Déléry (2018) take the
 // triangles to have "flanqué les marches et les contremarches"; the one in the Louvre "présente deux faces sculptées", those in the Bardo and at
-// Raqqada are "ajourés". So it is the same place as on the outside. Its inner face is not photographed, so it is plain.
+// Raqqada are "ajourés". So it is the same place as on the outside.
+// A pierced triangle shows the same openwork from inside, mirrored: scan 022 (after 1910) looks up the stair from inside at a triangle with the
+// cross lattice of nos. 72 and 79 on Creswell's photograph. So the inner face of every triangle that is pierced on Creswell's photograph carries
+// that photograph seen from behind. No. 76 shows its interlace on a light ground, not on openings: probably solid and carved on both faces, so its
+// inner face is unknown and stays plain, as do the maqsūra side's.
 // The maqsūra side is taken to have ten at the same steps; they are numbered t1 to t10 from the top, as that side's rail is.
-const TRIS = SLOTS.filter(s => s.kind === "tri").sort((a, b) => a.col - b.col), TRI_IN = [];
+const TRIS = SLOTS.filter(s => s.kind === "tri").sort((a, b) => a.col - b.col), TRI_IN = [], triPhotos = [], SOLID_TRI = new Set(["f76"]);
 const treadOf = s => Math.round(my(Math.max(...s.pts.map(p => p[1]))) / RISE);
 TRIS.forEach((s, i) => [1, -1].forEach(k => {
-  const mihrab = k > 0, place = mihrab ? s.id : "t" + (i + 1), j = treadOf(s);
-  const m = new THREE.Mesh(new THREE.ShapeGeometry(shapeOf(s.pts)), new THREE.MeshStandardMaterial({color: lin(COL.tri), roughness: 0.9, metalness: 0, envMapIntensity: 0.3, side: THREE.DoubleSide}));
-  m.position.z = k * (ZI + REC - 0.0005); m.receiveShadow = true;
-  m.userData = {base: COL.tri, place, slot: s, normal: new THREE.Vector3(0, 0, -k), reach: 2 * ZI - 0.08};
+  const mihrab = k > 0, place = mihrab ? s.id : "t" + (i + 1), j = treadOf(s), pierced = mihrab && !SOLID_TRI.has(s.id);
+  if (pierced) { const g = new THREE.ShapeGeometry(shapeOf(s.pts)); photoUV(g); const ph = new THREE.Mesh(g, triPhotoMat); ph.position.z = ZI + REC - 0.0005; ph.receiveShadow = true; scene.add(ph); triPhotos.push(ph); }
+  const m = new THREE.Mesh(new THREE.ShapeGeometry(shapeOf(s.pts)), pierced ? new THREE.MeshBasicMaterial({color: lin(COL.tri), transparent: true, opacity: 0, side: THREE.DoubleSide})      // over the photograph, as on the outside
+    : new THREE.MeshStandardMaterial({color: lin(COL.tri), roughness: 0.9, metalness: 0, envMapIntensity: 0.3, side: THREE.DoubleSide}));
+  m.position.z = k * (ZI + REC - (pierced ? 0.0012 : 0.0005)); m.receiveShadow = !pierced; if (pierced) m.renderOrder = 1;
+  m.userData = {base: COL.tri, place, slot: s, overlay: pierced, normal: new THREE.Vector3(0, 0, -k), reach: 2 * ZI - 0.08};
   Object.defineProperty(m.userData, "info", {get: () => mihrab
-    ? `${slotInfo(s).replace("Mihrab side, triangle", "Mihrab side, inside: the back of the triangle")}. The same piece as on the outside, pierced or carved on both faces; above tread ${j} of 11`
+    ? `${slotInfo(s).replace("Mihrab side, triangle", "Mihrab side, inside: the back of the triangle")}. The same piece as on the outside; above tread ${j} of 11. `
+      + (pierced ? "Pierced: Creswell's photograph of the outside, seen from behind, shows its openwork as it looks from inside" : "Not pierced on Creswell's photograph, probably carved on both faces: its inner face is not photographed")
     : `Maqsūra side, inside: triangle under the stair rail, position ${i + 1} of ${TRIS.length} from the top, above tread ${j} of 11. Numbered t${i + 1} here; no one numbered this side. Placed as on the mihrab side${numbersAt(place).length ? `. Recorded here: Saladin no. ${numbersAt(place).join("/")}` : ""}`});
   scene.add(m); pick.push(m); TRI_IN.push(m);
   const c = centroid(s.pts), lb = label(mihrab ? "" : place, 0.08, "#fff"); lb.userData.num = mihrab ? {id: place} : {id: place, own: place};
@@ -499,7 +508,7 @@ function tone(m) {
   else { paintC(mat, flag ?? (st ? HL : u.base)); mat.emissive.copy(st === "hot" ? HL_GLOW : BLACK); }
 }
 function paint() {
-  photo.visible = photoOn; skinM.material[0] = photoOn ? photoMat : WOOD_P;
+  photo.visible = photoOn; skinM.material[0] = photoOn ? photoMat : WOOD_P; triPhotos.forEach(m => m.visible = photoOn);
   Object.values(drawn).forEach(o => o.mesh.visible = drawOn && o.loaded);
   if (rail1On && !rail1Set) { rail1Set = true; railOuter.forEach(m => m.material = railMat(1)); }
   railOuter.forEach(m => m.visible = rail1On && !!railReady[1]);      // the mihrab face keeps Creswell's photograph unless its own button is on
