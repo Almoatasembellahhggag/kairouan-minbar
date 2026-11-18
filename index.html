@@ -103,6 +103,9 @@ body { background: var(--stage); color: var(--fg); font-family: var(--serif); fo
   display: flex; flex-direction: column; gap: 14px; background: var(--surface); color: var(--fg); border: 1px solid var(--line);
   border-radius: 8px; padding: 14px 18px 18px; box-shadow: 0 6px 24px rgba(0,0,0,.4); }
 @media (max-width: 760px) { .card { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); left: calc(env(safe-area-inset-left, 0px) + 8px); right: calc(env(safe-area-inset-right, 0px) + 8px); width: auto; max-height: 50vh; } }
+/* ?card: beside the 3D model only the card shows, filling the frame */
+html.card-only .views, html.card-only .tools { display: none !important; }
+html.card-only .card { inset: 0 !important; width: auto !important; max-height: none !important; border: 0; border-radius: 0; box-shadow: none; }
 .card > * { flex: none; }
 .close { align-self: flex-end; font-family: var(--label); font-size: .85rem; border: 1px solid var(--line); background: transparent; color: var(--muted); border-radius: 6px; padding: 3px 10px; cursor: pointer; }
 .head { display: flex; align-items: center; gap: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
@@ -230,6 +233,14 @@ details ul { padding-left: 1.2em; display: flex; flex-direction: column; gap: 4p
 <div id="lb" role="dialog" aria-label="Enlarged photograph" hidden><img alt=""><p></p><div class="chips" id="lbchips"></div></div>
 
 <script>
+// ?card: the page sits beside the 3D model, which asks it for the card of the place clicked there (cardFor below); only the card shows.
+// Its Close button and Escape close the frame, an enlarged photograph widens the frame to the whole window, and Previous and Next move the model too.
+const CARD = new URLSearchParams(location.search).has("card") && window !== window.top;
+const to3d = (k, ...a) => { try { return parent.MODEL?.[k]?.(...a); } catch (e) { return null; } };
+if (CARD) {
+  document.documentElement.classList.add("card-only");
+  addEventListener("keydown", e => { if (e.key === "Escape" && document.getElementById("lb").hidden) to3d("closeCard"); });      // before the page's own Escape, which closes an enlarged photograph first
+}
 const diag = {errors: [], db: "not started", save: ""};
 let diagDoc = null, diagTimer = null;
 function sendDiag() {
@@ -690,6 +701,7 @@ async function loadEdits() {
       renderAll(); status(sameEdits(E, pub) ? `Saved ${savedLabel()} on the site` : `Saved ${savedLabel()} in this browser only`);
     }
   } catch (e) {}
+  cardReady();
   if (!window.claude?.use) return;
   db = await window.claude.use("db");
   diag.db = db ? "connected" : "unavailable";
@@ -843,6 +855,18 @@ window.from3d = id => {
   if (picking && current) { assign(current, id); stopPick(); changed(); return; }
   if (ns.length) select(ns[0], false); else showSlot(id);
 };
+// ?card: the card of a place clicked on the 3D model, once the edits are in (a place asked for before that waits for them)
+let cardWait = CARD ? new URLSearchParams(location.search).get("place") : null, cardOk = false;
+window.cardFor = id => {
+  if (!cardOk) { cardWait = id; return; }
+  if (!id || !(SLOT[id] || OFF[id])) return;
+  const ns = numbersAt(id); if (ns.length) select(ns[0], false); else showSlot(id);
+};
+function cardReady() { if (!CARD || cardOk) return; cardOk = true; const w = cardWait; cardWait = null; if (w) cardFor(w); }
+if (CARD) {
+  card.addEventListener("click", e => { if (e.target.closest("#close")) to3d("closeCard"); });
+  new MutationObserver(() => to3d("cardWide", !$("lb").hidden)).observe($("lb"), {attributes: true, attributeFilter: ["hidden"]});
+}
 // a panel of after 1907 that Creswell's photograph does not show. The inside of a rail shares only its position with the panel on the outside:
 // it is named after that one, with r, and is a different panel.
 const offLabel = id => { const m = /^([bq]\d+)r$/.exec(id);
@@ -850,7 +874,7 @@ const offLabel = id => { const m = /^([bq]\d+)r$/.exec(id);
   const ns = numbersAt(m[1]); return (ns.length ? ns.join("/") : SLOT[m[1]] ? (newOf(m[1]) === "yes" ? "N" : "?") : m[1]) + "r"; };
 const offNote = id => { const m = /^([bq]\d+)r$/.exec(id);
   return m ? `On the inside of the rail, at the position of ${offLabel(id).slice(0, -1)} on its outside: the two share a position and are different panels.` : "Not in Creswell's photograph."; };
-const shot3d = id => { try { return $("f3d").contentWindow?.MODEL?.shot?.(id) || null; } catch (e) { return null; } };      // its photograph, where the 3D model has one
+const shot3d = id => { try { return (CARD ? parent.MODEL : $("f3d").contentWindow?.MODEL)?.shot?.(id) || null; } catch (e) { return null; } };      // its photograph, where the 3D model has one
 function clickSlot(id) {
   if (picking) { assign(current, id); stopPick(); changed(); return; }
   const ns = numbersAt(id);
@@ -996,6 +1020,7 @@ function renderCard() {
 function showSlot(id) {
   current = null; currentSlot = id;
   renderMarks();
+  if (CARD) to3d("cardAt", id);
   const isNew = newOf(id), ns = numbersAt(id), off = !!OFF[id], shot = off ? shot3d(id) : null;
   card.hidden = false; card.scrollTop = 0;
   card.innerHTML = `<button class="close" id="close">Close</button>
@@ -1021,6 +1046,7 @@ function select(n, scroll) {
   if (!POLY.before[n]) return;
   current = n; currentSlot = null;
   renderMarks(); renderCard();
+  if (CARD) to3d("cardAt", slotOf(n) || null);
   try { if (!editing && location.hash !== "#panel-" + n) history.replaceState(null, "", "#panel-" + n); } catch (e) {}
   soon(() => focusPanel());
   if (scroll && !editing) { const ids = [marks.before[n], slotOf(n) && marks.after[slotOf(n)], hits[n]].filter(Boolean);
@@ -1051,7 +1077,7 @@ function setView(v) {
   const show = w => v === w || (v === "both" && (w === "before" || w === partner));
   VW.forEach(w => { $("pane-" + w).hidden = !show(w); });
   const on3 = v === "both" && partner === "3d";      // the 3D model is loaded the first time it is asked for
-  $("pane-3d").hidden = !on3; if (on3 && !$("f3d").getAttribute("src")) $("f3d").src = "3d/?embed&v=20261115b"; if (on3) sync3d();
+  $("pane-3d").hidden = !on3; if (on3 && !$("f3d").getAttribute("src")) $("f3d").src = "3d/?embed&v=20261118"; if (on3) sync3d();
   $("withseg").hidden = v !== "both";
   syncSave();
   document.querySelectorAll("#withseg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.w === partner));

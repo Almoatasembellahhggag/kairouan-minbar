@@ -64,6 +64,11 @@
   .embed #ui h1, .embed #ui .sub, .embed #ui details.more, .embed #b-cmp, .embed #m-num { display: none; }      /* in a frame the numbering is set by the page around it */
   .embed #ui { width: auto; max-width: calc(100vw - 16px); left: 8px; top: 8px; padding: 6px 8px; } .embed #info { bottom: 44px; } .embed #ui .row { margin: 0; }
   @media (max-width: 760px) { #cmp { width: 100vw; top: 46vh; border-left: 0; border-top: 1px solid var(--line); } }
+  #side { position: absolute; right: 0; top: 0; bottom: 0; width: min(400px, 40vw); background: #1a1511; border-left: 1px solid var(--line); z-index: 5; }
+  #side[hidden] { display: none; }
+  #side iframe { display: block; width: 100%; height: 100%; border: 0; }
+  #side.wide { left: 0; width: auto; top: 0; z-index: 20; border: 0; }      /* while the card shows a photograph enlarged */
+  @media (max-width: 760px) { #side { width: 100vw; top: 46vh; border-left: 0; border-top: 1px solid var(--line); } }
 </style>
 </head>
 <body>
@@ -94,7 +99,7 @@
   </div>
   <details class="more">
     <summary>How to use</summary>
-    <p>Drag to turn, scroll to zoom, right-drag to move. Double-click a panel to face it square on; double-click beside the minbar to go back.</p>
+    <p>Drag to turn, scroll to zoom, right-drag to move. Click a panel to see its photographs and notes on the right, as on the panel pages; click beside the minbar or press Escape to close them. Double-click a panel to face it square on; double-click beside the minbar to go back.</p>
     <p>Show turns the photograph, the drawings, the rail photographs and the stair photographs on the model on or off. View turns the model to one of its faces. Compare sets the photograph of before 1907 beside the model.</p>
     <p>Numbers are those of the panel site: Saladin's, placed by the saved edits (N is a new panel, ? a place with no panel assigned), or Golvin's. They run over the side and the outside of the mihrab-side rail. The inside of that rail holds other panels: each is named after the one in front of it, with r. The maqsūra-side rail, which neither of them numbered, is q1 to q18 from the top, with r on its inside. Stairs: riser.panel. A panel recorded at one of these places shows its Saladin number there.</p>
   </details>
@@ -146,6 +151,7 @@
     <p id="e-note"></p>
   </div>
 </aside>
+<aside id="side" hidden aria-label="The panel clicked"><iframe id="side-f" title="Photographs and notes of the panel clicked"></iframe></aside>
 <div id="err"></div>
 <script>   // if the scripts stop part-way (most often one file from an older version left in the browser's cache), say so instead of showing nothing
 addEventListener("error", () => { const el = document.getElementById("err"); if (el && !window.MODEL) { el.style.display = "flex"; el.textContent = "The 3D model did not load completely. Reload the page; if it stays like this, clear this site's data in the browser and reload."; } });
@@ -454,16 +460,16 @@ const urn = stem => [[0.009, 0], [0.009, stem], [0.015, stem + 0.005], [0.011, s
 
 // ---- controls on the page
 const $ = id => document.getElementById(id);
-let photoOn = true, numMode = "off", drawOn = true, railOn = true, rail1On = false, rail1Set = false, stairOn = true, hot = null, cmpOn = false, markId = null, chosen = null;
+let photoOn = true, numMode = "off", drawOn = true, railOn = true, rail1On = false, rail1Set = false, stairOn = true, hot = null, cmpOn = false, markId = null, chosen = null, carded = null;
 const railOf = m => rail1On && railReady[1] && m.userData.rail;
 // with the mihrab face shown as in 1907-10, positions 6 and 13 show each other's panels: a part stands for the place its panel has now
 const then1 = () => rail1On && !!railReady[1], phys = id => (then1() && THEN[id]) || id, plOf = m => m && m.userData.place ? phys(m.userData.place) : null;
 let wasThen = false;
-// a part that can be pointed at is shown in one of four ways: pointed at; the place chosen by a click (while comparing);
+// a part that can be pointed at is shown in one of four ways: pointed at; the place chosen by a click (while comparing, or whose card is open);
 // the place where the held panel is recorded; or plain
 const MARK = 0x5fd0ff, CHOSEN = 0x7be08a;
 let markSet = new Set();      // framed in the panel site's Photos view: the places of the panels marked for the current photograph
-const stateOf = m => { const pl = plOf(m); return m === hot || (hot && m.userData.twin === hot) ? "hot" : cmpOn && chosen && pl === chosen ? "chosen" : (cmpOn || EMBED) && (markId && pl === markId || markSet.has(pl)) ? "mark" : ""; };
+const stateOf = m => { const pl = plOf(m); return m === hot || (hot && m.userData.twin === hot) ? "hot" : (cmpOn ? chosen : carded) && pl === (cmpOn ? chosen : carded) ? "chosen" : (cmpOn || EMBED) && (markId && pl === markId || markSet.has(pl)) ? "mark" : ""; };
 function tone(m) {
   const u = m.userData, mat = m.material, st = stateOf(m), flag = st === "chosen" ? CHOSEN : st === "mark" ? MARK : null;
   if (u.overlay) { mat.opacity = flag ? (st === "mark" ? 0.3 : 0.5) : photoOn || drawingOf(m) || railOf(m) ? (st ? (drawingOf(m) || railOf(m) ? 0.3 : 0.45) : 0) : 1; paintC(mat, flag ?? (st ? HL : u.base)); }
@@ -499,8 +505,8 @@ $("n-draw").textContent = DRAW.length + " panels";
 // ?embed: the page sits in a frame of the panel site's compare view. That page sends its edits, its selection and its numbering
 // (MODEL.embed) and is told which place was clicked here (its from3d).
 const EMBED = new URLSearchParams(location.search).has("embed");
-let embedSynced = false, embedKey = "", embedGolvin = null, clicked = null, idle = "Point at a panel";
-if (EMBED) document.body.classList.add("embed");
+let embedSynced = false, embedKey = "", embedGolvin = null, clicked = null, idle = EMBED ? "Point at a panel" : "Point at a panel; click it for its photographs and notes";
+if (EMBED) document.body.classList.add("embed"); else $("info-t").textContent = idle;
 const VIEWS = {
   mihrab: [[L / 2 - 0.85, 1.75, 6.6], [L / 2 - 0.85, 1.6, 0]],
   front: [[L + 4.6, 2.9, 1.5], [L - 1.5, 1.2, 0]],
@@ -600,11 +606,27 @@ renderer.domElement.addEventListener("pointerup", e => {   // a click, not a dra
     const pl = plOf(hot);
     if (pl || chosen) { chosen = pl || null; paint(); cmpRefresh(); }
   }
+  if (!EMBED && !cmpOn && !dbl) { const pl = plOf(hot); if (pl) openCard(pl); else if (!hot) closeCard(); }      // the card of the place clicked, beside the model; a click beside the minbar closes it
   const o = drawingOf(hot);
   if (o && o.d.v.length > 1) { o.i = (o.i + 1) % o.d.v.length; showDrawing(o); $("info-t").textContent = infoOf(hot); }
 });
+// the card of a panel: the panel site's own card (../index.html?card), framed on the right. It reports back when its Previous or Next
+// moves to another panel (cardAt), when it is closed (closeCard) and while a photograph is enlarged in it (cardWide).
+function openCard(id) {
+  const side = $("side"), f = $("side-f"), was = side.hidden;
+  carded = id; side.hidden = false; paint();
+  if (!f.getAttribute("src")) f.src = "../index.html?card&place=" + encodeURIComponent(id);
+  else try { f.contentWindow.cardFor(id); } catch (e) {}
+  if (was) layout();
+}
+$("side-f").addEventListener("load", () => { if (carded) try { $("side-f").contentWindow.cardFor(carded); } catch (e) {} });      // a panel clicked while the card was still loading
+function closeCard() {
+  if ($("side").hidden) return;
+  carded = null; $("side").hidden = true; $("side").classList.remove("wide"); paint(); layout();
+}
 function layout() {
-  const cw = cmpOn && innerWidth > 760 ? $("cmp").offsetWidth : 0, w = innerWidth - cw, h = cmpOn && innerWidth <= 760 ? innerHeight * 0.46 : innerHeight;
+  const sideOn = !cmpOn && !$("side").hidden, wide = cmpOn || sideOn;
+  const cw = wide && innerWidth > 760 ? (cmpOn ? $("cmp") : $("side")).offsetWidth : 0, w = innerWidth - cw, h = wide && innerWidth <= 760 ? innerHeight * 0.46 : innerHeight;
   camera.aspect = w / h; camera.updateProjectionMatrix(); renderer.setSize(w, h); $("info").style.right = (cw + 12) + "px";
   if (cmpOn) fitOld();
 }
@@ -788,6 +810,7 @@ $("e-none").onclick = () => sel && judge(sel, "none");
 $("e-save").onclick = saveFile;
 let drawWas = true;
 function setCmp(on) {
+  if (on) closeCard();      // Compare takes the right side
   cmpOn = on; $("cmp").hidden = !on; document.body.classList.toggle("cmp-on", on); $("b-cmp").setAttribute("aria-pressed", on);
   if (on) { drawWas = drawOn; drawOn = false; railSheet(1); } else { drawOn = drawWas; sel = pre = markId = chosen = null; }   // the drawings would hide the panels; the rail photos stay as they are
   layout(); view(on ? "compare" : "mihrab"); paint(); cmpRefresh();
@@ -796,7 +819,12 @@ $("b-cmp").onclick = () => setCmp(!cmpOn);
 $("cmp-close").onclick = () => setCmp(false);
 oldImg.addEventListener("load", cmpRefresh); newImg.addEventListener("load", cmpRefresh);
 relabel();
-window.MODEL = {faceOn, labels, railReady, rails: FACES.map(f => [f.name, f.rail.length]), drawn, hold: n => { sel = n; cmpRefresh(); goHeld(); }, choose: id => { chosen = id; paint(); cmpRefresh(); }, judge, get edits() { return E; }, home: () => view("mihrab"),
+addEventListener("keydown", e => { if (e.key === "Escape" && !cmpOn) closeCard(); });
+window.MODEL = {faceOn, labels, railReady, closeCard,
+  cardAt(id) {      // the card beside the model moved to another panel: mark its place and go to it
+    if (id === carded) return; carded = id; paint();
+    const m = id && pick.find(q => plOf(q) === id); if (m) faceOn(m); },
+  cardWide(on) { $("side").classList.toggle("wide", !!on); }, rails: FACES.map(f => [f.name, f.rail.length]), drawn, hold: n => { sel = n; cmpRefresh(); goHeld(); }, choose: id => { chosen = id; paint(); cmpRefresh(); }, judge, get edits() { return E; }, home: () => view("mihrab"),
   shot(id) {      // a picture of a place for the panel site's card: the same straightened detail as in the compare panel
     const sh = shotOf(id); if (!sh || sh.creswell) return null;
     const c = document.createElement("canvas"); c.width = 360; c.height = Math.round(360 * sh.shape[1] / sh.shape[0]); detail(c, sh.img, sh.quad, 1, 1, sh.shape);
