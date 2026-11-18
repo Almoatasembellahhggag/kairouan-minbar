@@ -126,6 +126,8 @@
     <p>Compare puts Garrigues's photograph of before 1907 beside the model. Each pair of details is straightened to the same shape, so a panel can be checked against any place on the model. The stair rails count as places too, on all four faces: with Rail photos on, a rail panel is shown from the photographs of the new rails laid flat in 1907–10. A position on the outside of the mihrab-side rail is shown three times: before 1907, in those photographs of 1907–10 and in Creswell's photograph, which shows the rail by 1929. The middle one follows the panel: positions 6 and 13 hold each other's panels in 1907–10, so for these two it is taken from the other position. Where a panel is now is read from the edits saved on the panel site, in this browser if there are any. On the old photograph the outline of a panel is green where it is recorded in the same place, orange where it is recorded as moved and red where it is recorded as gone.</p>
     <p>The place of a panel can be changed here: hold the panel, click its place on the model (it turns green) and press Now at the place clicked. A place is any panel of the side, of the two stair rails (the outside and the inside of a rail are separate places, with different panels), of the risers or of the seat front, the backrest, or the maqsūra-side face as a whole, so a panel that left the mihrab side can be followed. The change is saved in this browser, where the panel site's Edit page reads it too; Save file writes edits.json for the site's folder.</p>
     <p>The model is lit and casts shadows, and the photographs take that light. They are black and white: each is tinted to the same wood colour so that they sit together, and its light and dark areas also give the carving a slight relief. Photograph, off, shows the plain model.</p>
+    <p>The steps follow the side: each tread lies at the foot of the triangle above it and the next riser stands at the triangle's upright edge, as scan 022 shows from inside the stair (fonds Poinssot, after 1910). Treads 2 to 11, risers 3 to 11 and the front of the seat are read from the triangles on Creswell's photograph, so the steps are as uneven as his photograph shows them (risers of 20 to 24 cm); the first step, which has no triangle, takes half the height of the second.</p>
+    <p>The carved frame of the rails, a vine-scroll band under the handrail, another along the stair string and narrow carved uprights between the panels, is photographed only on the outside of the mihrab side (Creswell) and, from inside, in scan 022. On the other three faces it carries Creswell's photograph: seen from behind inside the mihrab side; on the maqsūra side the bands run on and every upright is the one between panels 8 and 9 of the mihrab side. It goes with the Photograph button.</p>
     <p>Estimated, not measured: the width (1.0 m), the height of the seat, the thickness of the sides and of the treads, and how far the panels sit back in their frames (8 mm). The posts at the foot of the rails and the spindles on top of the sides are measured on Creswell's photograph. The backrest of 1909–10, its columns and its urns follow the photographs taken after 1910 (fonds Poinssot, prints 012, 016 and 018) in outline only; their carving is not drawn. How high the frieze and the panels of a riser are is read from the photographs, which look up or down the stair, so it is approximate. The maqsūra-side face is left blank.</p>
     <p>Rail photos puts a photograph on every rail panel of the three faces Creswell's photograph does not show, cut from the six photographs of the new rails laid flat during the restoration (Bibliothèque de l'INHA, Collection Jacques Doucet, fonds Poinssot, Archives 106, 130, 03, scans 073 to 075, 078, 080 and 082; reproduced for research and study). Each is straightened and set on its panel at the panel's own size: on the mihrab-side rail the panels are measured on Creswell's photograph, and on the maqsūra-side rail their widths and the uprights between them are measured on the restoration photographs. Black or white patches are breaks in the prints. The outside of the mihrab-side rail, the face towards the mihrab, keeps Creswell's photograph. Rail photos, mihrab face, off at first, puts the photographs of 1907–10 there as well; in them the panels of positions 6 and 13 are in each other's places. With it on, the numbers of those two positions, the place a panel is zoomed to and the panel a click selects follow the photographs of 1907–10; where a panel is recorded stays its place by 1929. Two prints of the rail in place taken after 1910 (scans 021 and 026) already show them where Creswell has them, and so does Creswell's print V&A 720-1929. With Rail photos off, the other three faces are plain panels.</p>
     <p>The rail counts come from six photographs of the two new rails laid flat during the restoration (fonds Poinssot, scans 073 to 075, 078, 080 and 082), three for each face, joined into one image per face. Each rail was counted on both of its faces from a different set of photographs, and the two counts agree: 16 on the mihrab-side rail, which is also Creswell's count, and 18 on the maqsūra-side rail. The 18 are narrower, so both rails come out the same length. On the model the panels on the inside of the mihrab-side rail have the positions and sizes of those on its outside, and the 18 of the maqsūra-side rail are set on the same length of rail by their measured widths, good to about a fifth of a panel.</p>
@@ -171,7 +173,14 @@ const ZO = W / 2, ZI = W / 2 - T;              // outer and inner planes of the 
 const REC = 0.008;                             // how far a panel sits behind the face of its frame (estimate)
 // outline of a side: frame, rail and handrail, the post at the head of the rail and the carved lower part of the post at the foot
 const OUTLINE = [[435, 172], [705, 172], [705, 213], [879, 213], [879, 172], [925, 172], [925, 241], [2650, 1616], [2650, 1500], [2700, 1500], [2700, 2095], [435, 2095]];
-const X_SEAT = mx(897), RUN = (L - X_SEAT) / 11, RISE = 0.7956 * RUN, SEAT_FRONT = 0.45, SEAT = 11 * RISE + SEAT_FRONT;   // 0.7956: the slope of the stair string
+// The steps follow the side. A tread lies at the foot of the triangle above it, and the next riser stands at the triangle's upright edge: scan 022,
+// taken from inside the stair after 1910, shows a triangle on its tread with its upright edge against the next riser. So treads 2 to 11 and risers
+// 3 to 12 (12 is the front of the seat) are read from the triangles of columns 12 to 3 on Creswell's photograph; riser 2 stands at the left edge of
+// column 13, and the first step, which has no triangle, takes half the height of the second.
+const TRI_FOOT = SLOTS.filter(s => s.kind === "tri").sort((a, b) => b.col - a.col);      // from the foot: column 12 (tread 2) to column 3 (tread 11)
+const XR = [null, L, mx(SLOTS.find(s => s.id === "f13").pts[0][0]), ...TRI_FOOT.map(s => mx(Math.min(...s.pts.map(p => p[0]))))];      // XR[j]: the face of riser j
+const YT = [0, 0, ...TRI_FOOT.map(s => my(Math.max(...s.pts.map(p => p[1]))))]; YT[1] = YT[2] / 2;                                  // YT[j]: the top of tread j
+const X_SEAT = XR[12], RUN = (L - X_SEAT) / 11, RISE = YT[11] / 11, SEAT_FRONT = 0.45, SEAT = YT[11] + SEAT_FRONT;      // RUN and RISE: averages
 const TOP = my(172);
 
 const scene = new THREE.Scene();
@@ -368,7 +377,7 @@ FACES.forEach(f => f.rail.forEach(s => {
 // inner face is unknown and stays plain, as do the maqsūra side's.
 // The maqsūra side is taken to have ten at the same steps; they are numbered t1 to t10 from the top, as that side's rail is.
 const TRIS = SLOTS.filter(s => s.kind === "tri").sort((a, b) => a.col - b.col), TRI_IN = [], triPhotos = [], SOLID_TRI = new Set(["f76"]);
-const treadOf = s => Math.round(my(Math.max(...s.pts.map(p => p[1]))) / RISE);
+const treadOf = s => YT.indexOf(my(Math.max(...s.pts.map(p => p[1]))));
 TRIS.forEach((s, i) => [1, -1].forEach(k => {
   const mihrab = k > 0, place = mihrab ? s.id : "t" + (i + 1), j = treadOf(s), pierced = mihrab && !SOLID_TRI.has(s.id);
   if (pierced) { const g = new THREE.ShapeGeometry(shapeOf(s.pts)); photoUV(g); const ph = new THREE.Mesh(g, triPhotoMat); ph.position.z = ZI + REC - 0.0005; ph.receiveShadow = true; scene.add(ph); triPhotos.push(ph); }
@@ -384,6 +393,23 @@ TRIS.forEach((s, i) => [1, -1].forEach(k => {
   const c = centroid(s.pts), lb = label(mihrab ? "" : place, 0.08, "#fff"); lb.userData.num = mihrab ? {id: place} : {id: place, own: place};
   lb.position.set(mx(c[0]), my(c[1]) - 0.02, k * (ZI - 0.002)); lb.rotation.y = mihrab ? Math.PI : 0; scene.add(lb);
 }));
+// ---- the carved frame round the rail panels on the three faces Creswell's photograph does not show: a vine-scroll band under the handrail,
+// another along the stair string, and narrow carved uprights between the panels, as on Creswell's photograph of the outside and, from inside,
+// in scan 022. Their own carving is not photographed, so they carry Creswell's photograph of the outside: seen from behind on the inside of the
+// mihrab side, where the panels stand as they do outside; on the maqsūra side the bands run on alike and every gap between its panels takes the
+// upright between panels 8 and 9 of the mihrab side, fitted to the gap. Offsets in pixels below the handrail line of the photograph.
+const bands = [];
+{ const lineY = x => 241 + (1616 - 241) / (2650 - 925) * (x - 925), TOPB = 33, STR0 = 275, STR1 = 315;      // panels from 33 to 275; triangles from 315
+  const quad = (x0, x1, o0, o1, sx0 = x0, sx1 = x1) => {      // a strip with upright ends, mapped onto the same offsets between sx0 and sx1 of the photograph
+    const g = new THREE.ShapeGeometry(shapeOf([[x0, lineY(x0) + o0], [x1, lineY(x1) + o0], [x1, lineY(x1) + o1], [x0, lineY(x0) + o1]])), p = g.attributes.position, uv = g.attributes.uv;
+    for (let i = 0; i < p.count; i++) { const x = p.getX(i) / S + PX0, y = PYF - p.getY(i) / S, sx = sx0 + (x - x0) / (x1 - x0) * (sx1 - sx0), sy = lineY(sx) + y - lineY(x); uv.setXY(i, sx / PW, 1 - sy / PH); }
+    return g; };
+  const R0 = RAIL[7].pts[1][0], R1 = RAIL[8].pts[0][0];
+  [[RAIL, ZI - 0.0004, false], [RAILQ, -ZI + 0.0004, true], [RAILQ, -ZO - 0.0004, true]].forEach(([rail, z, other]) => {
+    const parts = [quad(925, 2650, 0, TOPB), quad(925, 2650, STR0, STR1)];
+    rail.slice(0, -1).forEach((s, i) => { const a = s.pts[1][0], b = rail[i + 1].pts[0][0]; parts.push(other ? quad(a, b, TOPB, STR0, R0, R1) : quad(a, b, TOPB, STR0)); });
+    parts.forEach(g => { const m = new THREE.Mesh(g, triPhotoMat); m.position.z = z; m.receiveShadow = true; scene.add(m); bands.push(m); });
+  }); }
 // a note on the face that has no photograph
 { const c = document.createElement("canvas"); c.width = 1024; c.height = 256; const g = c.getContext("2d");
   g.fillStyle = "#eee6da"; g.font = "64px Georgia, serif"; g.textAlign = "center"; g.fillText("Maqsūra side", 512, 100); g.font = "44px Georgia, serif"; g.fillText("not modelled", 512, 170);
@@ -398,7 +424,7 @@ TRIS.forEach((s, i) => [1, -1].forEach(k => {
 // ---- body: a stepped block between the sides, with a tread on every step and the seat board on top
 const WI = 2 * ZI, TT = 0.03, NOSE = 0.014, RR = 0.008;     // inner width; thickness and overhang of a tread; depth of the panels in a riser (estimates)
 { const s = new THREE.Shape(); s.moveTo(0.02, 0); s.lineTo(L - RR, 0);
-  for (let j = 1; j <= 11; j++) { s.lineTo(L - (j - 1) * RUN - RR, j * RISE - TT); s.lineTo(L - j * RUN - RR, j * RISE - TT); }
+  for (let j = 1; j <= 11; j++) { s.lineTo(XR[j] - RR, YT[j] - TT); s.lineTo(XR[j + 1] - RR, YT[j] - TT); }
   s.lineTo(X_SEAT - RR, SEAT - TT); s.lineTo(0.02, SEAT - TT); s.closePath();
   solid(new THREE.Mesh(new THREE.ExtrudeGeometry(s, {depth: WI - 0.002, bevelEnabled: false}), WOOD_D)).position.z = -ZI + 0.001; }
 function board(back, front, y1) {      // a tread: a board across the stair with a rounded nose
@@ -438,13 +464,13 @@ function front(x, y0, h, row, name, place) {
 }
 let riserPanels = 0;
 for (let j = 1; j <= 11; j++) {
-  const row = ST.rows["r" + j], n = row.px.length, x = L - (j - 1) * RUN, y0 = (j - 1) * RISE;
-  board(L - j * RUN - RR, x + NOSE, j * RISE);
-  front(x, y0, RISE - TT, row, k => `Stair riser ${j} of 11 from the bottom, panel ${k} of ${n} from the mihrab side`, k => `r${j}.${k}`).forEach((c, k) => { if (!k) return; riserPanels++;
+  const row = ST.rows["r" + j], n = row.px.length, x = XR[j], y0 = YT[j - 1];
+  board(XR[j + 1] - RR, x + NOSE, YT[j]);
+  front(x, y0, YT[j] - y0 - TT, row, k => `Stair riser ${j} of 11 from the bottom, panel ${k} of ${n} from the mihrab side`, k => `r${j}.${k}`).forEach((c, k) => { if (!k) return; riserPanels++;
     const lb = label(j + "." + k, 0.085); lb.userData.num = {id: `r${j}.${k}`, own: j + "." + k}; lb.rotation.y = Math.PI / 2; lb.position.set(x + 0.003, c[0], c[1]); scene.add(lb); });
 }
 board(0.02, X_SEAT + NOSE, SEAT);      // the seat
-{ const row = ST.rows.s, y0 = 11 * RISE, h = SEAT - TT - y0;      // front of the seat: two panels, each with a lozenge
+{ const row = ST.rows.s, y0 = YT[11], h = SEAT - TT - y0;      // front of the seat: two panels, each with a lozenge
   front(X_SEAT, y0, h, row, k => `Front of the seat, ${k > 1 ? "maqsūra" : "mihrab"}-side panel, with a lozenge`, k => "s" + k).forEach((c, k) => { if (!k) return;
     const q = row.px[k - 1], a = (q[1] - q[0]) / ST.w * WI / 2 - 0.012, b = (row.py[1] - row.py[0]) / row.h * h / 2 - 0.012, f = 0.76;      // the lozenge of the plain model
     const s = new THREE.Shape(), o = new THREE.Path(); s.moveTo(-a, 0); s.lineTo(0, -b); s.lineTo(a, 0); s.lineTo(0, b); s.closePath();
@@ -508,7 +534,7 @@ function tone(m) {
   else { paintC(mat, flag ?? (st ? HL : u.base)); mat.emissive.copy(st === "hot" ? HL_GLOW : BLACK); }
 }
 function paint() {
-  photo.visible = photoOn; skinM.material[0] = photoOn ? photoMat : WOOD_P; triPhotos.forEach(m => m.visible = photoOn);
+  photo.visible = photoOn; skinM.material[0] = photoOn ? photoMat : WOOD_P; triPhotos.forEach(m => m.visible = photoOn); bands.forEach(m => m.visible = photoOn);
   Object.values(drawn).forEach(o => o.mesh.visible = drawOn && o.loaded);
   if (rail1On && !rail1Set) { rail1Set = true; railOuter.forEach(m => m.material = railMat(1)); }
   railOuter.forEach(m => m.visible = rail1On && !!railReady[1]);      // the mihrab face keeps Creswell's photograph unless its own button is on
@@ -784,7 +810,7 @@ function shotOf(id) {
   const t = /^(?:r(\d+)\.(\d+)|s([12]))$/.exec(id);      // a panel of a riser or of the front of the seat
   if (t) { const row = ST.rows[t[3] ? "s" : "r" + t[1]], k = +(t[3] || t[2]), q = row && row.px[k - 1]; if (!q || !(stairOn && stairReady) || (row.none || []).includes(k)) return null;
     const y0 = row.y + row.py[0], y1 = row.y + row.py[1];
-    return {img: stairTex.image, quad: [[q[0], y0], [q[1], y0], [q[1], y1], [q[0], y1]], shape: [(q[1] - q[0]) / ST.w * WI, (y1 - y0) / row.h * (t[3] ? SEAT_FRONT : RISE) - TT * (y1 - y0) / row.h], note: "photograph taken after 1910"}; }
+    return {img: stairTex.image, quad: [[q[0], y0], [q[1], y0], [q[1], y1], [q[0], y1]], shape: [(q[1] - q[0]) / ST.w * WI, (y1 - y0) / row.h * (t[3] ? SEAT_FRONT : YT[+t[1]] - YT[+t[1] - 1]) - TT * (y1 - y0) / row.h], note: "photograph taken after 1910"}; }
   const m = /^([bq])(\d+)(r?)$/.exec(id); if (!m) return null;      // a face of a rail
   return m[1] === "b" ? sheetOf(2, SLOT_BY["b" + m[2]], 16) : sheetOf(m[3] ? 3 : 4, RAILQ[+m[2] - 1], RAILQ.length);
 }
