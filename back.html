@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="The panels of the other face of the Kairouan minbar, the one against the maqsūra, on Strzygowski's photographs of 1907, with the photographs that show each panel.">
+<title>Kairouan Minbar: Other Face</title>
+<link rel="icon" href="favicon.ico" sizes="32x32">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Sans+Condensed:wght@500;600&display=swap">
+<style>
+:root {
+  --bg: #f2f2ef; --surface: #fbfbf9; --fg: #24211c; --muted: #6a645b; --line: #dcdcd6; --accent: #8a5a36; --sel: #e8862f; --ok: #2f8f4e; --stage: #0d0b09;
+  --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --label: "IBM Plex Sans Condensed", "Arial Narrow", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #141210; --surface: #1c1915; --fg: #ebe5db; --muted: #a39a8c; --line: #322c25; --accent: #d0a57a; color-scheme: dark } }
+:root[data-theme="dark"] { --bg: #141210; --surface: #1c1915; --fg: #ebe5db; --muted: #a39a8c; --line: #322c25; --accent: #d0a57a; color-scheme: dark }
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--stage); color: var(--fg); font-family: var(--serif); font-size: 16px; line-height: 1.55; overflow: hidden; }
+.views { position: fixed; inset: 0; display: flex; gap: 2px; background: var(--stage); }
+@media (max-aspect-ratio: 1/1) { .views { flex-direction: column; } }
+@media (min-width: 761px) { .views.docked { right: calc(min(380px, 38vw) + 20px); } }
+.pane { position: relative; flex: 1 1 0; min-width: 0; min-height: 0; }
+.scroll { position: absolute; inset: 0; overflow: auto; display: flex; }
+.stage { position: relative; margin: auto; flex: none; }
+.stage img { display: block; width: 100%; height: auto; user-select: none; -webkit-user-drag: none; }
+.stage svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.stage polygon { fill: transparent; stroke: rgba(232, 134, 47, .55); stroke-width: 2; vector-effect: non-scaling-stroke; cursor: pointer; outline: none; }
+.stage polygon.unsure { stroke-dasharray: 6 5; }
+.stage polygon:hover, .stage polygon:focus-visible { fill: rgba(232, 134, 47, .16); stroke: var(--sel); }
+.stage polygon.has { fill: rgba(232, 134, 47, .07); }
+.stage polygon.on { fill: rgba(47, 143, 78, .34); stroke: #4fc27a; stroke-width: 3; }
+.stage polygon.sel { stroke: var(--sel); stroke-width: 4; fill: rgba(232, 134, 47, .22); }
+.stage text { font-family: var(--label); font-weight: 600; fill: #fff; paint-order: stroke; stroke: rgba(0,0,0,.85); stroke-width: 5px; stroke-linejoin: round; pointer-events: none; }
+.nonums .stage text { display: none; }
+.tag { position: absolute; left: 10px; bottom: 10px; font-family: var(--label); font-size: .78rem; color: #f3ede3; background: rgba(0,0,0,.55); padding: 3px 8px; border-radius: 4px; pointer-events: none; }
+.pzoom { position: absolute; z-index: 5; right: 10px; bottom: 10px; display: flex; align-items: center; gap: 2px; padding: 2px; border-radius: 6px; background: rgba(0,0,0,.62); font-family: var(--label); font-size: .82rem; color: #f3ede3; }
+.pzoom button { font: inherit; color: inherit; background: transparent; border: 0; border-radius: 4px; min-width: 28px; padding: 3px 7px; cursor: pointer; }
+.pzoom button:hover { background: rgba(255,255,255,.18); }
+.tools { position: fixed; z-index: 10; top: calc(env(safe-area-inset-top, 0px) + 10px); left: calc(env(safe-area-inset-left, 0px) + 10px);
+  max-width: calc(100vw - 20px); display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 6px 8px; border-radius: 8px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent); border: 1px solid var(--line); box-shadow: 0 4px 18px rgba(0,0,0,.35); font-family: var(--label); font-size: .88rem; }
+@media (min-width: 761px) { .views.docked ~ .tools { max-width: calc(100vw - min(380px, 38vw) - 40px); } }
+.tools h1 { font-family: var(--serif); font-size: 1rem; font-weight: 600; margin: 0 4px 0 2px; }
+.tools select, .tools > button, .tools .fileb { font: inherit; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; cursor: pointer; }
+.tools select { max-width: 17em; }
+.tools > a.linkb { color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px; text-decoration: none; }
+.tools > a.linkb:focus-visible, .tools button:focus-visible, .tools select:focus-visible { outline: 2px solid var(--sel); outline-offset: 2px; }
+.tools .saved { color: var(--muted); }
+.card { position: fixed; z-index: 11; top: calc(env(safe-area-inset-top, 0px) + 10px); right: calc(env(safe-area-inset-right, 0px) + 10px); width: min(380px, 38vw);
+  max-height: calc(100vh - 20px); overflow: auto; display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border-radius: 10px;
+  background: var(--surface); border: 1px solid var(--line); box-shadow: 0 6px 24px rgba(0,0,0,.4); }
+@media (max-width: 760px) { .card { top: auto; bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); left: 8px; right: 8px; width: auto; max-height: 50vh; } }
+.card .head { display: flex; align-items: baseline; gap: 10px; }
+.card .id { white-space: nowrap; font-family: var(--label); font-size: 1.9rem; font-weight: 600; color: var(--accent); line-height: 1; }
+.card h2 { font-size: 1rem; margin: 0; font-weight: 600; }
+.card .x { margin-left: auto; font: inherit; font-family: var(--label); border: 1px solid var(--line); background: transparent; color: var(--fg); border-radius: 6px; padding: 2px 9px; cursor: pointer; }
+.card p { margin: 0; }
+.card .sub, .card .note { font-family: var(--label); font-size: .82rem; color: var(--muted); }
+.card .quote { font-size: .95rem; }
+.figs { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
+.fig { margin: 0; display: flex; flex-direction: column; gap: 4px; }
+.fig img { width: 100%; height: auto; max-height: 360px; object-fit: contain; background: var(--stage); border-radius: 3px; cursor: zoom-in; }
+.fig figcaption { font-family: var(--label); font-size: .78rem; color: var(--muted); }
+.checks { display: flex; flex-direction: column; gap: 4px; font-family: var(--label); font-size: .85rem; }
+.checks label { display: flex; gap: 8px; align-items: flex-start; cursor: pointer; }
+.checks img { width: 54px; height: 40px; object-fit: cover; border-radius: 2px; flex: none; }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.chip { font-family: var(--label); font-size: .82rem; border: 1px solid var(--line); border-radius: 5px; padding: 1px 7px; background: transparent; color: var(--fg); cursor: pointer; }
+#lb { position: fixed; inset: 0; z-index: 30; display: flex; flex-direction: column; align-items: center; overflow: auto; background: rgba(0,0,0,.93); padding: 12px; }
+#lb img { max-width: 100%; max-height: calc(100vh - 70px); margin: auto; cursor: zoom-in; }
+#lb.big img { max-width: none; max-height: none; margin: 0; cursor: zoom-out; }
+#lb p { color: #f3ede3; font-family: var(--label); font-size: .85rem; margin: 6px 0 0; text-align: center; }
+</style>
+</head>
+<body>
+<div class="views" id="views">
+  <div class="pane" id="pane-167"><div class="scroll"><div class="stage" id="stage-167"></div></div>
+    <div class="pzoom" role="group" aria-label="Zoom this image"><button data-z="out" aria-label="Zoom out">−</button><button data-z="fit">Fit</button><button data-z="in" aria-label="Zoom in">+</button></div>
+    <span class="tag">Strzygowski 1917, Abb. 167: left half, columns XII to VII</span></div>
+  <div class="pane" id="pane-168"><div class="scroll"><div class="stage" id="stage-168"></div></div>
+    <div class="pzoom" role="group" aria-label="Zoom this image"><button data-z="out" aria-label="Zoom out">−</button><button data-z="fit">Fit</button><button data-z="in" aria-label="Zoom in">+</button></div>
+    <span class="tag">Strzygowski 1917, Abb. 168: right half, columns VI to I</span></div>
+</div>
+
+<div class="tools">
+  <h1>Kairouan Minbar: the other face</h1>
+  <select id="go" aria-label="Go to panel"><option value="">Panel…</option></select>
+  <button id="nums" aria-pressed="true">Numbers on</button>
+  <a class="linkb" href="./">Mihrab side</a>
+  <a class="linkb" href="3d/">3D model</a>
+  <a class="linkb" id="pagelink" href="back.html?edit">Edit</a>
+  <select id="photo" class="edit-only" aria-label="Photograph to assign" hidden><option value="">Assign a photograph…</option></select>
+  <button id="savef" class="edit-only" hidden>Save file</button>
+  <label class="fileb edit-only" hidden>Load file<input id="loadf" type="file" accept="application/json,.json" hidden></label>
+  <span class="saved edit-only" id="saved" role="status" hidden></span>
+</div>
+
+<aside class="card" id="card" aria-live="polite" hidden></aside>
+<div id="lb" role="dialog" aria-label="Enlarged photograph" hidden><img alt=""><p></p></div>
+
+<script>
+// Panels of the face against the maqsūra, on Strzygowski's Altai-Iran (1917), Abb. 167 and 168, from the researcher's scans of pp. 202-203.
+// Columns are Strzygowski's (p. 199 n. 3: counted from the high end, which on the back is on the right). Panels are counted in each
+// column from the foot (the site's numbering; on Abb. 167 Strzygowski prints 1 to 3 in the margin). Photographs are assigned on the
+// Edit page and published in back-edits.json, as edits.json on the main page.
+const DATA = {"D":{"167":{"src":"back/abb167.jpg","w":2172,"h":1636,"polys":{"XII-1":[[185.7,966.5],[413.3,969.3],[408.2,1363.5],[180.6,1360.7]],"XI-2":[[489.2,710.5],[736.1,713.5],[730.8,1127.0],[483.9,1124.0]],"XI-1":[[502.0,1220.4],[739.3,1223.2],[737.4,1367.5],[500.2,1364.6]],"X-2":[[807.3,454.7],[1059.0,457.8],[1053.4,890.5],[801.7,887.4]],"X-1":[[810.1,988.5],[1057.0,991.5],[1052.1,1371.3],[805.2,1368.3]],"IX-3":[[1135.2,179.8],[1387.0,182.9],[1381.1,639.6],[1129.3,636.5]],"IX-2":[[1137.9,728.0],[1389.6,731.0],[1384.3,1144.5],[1132.5,1141.4]],"IX-1":[[1145.8,1237.8],[1383.0,1240.6],[1381.2,1384.9],[1144.0,1382.0]],"VIII-3":[[1480.5,68.6],[1727.4,71.6],[1723.5,374.5],[1476.6,371.5]],"VIII-2":[[1475.4,462.8],[1722.3,465.8],[1716.7,898.5],[1469.8,895.5]],"VIII-1":[[1473.5,982.1],[1715.6,985.0],[1710.4,1388.8],[1468.3,1385.9]],"VII-3":[[1803.4,187.9],[1987.3,190.1],[1981.4,646.8],[1797.5,644.6]],"VII-2":[[1796.4,726.3],[1975.6,728.5],[1970.1,1151.6],[1791.0,1149.4]],"VII-1":[[1789.9,1235.9],[1964.1,1238.0],[1962.2,1391.9],[1787.9,1389.8]],"XII-2":[[167.5,879.8],[395.0,882.5],[386.8,545.8]]}},"168":{"src":"back/abb168.jpg","w":2109,"h":2316,"polys":{"VI-4":[[202.0,340.4],[450.5,342.3],[446.8,764.6],[198.3,762.8]],"VI-3":[[197.5,858.8],[445.9,860.6],[442.1,1297.4],[193.6,1295.6]],"VI-2":[[194.7,1391.6],[446.1,1393.5],[442.0,1854.3],[190.7,1852.4]],"VI-1":[[189.8,1958.0],[445.9,1959.9],[444.5,2123.1],[188.3,2121.2]],"V-5":[[532.7,117.2],[781.2,119.1],[777.6,522.3],[529.2,520.4]],"V-4":[[535.2,606.9],[786.5,608.7],[782.8,1035.9],[531.4,1034.1]],"V-3":[[535.4,1130.1],[788.7,1132.0],[784.8,1573.6],[531.5,1571.7]],"V-2":[[535.5,1672.5],[791.7,1674.4],[787.7,2125.6],[531.5,2123.7]],"IV-5":[[860.9,71.7],[1022.3,72.9],[1020.6,264.9],[859.2,263.7]],"IV-4":[[875.8,350.2],[1043.1,351.4],[1039.5,764.2],[872.2,763.0]],"IV-3":[[885.8,870.6],[1050.1,871.8],[1046.5,1287.5],[882.1,1286.3]],"IV-2":[[890.8,1401.6],[1061.9,1402.8],[1057.9,1858.8],[886.8,1857.5]],"IV-1":[[895.5,1963.2],[1069.5,1964.5],[1068.1,2127.7],[894.1,2126.4]],"II-5":[[1398.0,339.7],[1543.0,340.7],[1539.9,695.9],[1394.9,694.8]],"II-4":[[1399.0,771.7],[1544.1,772.8],[1540.9,1127.9],[1395.9,1126.9]],"II-3":[[1400.3,1174.9],[1545.4,1176.0],[1542.8,1464.0],[1397.8,1462.9]],"II-2":[[1402.1,1530.1],[1547.1,1531.2],[1544.3,1848.0],[1399.3,1846.9]],"II-1":[[1403.5,1914.2],[1548.5,1915.2],[1546.7,2126.4],[1401.7,2125.4]],"I-5":[[1679.0,264.9],[1930.4,266.8],[1927.7,574.0],[1676.3,572.1]],"I-4":[[1675.8,639.3],[1927.1,641.2],[1924.8,910.0],[1673.4,908.1]],"I-3":[[1672.6,994.5],[1924.0,996.4],[1921.6,1274.8],[1670.2,1272.9]],"I-2":[[1669.5,1349.7],[1920.9,1351.6],[1918.3,1639.6],[1667.0,1637.7]],"I-1":[[1666.1,1733.7],[1917.5,1735.6],[1915.1,2014.0],[1663.7,2012.1]]}}},"DES":{"XII-2":"Strzygowski, p. 201: «ein achtteiliger Stern in der Mitte entsendet nach allen Seiten seine Parallelen, deren Felder, tiefer liegend, durch Arabesken gefüllt sind» (an eight-part star in the middle sends its parallels out on every side; the fields between, set deeper, are filled with arabesques).","XII-1":"Reading on the photographs, not Strzygowski's: diagonal key fret.","XI-2":"Reading on the photographs, not Strzygowski's: interlaced ovals.","XI-1":"Reading on the photographs, not Strzygowski's: double swastika.","X-2":"Reading on the photographs, not Strzygowski's: lozenges with swastikas.","X-1":"Reading on the photographs, not Strzygowski's: circles on a square grid.","IX-3":"Reading on the photographs, not Strzygowski's: diagonal lattice.","IX-2":"Reading on the photographs, not Strzygowski's: squares with small squares.","IX-1":"Reading on the photographs, not Strzygowski's: three arches with plants.","VIII-3":"Reading on the photographs, not Strzygowski's: squares.","VIII-2":"Reading on the photographs, not Strzygowski's: eight looped roundels.","VIII-1":"Reading on the photographs, not Strzygowski's: squares on point.","VII-3":"Reading on the photographs, not Strzygowski's: diagonal lattice.","VII-2":"Reading on the photographs, not Strzygowski's: swastika key fret.","VII-1":"Reading on the photographs, not Strzygowski's: lozenge knot.","VI-4":"Reading on the photographs, not Strzygowski's: woven octagons and squares.","VI-3":"Reading on the photographs, not Strzygowski's: octagons with small squares.","VI-2":"Reading on the photographs, not Strzygowski's: interlaced circles.","VI-1":"Reading on the photographs, not Strzygowski's: six-fold star interlace.","V-5":"Reading on the photographs, not Strzygowski's: lobed lattice with small squares.","V-4":"Reading on the photographs, not Strzygowski's: swastika key fret.","V-3":"Reading on the photographs, not Strzygowski's: eight flowers in octagons.","V-2":"Reading on the photographs, not Strzygowski's: grid of flowers.","V-1":"Reading on the photographs, not Strzygowski's: double swastika under a row of triangles. Cut off at the foot of Strzygowski's plate; seen on INHA scan 077.","IV-5":"Reading on the photographs, not Strzygowski's: braid knot.","IV-4":"Reading on the photographs, not Strzygowski's: twelve quatrefoils in octagons.","IV-3":"Reading on the photographs, not Strzygowski's: arched niche with a tree.","IV-2":"Reading on the photographs, not Strzygowski's: chain of squares in a key border.","IV-1":"Reading on the photographs, not Strzygowski's: lozenge lattice with rectangles.","II-1":"Column too dark in the plate to read; the outline is approximate.","II-2":"Column too dark in the plate to read; the outline is approximate.","II-3":"Column too dark in the plate to read; the outline is approximate.","II-4":"Column too dark in the plate to read; the outline is approximate.","II-5":"Column too dark in the plate to read; the outline is approximate.","I-1":"Column too dark in the plate to read; the outline is approximate.","I-2":"Column too dark in the plate to read; the outline is approximate.","I-3":"Column too dark in the plate to read; the outline is approximate.","I-4":"Column too dark in the plate to read; the outline is approximate.","I-5":"Column too dark in the plate to read; the outline is approximate."},"PH":[["ip083","Archives 106, 130, 03, scan 083: the face against the maqsūra, dismantled, three columns (the print behind Strzygowski's Abb. 168); probably 1907"],["pd14","Picotin and Déléry 2018, fig. 11.14: Strzygowski's Abb. 167 reprinted"],["ip061","Archives 106, 130, 03, scan 061: dismantled panels in their frames (print from a cracked glass plate)"],["ip081","Archives 106, 130, 03, scan 081: dismantled panels: key-pattern grilles and an arched panel with a tree"],["ip077","Archives 106, 130, 03, scan 077: dismantled panels, with a 10 cm scale"],["ip062","Archives 106, 130, 03, scan 062: dismantled panels: a grille of squares above an interlace panel, with a 10 cm scale"],["ip038","Archives 106, 130, 03, scan 038 (B. Poinssot, 1939): geometric grille with a central lozenge, oblique view"],["ip040","Archives 106, 130, 03, scan 040 (B. Poinssot, 1939): lattice of stepped crosses and four-petal flowers, with scroll bands"],["ip042","Archives 106, 130, 03, scan 042 (B. Poinssot, 1939): two geometric grilles side by side"],["ip044","Archives 106, 130, 03, scan 044 (B. Poinssot, 1939): lattice of interlaced circles and crosses"],["ip046","Archives 106, 130, 03, scan 046 (B. Poinssot, 1939): interlace panel with knots (faint print)"],["ip048","Archives 106, 130, 03, scan 048 (B. Poinssot, 1939): lattice of stepped crosses and four-petal flowers, oblique view"],["x02","@HistoireTn: lattice, vine-scroll strip and braided panel below the stair rail, detail"],["x05","@HistoireTn: key-pattern lattice panel"],["x06","@HistoireTn: lattice of octagons with key-fret squares, detail"],["x09","Key-pattern lattice panel with vine friezes (Facebook)"]]};
+const EDIT = new URLSearchParams(location.search).has("edit");
+const $ = id => document.getElementById(id);
+const FIG = {"167": "Abb. 167, the left half of the face (columns XII to VII)", "168": "Abb. 168, the right half of the face (columns VI to I; III is missing)"};
+const ROMAN = ["XII", "XI", "X", "IX", "VIII", "VII", "VI", "V", "IV", "III", "II", "I"];
+const PANELS = {};
+for (const f of ["167", "168"]) for (const [id, poly] of Object.entries(DATA.D[f].polys)) PANELS[id] = {id, fig: f, poly};
+PANELS["V-1"] = {id: "V-1", fig: "168", poly: null};
+const ORDER = Object.keys(PANELS).sort((a, b) => { const [ca, na] = a.split("-"), [cb, nb] = b.split("-"); return ROMAN.indexOf(ca) - ROMAN.indexOf(cb) || +na - +nb; });
+const label = id => id.replace("-", " ");
+const unsure = id => /^(I|II)-/.test(id);
+const ORD = ["", "first", "second", "third", "fourth", "fifth"];
+const PH = Object.fromEntries(DATA.PH.map(([id, t]) => [id, {id, title: t}]));
+
+// ---- edits: the published file, and this browser's changes on top of it
+const LS = "kairouan-minbar-back-edits", LSB = "kairouan-minbar-back-base";
+let pub = {v: 1, photos: {}}, E = {v: 1, photos: {}};
+const lsGet = k => { try { const s = localStorage.getItem(k); return s ? JSON.parse(s) : null; } catch (e) { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } };
+const same = (a, b) => JSON.stringify([...(a || [])].sort()) === JSON.stringify([...(b || [])].sort());
+function mergeLocal() {          // keys changed in this browser keep their local value; the rest follow the published file
+  const loc = lsGet(LS), base = lsGet(LSB) || {photos: {}};
+  E = JSON.parse(JSON.stringify(pub));
+  if (!loc) return;
+  for (const k of new Set([...Object.keys(loc.photos || {}), ...Object.keys(base.photos || {})])) {
+    const l = loc.photos?.[k]?.panels, b = base.photos?.[k]?.panels;
+    if (!same(l, b)) { if (l && l.length) E.photos[k] = {panels: [...l]}; else delete E.photos[k]; }
+  }
+}
+const panelsOf = pid => E.photos[pid]?.panels || [];
+const photosOf = id => DATA.PH.map(p => p[0]).filter(pid => panelsOf(pid).includes(id));
+function toggle(pid, id) {
+  const s = new Set(panelsOf(pid)); s.has(id) ? s.delete(id) : s.add(id);
+  if (!lsGet(LSB)) lsSet(LSB, pub);
+  if (s.size) E.photos[pid] = {panels: ORDER.filter(x => s.has(x))}; else delete E.photos[pid];
+  lsSet(LS, E); status(); paint(); renderCard();
+}
+const placedCount = () => DATA.PH.filter(p => panelsOf(p[0]).length).length;
+function status() { if (EDIT) $("saved").textContent = `${placedCount()}/${DATA.PH.length} photographs placed. Saved in this browser; Save file to publish.`; }
+
+// ---- the two plates
+const NS = "http://www.w3.org/2000/svg", polyEl = {};
+const zf = {"167": 1, "168": 1};
+for (const f of ["167", "168"]) {
+  const d = DATA.D[f], st = $("stage-" + f), img = new Image(); img.src = d.src; img.alt = `Strzygowski, Altai-Iran (1917), ${FIG[f]}`; st.appendChild(img);
+  const svg = document.createElementNS(NS, "svg"); svg.setAttribute("viewBox", `0 0 ${d.w} ${d.h}`); st.appendChild(svg);
+  for (const [id, poly] of Object.entries(d.polys)) {
+    const p = document.createElementNS(NS, "polygon"); p.setAttribute("points", poly.map(q => q.join(",")).join(" "));
+    p.setAttribute("tabindex", "0"); p.setAttribute("role", "button"); p.setAttribute("aria-label", `Panel ${label(id)}`);
+    if (unsure(id)) p.classList.add("unsure");
+    p.addEventListener("click", () => clickPanel(id)); p.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); clickPanel(id); } });
+    svg.appendChild(p); polyEl[id] = p;
+    const xs = poly.map(q => q[0]), ys = poly.map(q => q[1]), t = document.createElementNS(NS, "text");
+    const tri = id === "XII-2"; t.setAttribute("x", tri ? (Math.min(...xs) + Math.max(...xs)) / 2 + 10 : Math.min(...xs) + 10); t.setAttribute("y", tri ? Math.max(...ys) - 18 : Math.min(...ys) + 40);
+    t.setAttribute("font-size", "34"); t.textContent = label(id) + (unsure(id) ? "?" : ""); svg.appendChild(t);
+  }
+}
+function layout() {
+  for (const f of ["167", "168"]) {
+    const d = DATA.D[f], pane = $("pane-" + f), w = pane.clientWidth - 16, h = pane.clientHeight - 16;
+    const fit = Math.min(w, h * d.w / d.h); $("stage-" + f).style.width = Math.max(120, fit * zf[f]) + "px";
+  }
+}
+document.querySelectorAll(".pzoom button").forEach(b => b.addEventListener("click", () => {
+  const f = b.closest(".pane").id.slice(5); zf[f] = b.dataset.z === "fit" ? 1 : Math.max(1, Math.min(6, zf[f] * (b.dataset.z === "in" ? 1.5 : 1 / 1.5))); layout();
+}));
+addEventListener("resize", layout);
+if (window.ResizeObserver) { const ro = new ResizeObserver(() => layout()); ["167", "168"].forEach(f => ro.observe($("pane-" + f))); }          // the card docking changes the panes' size
+
+// ---- selection, card and photographs
+let cardFor = null, curPhoto = "";
+function paint() {
+  for (const id of Object.keys(polyEl)) {
+    const p = polyEl[id]; p.classList.toggle("sel", cardFor === id); p.classList.toggle("has", photosOf(id).length > 0);
+    p.classList.toggle("on", !!curPhoto && panelsOf(curPhoto).includes(id));
+  }
+}
+function clickPanel(id) { if (EDIT && curPhoto) { toggle(curPhoto, id); return; } cardFor = cardFor === id ? null : id; renderCard(); paint(); }
+function zoomTo(id) {
+  const P = PANELS[id]; if (!P.poly) return; const f = P.fig, d = DATA.D[f], sc = $("pane-" + f).querySelector(".scroll"), st = $("stage-" + f);
+  if (zf[f] < 2) { zf[f] = 2.5; layout(); }
+  const k = st.clientWidth / d.w, xs = P.poly.map(q => q[0]), ys = P.poly.map(q => q[1]);
+  sc.scrollTo({left: ((Math.min(...xs) + Math.max(...xs)) / 2) * k - sc.clientWidth / 2 + st.offsetLeft, top: ((Math.min(...ys) + Math.max(...ys)) / 2) * k - sc.clientHeight / 2 + st.offsetTop, behavior: "smooth"});
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const fig = pid => `<figure class="fig"><img src="th/${pid}.jpg" alt="${esc(PH[pid].title)}" loading="lazy" data-big="ph/${pid}.jpg"><figcaption>${esc(PH[pid].title)}</figcaption></figure>`;
+function renderCard() {
+  const c = $("card"); $("views").classList.toggle("docked", !!(cardFor || (EDIT && curPhoto)));
+  if (EDIT && curPhoto && !cardFor) {
+    const ps = panelsOf(curPhoto);
+    c.innerHTML = `<div class="head"><h2>Assigning a photograph</h2><button class="x" data-x>Close</button></div>${fig(curPhoto)}
+      <p class="note">Click a panel on the plates to add it to this photograph or take it off. Green panels are on it now.</p>
+      <p><b>Panels on it:</b> ${ps.length ? `<span class="chips">${ps.map(id => `<button class="chip" data-go="${id}">${label(id)}</button>`).join("")}</span>` : "none yet"}</p>`;
+  } else if (cardFor) {
+    const id = cardFor, P = PANELS[id], [col, n] = id.split("-"), phs = photosOf(id);
+    c.innerHTML = `<div class="head"><span class="id">${label(id)}</span><h2>Column ${col}, ${id === "XII-2" ? "the triangle" : ORD[+n] + " panel from the foot"}</h2><button class="x" data-x>Close</button></div>
+      <p class="sub">Strzygowski, Altai-Iran (1917), ${FIG[P.fig]}. Columns are his; the panel number is this site's, counted from the foot of the column.${unsure(id) ? " This column is very dark in the plate: the outline is approximate." : ""}</p>
+      <p class="quote">${esc(DATA.DES[id] || "")}</p>
+      <h2>Photographs (${phs.length})</h2>${phs.length ? `<div class="figs">${phs.map(fig).join("")}</div>` : `<p class="note">No photograph assigned yet.</p>`}
+      ${EDIT ? `<h2>Which photographs show it</h2><div class="checks">${DATA.PH.map(([pid, t]) => `<label><input type="checkbox" data-ph="${pid}" ${panelsOf(pid).includes(id) ? "checked" : ""}><img src="th/${pid}.jpg" alt=""><span>${esc(t)}</span></label>`).join("")}</div>` : ""}`;
+  } else { c.hidden = true; c.innerHTML = ""; return; }
+  c.hidden = false;
+}
+$("card").addEventListener("click", e => {
+  const t = e.target;
+  if (t.closest("[data-x]")) { if (cardFor) cardFor = null; else { curPhoto = ""; $("photo").value = ""; } renderCard(); paint(); layout(); return; }
+  if (t.dataset.go) { cardFor = null; zoomTo(t.dataset.go); return; }
+  if (t.dataset.big) { const lb = $("lb"); lb.querySelector("img").src = t.dataset.big; lb.querySelector("p").textContent = t.alt; lb.classList.remove("big"); lb.hidden = false; }
+});
+$("card").addEventListener("change", e => { const t = e.target; if (t.dataset.ph) toggle(t.dataset.ph, cardFor); });
+$("lb").addEventListener("click", e => { if (e.target.tagName === "IMG") e.currentTarget.classList.toggle("big"); else e.currentTarget.hidden = true; });
+addEventListener("keydown", e => { if (e.key === "Escape") { if (!$("lb").hidden) $("lb").hidden = true; else if (cardFor || curPhoto) { cardFor = null; curPhoto = ""; $("photo").value = ""; renderCard(); paint(); layout(); } } });
+
+// ---- tools
+for (const id of ORDER) $("go").insertAdjacentHTML("beforeend", `<option value="${id}">${label(id)}${unsure(id) ? "?" : ""}${PANELS[id].poly ? "" : " (cut off in the plate)"}</option>`);
+$("go").addEventListener("change", e => { const id = e.target.value; if (!id) return; cardFor = id; curPhoto = EDIT ? curPhoto : ""; renderCard(); paint(); layout(); zoomTo(id); e.target.value = ""; });
+$("nums").addEventListener("click", e => { const on = e.currentTarget.getAttribute("aria-pressed") !== "true"; e.currentTarget.setAttribute("aria-pressed", on); e.currentTarget.textContent = on ? "Numbers on" : "Numbers off"; document.body.classList.toggle("nonums", !on); });
+if (EDIT) {
+  document.querySelectorAll(".edit-only").forEach(x => x.hidden = false); $("pagelink").textContent = "View"; $("pagelink").href = "back.html";
+  for (const [pid, t] of DATA.PH) $("photo").insertAdjacentHTML("beforeend", `<option value="${pid}">${esc(t.length > 70 ? t.slice(0, 68) + "…" : t)}</option>`);
+  $("photo").addEventListener("change", e => { curPhoto = e.target.value; cardFor = null; renderCard(); paint(); layout(); });
+  $("savef").addEventListener("click", () => {
+    const blob = new Blob([JSON.stringify(E, null, 1) + "\n"], {type: "application/json"}), a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = "back-edits.json"; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  });
+  $("loadf").addEventListener("change", async e => {
+    const f = e.target.files[0]; if (!f) return;
+    try { const j = JSON.parse(await f.text()); if (!j.photos) throw 0; E = {v: 1, photos: j.photos}; lsSet(LSB, pub); lsSet(LS, E); status(); paint(); renderCard(); }
+    catch (err) { $("saved").textContent = "That file could not be read"; }
+  });
+}
+fetch("back-edits.json?" + Date.now()).then(r => r.ok ? r.json() : {v: 1, photos: {}}).catch(() => ({v: 1, photos: {}}))
+  .then(j => { pub = j && j.photos ? j : {v: 1, photos: {}}; mergeLocal(); status(); paint(); renderCard(); });
+layout(); requestAnimationFrame(layout);
+</script>
+</body>
+</html>
