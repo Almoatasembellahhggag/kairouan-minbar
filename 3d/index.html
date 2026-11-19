@@ -161,7 +161,7 @@ addEventListener("error", () => { const el = document.getElementById("err"); if 
 </script>
 <script src="lib/three.min.js"></script>
 <script src="lib/OrbitControls.js"></script>
-<script src="data.js?v=20261119b"></script>   <!-- the version changes with every update, so the page never runs with older data -->
+<script src="data.js?v=20261119c"></script>   <!-- the version changes with every update, so the page never runs with older data -->
 <script>
 "use strict";
 // ---- photo space to metres. The frame runs from x = 435 to 2700 px on Creswell's photograph and stands on y = 2095.
@@ -417,6 +417,7 @@ const bands = [];
 // mirrored (built for ../back.html by tools/other face elevation/elev_panels.py). The image covers the frame from x = PX0 to PX1 and
 // from y = 172 to PYF; the panels lie in openings of the skin, REC behind its face, and are seen from outside only.
 let backReady = false;
+const BACK_PLACES = [], BACK_BY = {};          // its places: [name on the Other face page, what it is], and their outlines by that name
 const BACK_SLOTS = SLOTS.filter(s => s.kind !== "rail"), BACK_HAS = new Set(["II-1","II-2","II-3","III-1","III-2","IV-1","IV-2","IV-3","IV-4","IV-5","IX-1","IX-2","IX-3","V-1","V-2","V-3","V-4","V-5","VI-1","VI-2","VI-3","VI-4","VII-1","VII-2","VII-3","VIII-1","VIII-2","VIII-3","X-1","X-2","XI-1","XI-2","XII-1","XII-2"]);
 const backMat = new THREE.MeshStandardMaterial({color: lin(0x705841), roughness: 0.74, metalness: 0, envMapIntensity: 0.4, side: THREE.BackSide});
 const backFace = (() => { const g = new THREE.ShapeGeometry(BACK_SLOTS.map(s => shapeOf(opening(s)))), p = g.attributes.position, uv = g.attributes.uv;
@@ -432,12 +433,9 @@ new THREE.TextureLoader().load("back/face.jpg?v=20261119b", t => { const o = pho
   BACK_SLOTS.forEach(s => { const [id, what] = name.get(s);
     const m = new THREE.Mesh(new THREE.ShapeGeometry(shapeOf(opening(s))), new THREE.MeshBasicMaterial({color: lin(0xe0b070), transparent: true, opacity: 0, depthWrite: false, side: THREE.BackSide}));
     m.position.z = -ZO - 0.002; m.renderOrder = 1; scene.add(m); pick.push(m);
-    m.userData = {veil: true, place: "o", base: 0xe0b070, normal: new THREE.Vector3(0, 0, -1), info: `Maqsūra side, ${what}: ${BACK_HAS.has(id) ? "from a photograph of 1907–39, set into an imaginary frame" : "no photograph; the place is mirrored from the mihrab side"} (see Other face)`}; }); }
-// that face is still a place: a panel can be recorded as moved there. An unseen sheet over it, open over the rail panels, takes the pointer.
-{ const sh = shapeOf(OUTLINE); RAILQ.forEach(q => sh.holes.push(shapeOf(q.pts)));
-  const m = new THREE.Mesh(new THREE.ShapeGeometry(sh), new THREE.MeshBasicMaterial({color: lin(0xe0b070), transparent: true, opacity: 0, depthWrite: false, side: THREE.BackSide}));      // seen and pointed at from outside only
-  m.position.z = -ZO - 0.0015; m.renderOrder = 1; scene.add(m); pick.push(m);
-  m.userData = {veil: true, place: "o", base: 0xe0b070, normal: new THREE.Vector3(0, 0, -1), info: "Maqsūra-side face, imaginary: photographs of 1907–10 set into a frame mirrored from the mihrab side; see Other face"}; }
+    BACK_PLACES.push([id, what]); BACK_BY[id] = s;
+    m.userData = {veil: true, place: "o." + id, base: 0xe0b070, normal: new THREE.Vector3(0, 0, -1), info: `Maqsūra side, ${what}: ${BACK_HAS.has(id) ? "from a photograph of 1907–39, set into an imaginary frame" : "no photograph; the place is mirrored from the mihrab side"} (see Other face)`}; }); }
+// every place of that face is a place of its own (o.IV-3 and so on), as on the mihrab side; the face as one place (o) is no longer offered
 
 // ---- body: a stepped block between the sides, with a tread on every step and the seat board on top
 const WI = 2 * ZI, TT = 0.03, NOSE = 0.014, RR = 0.008;     // inner width; thickness and overhang of a tread; depth of the panels in a riser (estimates)
@@ -715,6 +713,7 @@ RAILQ.forEach(q => { OFF["q" + q.pos] = `the stair rail on the maqsūra side, ou
 for (let j = 1; j <= 11; j++) for (let k = 1; k <= (j % 2 ? 3 : 4); k++) OFF[`r${j}.${k}`] = `stair riser ${j} from the bottom, panel ${k} from the mihrab side`;
 TRIS.forEach((s, i) => OFF["t" + (i + 1)] = `the triangle under the stair rail on the maqsūra side, inside, position ${i + 1} of ${TRIS.length} from the top`);
 Object.assign(OFF, {s1: "the front of the seat, mihrab-side panel", s2: "the front of the seat, maqsūra-side panel", k: "the backrest", o: "the maqsūra-side face"});
+BACK_PLACES.forEach(([id, what]) => OFF["o." + id] = "the maqsūra side, " + what);
 const blank = () => ({v: 2, numbers: {}, panels: {}, slots: {}, photos: {}, geo: {panels: [], slots: []}});
 const adopt = o => o && o.v === 2 && o.panels && typeof o.panels === "object" ? Object.assign(blank(), o) : null;      // the whole saved object is kept, so that saving here loses nothing
 let E = blank(), editsFrom = "none", savedNote = "", pubBase = null;
@@ -829,6 +828,10 @@ function shotOf(id) {
   if (t) { const row = ST.rows[t[3] ? "s" : "r" + t[1]], k = +(t[3] || t[2]), q = row && row.px[k - 1]; if (!q || !(stairOn && stairReady) || (row.none || []).includes(k)) return null;
     const y0 = row.y + row.py[0], y1 = row.y + row.py[1];
     return {img: stairTex.image, quad: [[q[0], y0], [q[1], y0], [q[1], y1], [q[0], y1]], shape: [(q[1] - q[0]) / ST.w * WI, (y1 - y0) / row.h * (t[3] ? SEAT_FRONT : YT[+t[1]] - YT[+t[1] - 1]) - TT * (y1 - y0) / row.h], note: "photograph taken after 1910"}; }
+  if (id.startsWith("o.")) { const b = id.slice(2), s2 = BACK_BY[b], im = backReady && backMat.map && backMat.map.image;      // a panel of the maqsūra side: its place in the image of that face
+    if (!s2 || s2.kind !== "panel" || !im || !BACK_HAS.has(b)) return null;
+    const tx = q => [(PX1 - q[0]) / (PX1 - PX0) * im.naturalWidth, (q[1] - 172) / (PYF - 172) * im.naturalHeight], d = (a, c) => Math.hypot(a[0] - c[0], a[1] - c[1]), q = s2.pts;
+    return {img: im, quad: [tx(q[1]), tx(q[0]), tx(q[3]), tx(q[2])], shape: [d(q[0], q[1]), d(q[0], q[3])], note: "photograph set into this place on the Other face page"}; }
   const m = /^([bq])(\d+)(r?)$/.exec(id); if (!m) return null;      // a face of a rail
   return m[1] === "b" ? sheetOf(2, SLOT_BY["b" + m[2]], 16) : sheetOf(m[3] ? 3 : 4, RAILQ[+m[2] - 1], RAILQ.length);
 }

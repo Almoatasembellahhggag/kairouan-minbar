@@ -545,6 +545,15 @@ for (let j = 1; j <= 18; j++) OFF["q" + j + "r"] = `Stair rail on the maqsūra s
 for (let j = 1; j <= 11; j++) for (let k = 1; k <= (j % 2 ? 3 : 4); k++) OFF[`r${j}.${k}`] = `Stair riser ${j} from the bottom, panel ${k} from the mihrab side`;
 for (let j = 1; j <= 10; j++) OFF["t" + j] = `Triangle under the stair rail on the maqsūra side, inside, position ${j} from the top`;      // the mihrab side's are the backs of its outside triangles, the same places
 Object.assign(OFF, {s1: "Front of the seat, mihrab-side panel", s2: "Front of the seat, maqsūra-side panel", k: "Backrest", o: "Maqsūra-side face"});
+// the places of the maqsūra-side face, named as on the Other face page and the 3D model: Strzygowski's column, then the panel from the foot
+// (o.IV-3); the frame is the mihrab side's, mirrored. BACKED holds the photographs placed on them on that page.
+{ const R = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII"], N = [8, 8, 6, 5, 5, 4, 4, 3, 3, 2, 2, 1, 1];
+  R.forEach((r, i) => { for (let k = 1; k <= N[i]; k++) OFF[`o.${r}-${k}`] = `Maqsūra side, column ${r}, panel ${k} from the foot`;
+    if (i >= 2 && i <= 11) OFF[i === 11 ? "o.XII-2" : `o.${r}-T`] = `Maqsūra side, column ${r}, the triangle under the rail`; }); }
+const isBack = id => typeof id === "string" && id.startsWith("o.");
+let BACKED = {photos: {}};
+fetch("back-edits.json?" + Date.now()).then(r => r.ok ? r.json() : null).then(j => { if (j && j.photos) BACKED = j;
+  try { const l = JSON.parse(localStorage.getItem("kairouan-minbar-back-edits")); if (l && l.photos) BACKED = l; } catch (e) {} }).catch(() => {});
 const slotName = id => {
   if (!id) return "Not on his photograph";
   if (OFF[id]) return OFF[id];
@@ -627,6 +636,7 @@ const setPhoto = (id, panels, whole, news = newsOf(id), sides = sidesOf(id), oth
   if (other) E.photos[id].other = true;
 };
 const photosOfSlot = id => PHOTOS.filter(p => newsOf(p.id).includes(id));
+const slotPhotos = id => { const l = photosOfSlot(id); return isBack(id) ? l.concat(PHOTOS.filter(p => !l.includes(p) && (BACKED.photos[p.id]?.panels || []).includes(id.slice(2)))) : l; };      // with those placed on the Other face page
 const photosOf = n => PHOTOS.filter(p => assignedOf(p.id).includes(n));
 const placed = id => assignedOf(id).length > 0 || newsOf(id).length > 0 || sidesOf(id).length > 0 || otherOf(id) || wholeOf(id);
 // geometric panels: a Creswell position holding an old panel shares that panel's mark; a new panel has its own
@@ -851,7 +861,8 @@ window.from3d = id => {
   if (photoMode) {      // the panel at the place clicked is added to the current photograph or taken off it; the maqsūra-side face marks the photograph as showing that side
     if (!curPhoto) return;
     if (id === "o") { setPhoto(curPhoto, assignedOf(curPhoto), wholeOf(curPhoto), newsOf(curPhoto), sidesOf(curPhoto), !otherOf(curPhoto)); changed(); }
-    else if (ns.length) togglePanel(ns[0]); else toggleNew(id);
+    else if (ns.length) togglePanel(ns[0]); else { toggleNew(id);      // a place of the maqsūra-side face also marks the photograph as showing that side
+      if (isBack(id) && newsOf(curPhoto).includes(id) && !otherOf(curPhoto)) { setPhoto(curPhoto, assignedOf(curPhoto), wholeOf(curPhoto), newsOf(curPhoto), sidesOf(curPhoto), true); changed(); } }
     return;
   }
   if (picking && current) { assign(current, id); stopPick(); changed(); return; }
@@ -872,10 +883,10 @@ if (CARD) {
 // a panel of after 1907 that Creswell's photograph does not show. The inside of a rail shares only its position with the panel on the outside:
 // it is named after that one, with r, and is a different panel.
 const offLabel = id => { const m = /^([bq]\d+)r$/.exec(id);
-  if (!m) return id[0] === "q" || id[0] === "t" ? id : id[0] === "r" ? id.slice(1) : id === "k" ? "back" : id === "o" ? "side" : "seat";
+  if (!m) return isBack(id) ? id.slice(2).replace("-", " ") : id[0] === "q" || id[0] === "t" ? id : id[0] === "r" ? id.slice(1) : id === "k" ? "back" : id === "o" ? "side" : "seat";
   const ns = numbersAt(m[1]); return (ns.length ? ns.join("/") : SLOT[m[1]] ? (newOf(m[1]) === "yes" ? "N" : "?") : m[1]) + "r"; };
 const offNote = id => { const m = /^([bq]\d+)r$/.exec(id);
-  return m ? `On the inside of the rail, at the position of ${offLabel(id).slice(0, -1)} on its outside: the two share a position and are different panels.` : "Not in Creswell's photograph."; };
+  return m ? `On the inside of the rail, at the position of ${offLabel(id).slice(0, -1)} on its outside: the two share a position and are different panels.` : isBack(id) ? "On the face against the maqsūra, which Creswell's photograph does not show. The place is from the mihrab side's frame, mirrored: see Other face." : "Not in Creswell's photograph."; };
 const shot3d = id => { try { return (CARD ? parent.MODEL : $("f3d").contentWindow?.MODEL)?.shot?.(id) || null; } catch (e) { return null; } };      // its photograph, where the 3D model has one
 function clickSlot(id) {
   if (picking) { assign(current, id); stopPick(); changed(); return; }
@@ -1026,13 +1037,13 @@ function showSlot(id) {
   const isNew = newOf(id), ns = numbersAt(id), off = !!OFF[id], shot = off ? shot3d(id) : null;
   card.hidden = false; card.scrollTop = 0;
   card.innerHTML = `<button class="close" id="close">Close</button>
-    <div class="head">${off ? idBlock(offLabel(id), isNew === "yes" ? "New" : "After 1907", id) : idBlock(isNew === "yes" ? "N" : "?", isNew === "yes" ? "New" : "Saladin", id)}<div><span class="kind">${isNew === "yes" ? "New panel" : off ? "Panel of after 1907" : "No panel assigned"}</span><span class="sub">${slotName(id)}, after 1907</span>${off ? `<span class="sub">${offNote(id)}</span>` : golvinLine(id)}</div></div>
+    <div class="head">${off ? idBlock(offLabel(id), isNew === "yes" ? "New" : isBack(id) ? "Other face" : "After 1907", id) : idBlock(isNew === "yes" ? "N" : "?", isNew === "yes" ? "New" : "Saladin", id)}<div><span class="kind">${isNew === "yes" ? "New panel" : off ? (isBack(id) ? "Panel of the maqsūra side" : "Panel of after 1907") : "No panel assigned"}</span><span class="sub">${slotName(id)}${isBack(id) ? "" : ", after 1907"}</span>${off ? `<span class="sub">${offNote(id)}</span>` : golvinLine(id)}</div></div>
     ${editing ? `<form class="edit" id="edit">
       <div class="field"><span class="lab">${off ? "Is this panel new, made in 1907–10?" : "Is this Creswell panel new?"}</span>${seg("isNew", isNew, YESNO)}</div>
       <div class="field"><label for="e-as">If not, its Saladin number</label><div class="row"><input id="e-as" type="number" min="1" max="79"><button type="button" id="e-asgo">Assign</button></div></div>
     </form>` : ""}
-    ${shot ? `<div class="figs"><figure class="fig"><img src="${shot}" alt="${slotName(id)}"><figcaption>${slotName(id)}: ${/^(r\d+\.\d+|s[12])$/.test(id) ? "from the photographs of the stair taken after 1910" : "from the photographs of the new rails laid flat in 1907–10"}, straightened, as on the 3D model</figcaption></figure></div>` : ""}
-    ${photosOfSlot(id).length ? `<div class="figs">${photosOfSlot(id).map(p => `<figure class="fig"><img src="${p.file}" alt="${p.title}" loading="lazy"><figcaption>${p.group}: ${p.title}</figcaption></figure>`).join("")}</div>` : ""}
+    ${shot ? `<div class="figs"><figure class="fig"><img src="${shot}" alt="${slotName(id)}"><figcaption>${slotName(id)}: ${isBack(id) ? "from the photograph set into this place on the Other face page" : /^(r\d+\.\d+|s[12])$/.test(id) ? "from the photographs of the stair taken after 1910" : "from the photographs of the new rails laid flat in 1907–10"}, straightened, as on the 3D model</figcaption></figure></div>` : ""}
+    ${slotPhotos(id).length ? `<div class="figs">${slotPhotos(id).map(p => `<figure class="fig"><img src="${p.file}" alt="${p.title}" loading="lazy"><figcaption>${p.group}: ${p.title}</figcaption></figure>`).join("")}</div>` : ""}
     ${(id === "b10" || id === "b16") ? `<div class="note"><span class="src">${S.CRE}</span><p>The balustrade <q>now consists of sixteen only, of which Nos. 10 and 16 are new, the latter being twice the width of the rest</q>; p. 317.</p></div>` : ""}
     ${id === "b16" ? `<div class="note"><span class="src">${S.PD}</span><p>The two original panels nos. 68 and 69 of the left face were replaced by a single one; p. 223.</p></div>` : ""}
     ${!ns.length && isNew !== "yes" && id[0] === "f" ? `<p class="empty">The panel that was here is marked as gone or moved. Say whether this one is new, or which old panel it is.</p>` : ""}`;
@@ -1079,7 +1090,7 @@ function setView(v) {
   const show = w => v === w || (v === "both" && (w === "before" || w === partner));
   VW.forEach(w => { $("pane-" + w).hidden = !show(w); });
   const on3 = v === "both" && partner === "3d";      // the 3D model is loaded the first time it is asked for
-  $("pane-3d").hidden = !on3; if (on3 && !$("f3d").getAttribute("src")) $("f3d").src = "3d/?embed&v=20261119b"; if (on3) sync3d();
+  $("pane-3d").hidden = !on3; if (on3 && !$("f3d").getAttribute("src")) $("f3d").src = "3d/?embed&v=20261119c"; if (on3) sync3d();
   $("withseg").hidden = v !== "both";
   syncSave();
   document.querySelectorAll("#withseg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.w === partner));
