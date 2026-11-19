@@ -161,7 +161,7 @@ addEventListener("error", () => { const el = document.getElementById("err"); if 
 </script>
 <script src="lib/three.min.js"></script>
 <script src="lib/OrbitControls.js"></script>
-<script src="data.js?v=20261119c"></script>   <!-- the version changes with every update, so the page never runs with older data -->
+<script src="data.js?v=20261119d"></script>   <!-- the version changes with every update, so the page never runs with older data -->
 <script>
 "use strict";
 // ---- photo space to metres. The frame runs from x = 435 to 2700 px on Creswell's photograph and stands on y = 2095.
@@ -424,7 +424,8 @@ const backFace = (() => { const g = new THREE.ShapeGeometry(BACK_SLOTS.map(s => 
   for (let i = 0; i < p.count; i++) uv.setXY(i, (PX1 - (p.getX(i) / S + PX0)) / (PX1 - PX0), p.getY(i) / S / (PYF - 172));
   const m = new THREE.Mesh(g, backMat); m.position.z = -ZO + REC - 0.0005; m.receiveShadow = true; m.visible = false; scene.add(m); return m; })();
 new THREE.TextureLoader().load("back/face.jpg?v=20261119b", t => { const o = photoLook(srgb(t), "creswell", 0.0035), c = o.color, e = o.emissive; delete o.color; delete o.emissive;
-  backMat.color.copy(c); backMat.emissive.copy(e); Object.assign(backMat, o); backMat.needsUpdate = true; backReady = true; paint(); });
+  backMat.color.copy(c); backMat.emissive.copy(e); Object.assign(backMat, o); backMat.needsUpdate = true; backReady = true; paint();
+  if (carded && carded.startsWith("o.")) try { $("side-f").contentWindow.cardFor(carded); } catch (e) {} });      // a card opened before the image arrived gets its picture
 // its places, named as on the Other face page: Strzygowski's column, then the panel counted from the foot
 { const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII"], byCol = {};
   BACK_SLOTS.filter(s => s.kind === "panel").forEach(s => (byCol[s.col] = byCol[s.col] || []).push(s));

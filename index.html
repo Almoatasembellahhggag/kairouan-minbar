@@ -551,9 +551,10 @@ Object.assign(OFF, {s1: "Front of the seat, mihrab-side panel", s2: "Front of th
   R.forEach((r, i) => { for (let k = 1; k <= N[i]; k++) OFF[`o.${r}-${k}`] = `Maqsūra side, column ${r}, panel ${k} from the foot`;
     if (i >= 2 && i <= 11) OFF[i === 11 ? "o.XII-2" : `o.${r}-T`] = `Maqsūra side, column ${r}, the triangle under the rail`; }); }
 const isBack = id => typeof id === "string" && id.startsWith("o.");
-let BACKED = {photos: {}};
+let BACKED = {photos: {}}, shownBack = null;
 fetch("back-edits.json?" + Date.now()).then(r => r.ok ? r.json() : null).then(j => { if (j && j.photos) BACKED = j;
-  try { const l = JSON.parse(localStorage.getItem("kairouan-minbar-back-edits")); if (l && l.photos) BACKED = l; } catch (e) {} }).catch(() => {});
+  try { const l = JSON.parse(localStorage.getItem("kairouan-minbar-back-edits")); if (l && l.photos) BACKED = l; } catch (e) {}
+  if (shownBack && !card.hidden) showSlot(shownBack); }).catch(() => {});          // a card opened before the file arrived gets its photographs
 const slotName = id => {
   if (!id) return "Not on his photograph";
   if (OFF[id]) return OFF[id];
@@ -1031,6 +1032,7 @@ function renderCard() {
   bindForm(n);
 }
 function showSlot(id) {
+  shownBack = isBack(id) ? id : null;
   current = null; currentSlot = id;
   renderMarks();
   if (CARD) to3d("cardAt", id);
@@ -1090,7 +1092,7 @@ function setView(v) {
   const show = w => v === w || (v === "both" && (w === "before" || w === partner));
   VW.forEach(w => { $("pane-" + w).hidden = !show(w); });
   const on3 = v === "both" && partner === "3d";      // the 3D model is loaded the first time it is asked for
-  $("pane-3d").hidden = !on3; if (on3 && !$("f3d").getAttribute("src")) $("f3d").src = "3d/?embed&v=20261119c"; if (on3) sync3d();
+  $("pane-3d").hidden = !on3; if (on3 && !$("f3d").getAttribute("src")) $("f3d").src = "3d/?embed&v=20261119d"; if (on3) sync3d();
   $("withseg").hidden = v !== "both";
   syncSave();
   document.querySelectorAll("#withseg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.w === partner));
