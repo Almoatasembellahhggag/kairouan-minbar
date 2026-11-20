@@ -161,7 +161,7 @@ addEventListener("error", () => { const el = document.getElementById("err"); if 
 </script>
 <script src="lib/three.min.js"></script>
 <script src="lib/OrbitControls.js"></script>
-<script src="data.js?v=20261120a"></script>   <!-- the version changes with every update, so the page never runs with older data -->
+<script src="data.js?v=20261120b"></script>   <!-- the version changes with every update, so the page never runs with older data -->
 <script>
 "use strict";
 // ---- photo space to metres. The frame runs from x = 435 to 2700 px on Creswell's photograph and stands on y = 2095.
@@ -280,6 +280,10 @@ function skin(holes, z, cap) {
 // the traced outline of panel 13 runs a little into the last rail panel; its opening stops short of the rail
 const railFoot = (r => x => r[3][1] + (r[2][1] - r[3][1]) / (r[2][0] - r[3][0]) * (x - r[3][0]) + 10)(RAIL[RAIL.length - 1].pts);
 const railX = (r => [Math.min(...r.map(p => p[0])), Math.max(...r.map(p => p[0]))])(RAIL[RAIL.length - 1].pts);
+// The maqsūra side's places are the mihrab side's, mirrored, except where a photograph of that side gives a place its size:
+// column VIII, laid from the foot at the sizes of Altai-Iran Abb. 167 (tools/other face elevation/elev_panels.py has the same figures).
+const BACK_FIT = {f8: [1906, 2090], f21: [1664, 1861], f32: [1414, 1619]};
+const BACK_SLOTS = SLOTS.filter(s => s.kind !== "rail").map(s => BACK_FIT[s.id] ? Object.assign({}, s, {pts: (([a, b]) => [[1727, a], [1840, a], [1840, b], [1727, b]])(BACK_FIT[s.id])}) : s);
 const opening = s => { if (s.kind !== "panel") return s.pts;          // only panels under that rail panel: elsewhere its line, run on, would cut the tops of the high panels (51)
   const xs = s.pts.map(p => p[0]); if (Math.max(...xs) < railX[0] || Math.min(...xs) > railX[1]) return s.pts;
   const top = Math.max(...s.pts.map(p => railFoot(p[0]))); return s.pts.map(p => [p[0], Math.max(p[1], top)]); };
@@ -295,7 +299,7 @@ new THREE.TextureLoader().load("../after.jpg", t => { const o = photoLook(srgb(t
   undefined, () => { document.getElementById("info-t").textContent = "Creswell's photograph did not load."; });
 { const tri = SLOTS.filter(s => s.kind === "tri").map(s => s.pts);      // the triangles under the rails show on the inside faces too
   skin(RAIL.map(s => s.pts).concat(tri), ZI, WOOD_F);                 // mihrab side, inside
-  skin(RAILQ.map(s => s.pts).concat(SLOTS.filter(s => s.kind !== "rail").map(opening)), -ZO, WOOD_F);      // maqsūra side, outside: open over every place, as the mihrab side is
+  skin(RAILQ.map(s => s.pts).concat(BACK_SLOTS.map(opening)), -ZO, WOOD_F);      // maqsūra side, outside: open over every place, as the mihrab side is
   skin(RAILQ.map(s => s.pts).concat(tri), -ZI - REC, WOOD_F); }       // maqsūra side, inside
 
 // ---- panels of the mihrab side, from the traced outlines
@@ -418,7 +422,7 @@ const bands = [];
 // from y = 172 to PYF; the panels lie in openings of the skin, REC behind its face, and are seen from outside only.
 let backReady = false;
 const BACK_PLACES = [], BACK_BY = {};          // its places: [name on the Other face page, what it is], and their outlines by that name
-const BACK_SLOTS = SLOTS.filter(s => s.kind !== "rail"), BACK_HAS = new Set(["II-1","II-2","II-3","III-1","III-2","IV-1","IV-2","IV-3","IV-4","IV-5","IX-1","IX-2","IX-3","V-1","V-2","V-3","V-4","V-5","VI-1","VI-2","VI-3","VI-4","VII-1","VII-2","VII-3","VIII-1","VIII-2","VIII-3","X-1","X-2","XI-1","XI-2","XII-1","XII-2"]);
+const BACK_HAS = new Set(["II-1","II-2","II-3","III-1","III-2","IV-1","IV-2","IV-3","IV-4","IV-5","IX-1","IX-2","IX-3","V-1","V-2","V-3","V-4","V-5","VI-1","VI-2","VI-3","VI-4","VII-1","VII-2","VII-3","VIII-1","VIII-2","VIII-3","X-1","X-2","XI-1","XI-2","XII-1","XII-2"]);
 const backMat = new THREE.MeshStandardMaterial({color: lin(0x705841), roughness: 0.74, metalness: 0, envMapIntensity: 0.4, side: THREE.BackSide});
 const backFace = (() => { const g = new THREE.ShapeGeometry(BACK_SLOTS.map(s => shapeOf(opening(s)))), p = g.attributes.position, uv = g.attributes.uv;
   for (let i = 0; i < p.count; i++) uv.setXY(i, (PX1 - (p.getX(i) / S + PX0)) / (PX1 - PX0), p.getY(i) / S / (PYF - 172));
@@ -426,11 +430,11 @@ const backFace = (() => { const g = new THREE.ShapeGeometry(BACK_SLOTS.map(s => 
 // the floral bars of that face (uprights and cross rails), where a photograph shows them: the same image on the frame's own face, cut out by back/barmask.png
 let barReady = false;
 const barMat = new THREE.MeshStandardMaterial({color: lin(0x705841), roughness: 0.74, metalness: 0, envMapIntensity: 0.4, side: THREE.BackSide, alphaTest: 0.5});
-barMat.alphaMap = new THREE.TextureLoader().load("back/barmask.png?v=20261120a", () => { barReady = true; paint(); });
+barMat.alphaMap = new THREE.TextureLoader().load("back/barmask.png?v=20261120b", () => { barReady = true; paint(); });
 const backBars = (() => { const g = new THREE.ShapeGeometry(shapeOf(OUTLINE)), p = g.attributes.position, uv = g.attributes.uv;
   for (let i = 0; i < p.count; i++) uv.setXY(i, (PX1 - (p.getX(i) / S + PX0)) / (PX1 - PX0), p.getY(i) / S / (PYF - 172));
   const m = new THREE.Mesh(g, barMat); m.position.z = -ZO - 0.0006; m.receiveShadow = true; m.visible = false; scene.add(m); return m; })();
-new THREE.TextureLoader().load("back/face.jpg?v=20261120a", t => { const o = photoLook(srgb(t), "creswell", 0.0035), c = o.color, e = o.emissive; delete o.color; delete o.emissive;
+new THREE.TextureLoader().load("back/face.jpg?v=20261120b", t => { const o = photoLook(srgb(t), "creswell", 0.0035), c = o.color, e = o.emissive; delete o.color; delete o.emissive;
   [backMat, barMat].forEach(m => { m.color.copy(c); m.emissive.copy(e); Object.assign(m, o); m.needsUpdate = true; }); backReady = true; paint();
   if (carded && carded.startsWith("o.")) try { $("side-f").contentWindow.cardFor(carded); } catch (e) {} });      // a card opened before the image arrived gets its picture
 // its places, named as on the Other face page: Strzygowski's column, then the panel counted from the foot
