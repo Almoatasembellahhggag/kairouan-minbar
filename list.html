@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="A list of the panels of the Kairouan minbar as they stand on Creswell's photograph, each with every photograph and drawing of it, and a mark for how important it is.">
+<title>Kairouan Minbar Panels: List</title>
+<link rel="icon" href="favicon.ico" sizes="32x32">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Sans+Condensed:wght@500;600&display=swap">
+<style>
+/* The list of Creswell's panels. The data (outlines, photographs, drawings, the saved edits and their logic) is not copied here:
+   the page reads index.html and runs the block between its <list-data> marks, so a photograph or drawing added there shows here too.
+   Only the importance marks are this page's own; they are saved in list-edits.json. */
+:root {
+  --bg: #f2f2ef; --surface: #fbfbf9; --fg: #24211c; --muted: #6a645b; --line: #dcdcd6; --accent: #8a5a36; --sel: #e8862f; --stage: #0d0b09;
+  --high: #c8342b; --medium: #e0b02c; --low: #2f8f4e;
+  --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --label: "IBM Plex Sans Condensed", "Arial Narrow", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #141210; --surface: #1c1915; --fg: #ebe5db; --muted: #a39a8c; --line: #322c25; --accent: #d0a57a; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #141210; --surface: #1c1915; --fg: #ebe5db; --muted: #a39a8c; --line: #322c25; --accent: #d0a57a; color-scheme: dark }
+
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { scroll-padding-top: 70px; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--serif); font-size: 16px; line-height: 1.5; }
+body.modal { overflow: hidden; }
+
+.tools { position: sticky; top: 0; z-index: 10; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px;
+  padding: calc(env(safe-area-inset-top, 0px) + 8px) 16px 8px; background: var(--surface); border-bottom: 1px solid var(--line);
+  font-family: var(--label); font-size: .88rem; }
+.tools h1 { font-family: var(--serif); font-size: 1rem; font-weight: 600; margin: 0 6px 0 0; }
+.seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.seg button { font: inherit; border: 0; background: transparent; color: var(--fg); padding: 4px 9px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--surface); }
+.tools > button, .tools > a.linkb, .fileb { font: inherit; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px; cursor: pointer; text-decoration: none; }
+.tools > #savef { background: var(--accent); border-color: var(--accent); color: var(--surface); font-weight: 600; }
+.tools .saved { color: var(--muted); }
+:is(button, a, summary):focus-visible { outline: 2px solid var(--sel); outline-offset: 2px; }
+.dot { display: inline-block; width: .8em; height: .8em; border-radius: 50%; background: var(--c, transparent); border: 1px solid rgba(0,0,0,.25); flex: none; }
+.dot.none { border: 1px dashed var(--muted); }
+[data-imp="high"] { --c: var(--high); } [data-imp="medium"] { --c: var(--medium); } [data-imp="low"] { --c: var(--low); }
+
+main { padding: 14px 16px 60px; max-width: 1500px; margin: 0 auto; }
+.lede { color: var(--muted); margin: 0 0 14px; max-width: 75ch; }
+.msg { padding: 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); max-width: 70ch; }
+section.grp { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: 10px; padding: 12px 0; border-top: 1px solid var(--line); }
+section.grp > h2 { margin: 0; font-family: var(--label); font-size: .82rem; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); display: flex; flex-direction: column; gap: 2px; }
+section.grp > h2 span { font-weight: 500; letter-spacing: 0; text-transform: none; }
+@media (max-width: 640px) { section.grp { grid-template-columns: minmax(0, 1fr); } section.grp > h2 { flex-direction: row; gap: 8px; align-items: baseline; } }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 10px; }
+
+.pc { position: relative; display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; border-top: 6px solid var(--c, var(--line)); }
+.pc .open { all: unset; cursor: pointer; display: flex; flex-direction: column; gap: 6px; padding: 8px 8px 9px; flex: 1; }
+.pc .open:hover .thumb { outline: 2px solid var(--sel); }
+.pc .open:focus-visible { outline: 2px solid var(--sel); outline-offset: -2px; }
+.thumb { height: 150px; display: grid; place-items: center; background: var(--stage); border-radius: 4px; overflow: hidden; }
+.thumb canvas { display: block; max-width: 100%; }
+.nums { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; font-family: var(--label); font-variant-numeric: tabular-nums; }
+.nums b { font-size: 1.5rem; line-height: 1; font-weight: 600; color: var(--accent); }
+.nums span { font-size: .78rem; color: var(--muted); }
+.pc .sub { font-family: var(--label); font-size: .78rem; color: var(--muted); line-height: 1.3; }
+.pc .sub i { font-style: normal; color: var(--fg); }
+.imp { display: flex; gap: 6px; padding: 0 8px 9px; }
+.imp button { all: unset; cursor: pointer; width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--c); box-sizing: border-box; background: transparent; }
+.imp button[aria-pressed="true"] { background: var(--c); box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--c); }
+.imp button:focus-visible { outline: 2px solid var(--sel); outline-offset: 3px; }
+
+#detail { position: fixed; inset: 0; z-index: 20; overflow: auto; background: var(--bg); }
+.dbar { position: sticky; top: 0; z-index: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: calc(env(safe-area-inset-top, 0px) + 8px) 16px 8px;
+  background: var(--surface); border-bottom: 1px solid var(--line); border-top: 6px solid var(--c, var(--line)); font-family: var(--label); font-size: .88rem; }
+.dbar button, .dbar a { font: inherit; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 4px 12px; cursor: pointer; text-decoration: none; }
+.dbar .sp { flex: 1; }
+.dbody { max-width: 1300px; margin: 0 auto; padding: 16px 16px 60px; display: flex; flex-direction: column; gap: 18px; }
+.head { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; }
+.head .ids { display: flex; gap: 14px; }
+.head .id { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.head .id b { font-family: var(--label); font-weight: 600; font-size: 2.6rem; line-height: 1; color: var(--accent); font-variant-numeric: tabular-nums; }
+.head .id.g b { color: var(--fg); }
+.head .id span { font-family: var(--label); font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.head .txt { display: flex; flex-direction: column; }
+.head .kind { font-weight: 600; }
+.head .where { color: var(--muted); font-size: .92rem; }
+.pill { display: inline-flex; align-items: center; gap: 6px; font-family: var(--label); font-size: .88rem; border: 1px solid var(--line); border-radius: 14px; padding: 2px 10px; background: var(--surface); }
+.impseg { font-family: var(--label); font-size: .88rem; }
+.impseg button[aria-pressed="true"] { background: var(--c); color: #fff; }
+.impseg button[data-imp="medium"][aria-pressed="true"] { color: #24211c; }
+.impseg button[aria-pressed="true"] .dot { background: #fff; }
+.glabel { font-family: var(--label); font-size: .8rem; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; }
+.figs { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; align-items: start; }
+.figs.own { grid-template-columns: repeat(auto-fill, minmax(200px, 300px)); }
+.fig { margin: 0; display: flex; flex-direction: column; gap: 5px; }
+.fig .im { all: unset; display: grid; place-items: center; background: var(--stage); border-radius: 4px; cursor: zoom-in; overflow: hidden; min-height: 120px; }
+.fig .im:focus-visible { outline: 2px solid var(--sel); outline-offset: 2px; }
+.fig img, .fig canvas { display: block; max-width: 100%; height: auto; max-height: 460px; object-fit: contain; }
+.fig figcaption { font-family: var(--label); font-size: .82rem; color: var(--muted); line-height: 1.35; }
+.fig figcaption a { color: var(--accent); }
+.empty { color: var(--muted); margin: 0; }
+
+#lb { position: fixed; inset: 0; z-index: 30; display: flex; flex-direction: column; align-items: center; overflow: auto; background: rgba(0,0,0,.94); padding: 12px; }
+#lb img { max-width: 100%; max-height: calc(100vh - 80px); margin: auto; cursor: zoom-in; }
+#lb.big img { max-width: none; max-height: none; margin: 0; cursor: zoom-out; }
+#lb p { color: #f3ede3; font-family: var(--label); font-size: .85rem; margin: 6px 0 0; text-align: center; max-width: 90ch; }
+#lb .lbnav { display: flex; gap: 8px; margin-top: 6px; font-family: var(--label); font-size: .85rem; }
+#lb .lbnav button { font: inherit; color: #f3ede3; background: transparent; border: 1px solid rgba(255,255,255,.4); border-radius: 6px; padding: 3px 12px; cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="tools">
+  <h1>Kairouan Minbar: list of panels</h1>
+  <div class="seg" id="filt" role="group" aria-label="Show panels by importance"></div>
+  <button id="sortb" aria-pressed="false">Group by importance</button>
+  <a class="linkb" href="./">Mihrab side</a>
+  <a class="linkb" href="3d/">3D model</a>
+  <a class="linkb" href="back.html">Other face</a>
+  <a class="linkb" id="pagelink" href="list.html?edit">Edit</a>
+  <button id="savef" class="edit-only" hidden>Save file</button>
+  <label class="fileb edit-only" hidden>Load file<input id="loadf" type="file" accept="application/json,.json" hidden></label>
+  <span class="saved edit-only" id="saved" role="status" hidden></span>
+</div>
+<main id="main">
+  <p class="lede" id="lede">The panels as they stand on Creswell's photograph of the mihrab side (<i>Early Muslim Architecture</i> II, 1940, Pl. 89a): the side column by column from the top, then the stair rail. Click a panel for every photograph and drawing of it.</p>
+  <div id="list"><p class="msg">Loading the panels…</p></div>
+</main>
+<div id="detail" role="dialog" aria-modal="true" aria-label="Panel" hidden></div>
+<div id="lb" role="dialog" aria-label="Enlarged photograph" hidden><img alt=""><p></p><div class="lbnav"><button data-lb="-1">Previous</button><button data-lb="1">Next</button><button data-lb="0">Close</button></div></div>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const EDIT = new URLSearchParams(location.search).has("edit");
+const IMP = [["high", "Extremely important", "Red"], ["medium", "Medium", "Yellow"], ["low", "Not that important", "Green"]];
+const IMP_NAME = Object.fromEntries(IMP.map(([k, t]) => [k, t]));
+// the two photographs the outlines are traced on: file, and the width of the outlines' coordinates
+const AFTER = {src: "after.jpg", vw: 3000, img: null}, BEFORE = {src: "minbar.jpg", vw: 3600, img: null};
+let D = null;          // the main page's data and edits logic
+let ORDER = [];        // Creswell's positions in the order of the list
+
+// ---- the main page's data: its script between the two marks, run here
+async function loadData() {
+  const r = await fetch("index.html", {cache: "no-cache"});
+  if (!r.ok) throw new Error("index.html " + r.status);
+  const s = await r.text(), a = s.indexOf("// <list-data>"), b = s.indexOf("// </list-data>");
+  if (a < 0 || b < a) throw new Error("the data marks are missing from index.html");
+  const tail = `
+    return {POLY, SLOT, GOLVIN, ROWS, TRI, PHOTOS, DRAWINGS, DRAW_NOTE, info, slotName, numbersAt, newOf, photosOf, photosOfSlot, outlineOf,
+      async load() {      // the saved edits, as the main page loads them: this browser's copy on top of the site's file
+        const local = lsGet(); let pub = null;
+        try { const r = await fetch("edits.json", {cache: "no-store"}); if (r.ok) pub = clean(await r.json()); } catch (e) {}
+        if (pub) E = local ? await reconcile(clean(local), pub, "edits-history.json", clean) : pub; else if (local) E = clean(local);
+      }};`;
+  D = new Function(s.slice(a, b) + tail)();
+  await D.load();
+}
+
+// ---- importance marks: the published file, and this browser's changes on top of it
+const LS = "kairouan-minbar-list-edits", LSB = "kairouan-minbar-list-base";
+let pub = {v: 1, importance: {}}, M = {v: 1, importance: {}};
+const lsGet = k => { try { const s = localStorage.getItem(k); return s ? JSON.parse(s) : null; } catch (e) { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } };
+const cleanM = raw => { const out = {v: 1, importance: {}};
+  Object.entries(raw?.importance || {}).forEach(([id, v]) => { if (D.SLOT[id] && IMP_NAME[v]) out.importance[id] = v; });
+  return out; };
+function mergeLocal() {          // marks changed in this browser keep their local value; the rest follow the published file
+  M = cleanM(pub);
+  const loc = lsGet(LS), base = lsGet(LSB) || {importance: {}};
+  if (!loc) return;
+  for (const k of new Set([...Object.keys(loc.importance || {}), ...Object.keys(base.importance || {})])) {
+    const l = loc.importance?.[k], b = base.importance?.[k];
+    if (l !== b) { if (IMP_NAME[l] && D.SLOT[k]) M.importance[k] = l; else delete M.importance[k]; }
+  }
+}
+const impOf = id => M.importance[id] || "";
+let savedOk = true;
+function setImp(id, v) {
+  if (!lsGet(LSB)) lsSet(LSB, pub);
+  if (v && impOf(id) !== v) M.importance[id] = v; else delete M.importance[id];
+  savedOk = lsSet(LS, M);
+  status(); renderFilter(); paintCard(id);
+  if (current === id) renderDetail();
+  if (filt !== "all" || byImp) renderList();
+}
+function status(t) { if (EDIT) $("saved").textContent = t || `${Object.keys(M.importance).length}/${ORDER.length} marked. ${savedOk ? "Saved in this browser; Save file to publish." : "Not saved in this browser: use Save file."}`; }
+
+// ---- what a position holds
+const numsAt = id => D.numbersAt(id);
+const isNew = id => D.newOf(id) === "yes";
+const bigOf = id => { const ns = numsAt(id); return ns.length ? ns.join(", ") : isNew(id) ? "N" : "?"; };
+const bigLab = id => numsAt(id).length ? "Saladin" : isNew(id) ? "New" : "Saladin";
+const kindOf = id => { const base = id[0] === "b" ? "Balustrade panel" : D.TRI[+id.slice(1)] ? "Triangle" : "Rectangular panel";
+  return numsAt(id).length ? base : isNew(id) ? base + ", new in 1907–10" : base + ", no panel assigned"; };
+const whereOf = id => id[0] === "b" ? `Stair rail on the mihrab side, outside, position ${id.slice(1)} from the top` : D.slotName(id);
+const colOf = id => { const k = +id.slice(1); return D.TRI[k] ?? D.ROWS.findIndex(a => a.includes(k)) + 1; };
+const photosFor = id => { const out = [];
+  numsAt(id).forEach(n => D.photosOf(n).forEach(p => out.includes(p) || out.push(p)));
+  D.photosOfSlot(id).forEach(p => out.includes(p) || out.push(p));
+  return out; };
+const drawingsFor = id => numsAt(id).flatMap(n => (D.DRAWINGS[n] || []).map(d => ({...d, n})));
+const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
+
+// ---- crops of the two photographs
+const loadImg = o => o.img ? Promise.resolve(o.img) : (o.wait ||= new Promise((ok, no) => { const i = new Image(); i.onload = () => { o.img = i; ok(i); }; i.onerror = no; i.src = o.src; }));
+function crop(cv, o, poly, maxW, maxH, pad = .08) {
+  const k = o.img.naturalWidth / o.vw, xs = poly.map(p => p[0]), ys = poly.map(p => p[1]);
+  let x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+  const m = Math.max(x1 - x0, y1 - y0) * pad;
+  x0 = Math.max(0, (x0 - m) * k); y0 = Math.max(0, (y0 - m) * k); x1 = Math.min(o.img.naturalWidth, (x1 + m) * k); y1 = Math.min(o.img.naturalHeight, (y1 + m) * k);
+  const w = x1 - x0, h = y1 - y0, s = Math.min(maxW / w, maxH / h), dpr = Math.min(window.devicePixelRatio || 1, 2);
+  cv.width = Math.round(w * s * dpr); cv.height = Math.round(h * s * dpr);
+  cv.style.width = Math.round(w * s) + "px"; cv.style.aspectRatio = `${w} / ${h}`;
+  const c = cv.getContext("2d"); c.imageSmoothingQuality = "high";
+  c.drawImage(o.img, x0, y0, w, h, 0, 0, cv.width, cv.height);
+}
+
+// ---- the list
+let filt = "all", byImp = false, current = null;
+const count = k => ORDER.filter(id => k === "all" || (k === "none" ? !impOf(id) : impOf(id) === k)).length;
+const shown = () => { const l = ORDER.filter(id => filt === "all" || (filt === "none" ? !impOf(id) : impOf(id) === filt));
+  return byImp ? ["high", "medium", "low", ""].flatMap(k => l.filter(id => impOf(id) === k)) : l; };
+function renderFilter() {
+  const opts = [["all", "All"], ...IMP.map(([k, t]) => [k, t]), ["none", "Not marked"]];
+  $("filt").innerHTML = opts.map(([k, t]) => `<button data-f="${k}" aria-pressed="${filt === k}">${k === "all" ? "" : k === "none" ? `<span class="dot none"></span>` : `<span class="dot" data-imp="${k}"></span>`}${t} ${count(k)}</button>`).join("");
+}
+const cardHtml = id => { const ph = photosFor(id).length, dr = drawingsFor(id).length, g = D.GOLVIN[id], imp = impOf(id);
+  return `<article class="pc" id="c-${id}" ${imp ? `data-imp="${imp}"` : ""}>
+    <button class="open" data-open="${id}" aria-label="Panel ${esc(bigOf(id))}, ${esc(whereOf(id))}${imp ? ", " + IMP_NAME[imp].toLowerCase() : ""}" title="${esc(whereOf(id))}${imp ? ". " + IMP_NAME[imp] : ""}">
+      <span class="thumb"><canvas data-crop="${id}"></canvas></span>
+      <span class="nums"><b>${esc(bigOf(id))}</b><span>${g ? "Golvin " + g : ""}</span></span>
+      <span class="sub">${plural(ph, "photograph")}${dr ? `, <i>drawn</i>` : ""}</span>
+    </button>
+    ${EDIT ? `<div class="imp" role="group" aria-label="Importance of panel ${esc(bigOf(id))}">${IMP.map(([k, t]) => `<button data-set="${id}" data-imp="${k}" aria-pressed="${imp === k}" aria-label="${t}" title="${t}"></button>`).join("")}</div>` : ""}
+  </article>`; };
+function groups(l) {
+  if (byImp) return [...IMP.map(([k, t, c]) => [t, c, l.filter(id => impOf(id) === k)]), ["Not marked", "", l.filter(id => !impOf(id))]];
+  const out = [];
+  for (let c = 1; c <= D.ROWS.length; c++) out.push([`Column ${c}`, c === 1 ? "from the top" : "", l.filter(id => id[0] === "f" && colOf(id) === c)]);
+  out.push(["Stair rail", "from the top", l.filter(id => id[0] === "b")]);
+  return out;
+}
+function renderList() {
+  const l = shown();
+  $("list").innerHTML = l.length ? groups(l).filter(g => g[2].length).map(([t, s, ids]) =>
+    `<section class="grp"><h2>${t}<span>${s ? s + ", " : ""}${ids.length}</span></h2><div class="cards">${ids.map(cardHtml).join("")}</div></section>`).join("")
+    : `<p class="msg">No panel has this mark${EDIT ? "" : ` yet. Marks are set on the <a href="list.html?edit">Edit</a> page`}.</p>`;
+  drawThumbs();
+}
+function paintCard(id) { const el = $("c-" + id); if (!el) return; el.outerHTML = cardHtml(id); drawThumbs($("c-" + id)); }
+function drawThumbs(root = $("list")) {
+  loadImg(AFTER).then(() => root.querySelectorAll("canvas[data-crop]").forEach(cv => { crop(cv, AFTER, D.SLOT[cv.dataset.crop], 180, 150); })).catch(() => {});
+}
+
+// ---- one panel
+let figs = [];          // what the enlarged view steps through: {src, cap}
+function renderDetail() {
+  const id = current, el = $("detail"), ns = numsAt(id), imp = impOf(id), ph = photosFor(id), dr = drawingsFor(id), g = D.GOLVIN[id];
+  const top = el.scrollTop;
+  figs = [];
+  const own = [`<figure class="fig"><button class="im" data-fig="${figs.push({canvas: "after", cap: `Creswell 1940, Pl. 89a, detail: ${whereOf(id)}`}) - 1}"><canvas id="cv-after"></canvas></button><figcaption>On Creswell's photograph (Pl. 89a), by 1929</figcaption></figure>`]
+    .concat(ns.filter(n => D.POLY.before[D.outlineOf(n)]).map(n => `<figure class="fig"><button class="im" data-fig="${figs.push({canvas: "before-" + n, cap: `Garrigues no. 271, detail: Saladin no. ${n} before 1907`}) - 1}"><canvas id="cv-before-${n}"></canvas></button><figcaption>Saladin no. ${n} before 1907, on Garrigues no. 271</figcaption></figure>`));
+  const drawn = dr.map(d => `<figure class="fig"><button class="im" data-fig="${figs.push({src: d.file, cap: `Panel ${d.n}, ${d.label}. ${D.DRAW_NOTE}`}) - 1}"><img src="${d.web}" alt="${esc(D.DRAW_NOTE)}, panel ${d.n}, ${esc(d.label)}" loading="lazy"></button><figcaption>Panel ${d.n}, ${esc(d.label)}. ${D.DRAW_NOTE}. <a href="${d.file}" download>Full PNG, ${d.w} × ${d.h} px, ${d.mb} MB</a></figcaption></figure>`);
+  const photos = ph.map(p => `<figure class="fig"><button class="im" data-fig="${figs.push({src: p.file, cap: `${p.group}: ${p.title}`}) - 1}"><img src="${p.file}" alt="${esc(p.title)}" loading="lazy"></button><figcaption>${esc(p.group)}: ${esc(p.title)}</figcaption></figure>`);
+  if (imp) el.dataset.imp = imp; else delete el.dataset.imp;
+  el.innerHTML = `<div class="dbar" ${imp ? `data-imp="${imp}"` : ""}>
+      <button id="d-close">Back to the list</button><button id="d-prev">Previous</button><button id="d-next">Next</button><span class="sp"></span>
+      ${ns.length ? `<a href="./#panel-${ns[0]}">On the main page</a>` : ""}</div>
+    <div class="dbody">
+      <div class="head"><div class="ids"><div class="id"><b>${esc(bigOf(id))}</b><span>${bigLab(id)}</span></div>${g ? `<div class="id g"><b>${g}</b><span>Golvin</span></div>` : ""}</div>
+        <div class="txt"><span class="kind">${kindOf(id)}</span><span class="where">${esc(whereOf(id))}</span></div>
+        ${EDIT ? `<div class="seg impseg" role="group" aria-label="Importance">${IMP.map(([k, t]) => `<button data-set="${id}" data-imp="${k}" aria-pressed="${imp === k}"><span class="dot"></span>${t}</button>`).join("")}</div>`
+          : `<span class="pill" ${imp ? `data-imp="${imp}"` : ""}><span class="dot${imp ? "" : " none"}"></span>${imp ? IMP_NAME[imp] : "Importance not marked"}</span>`}
+      </div>
+      <div><p class="glabel">The panel in place</p><div class="figs own">${own.join("")}</div></div>
+      ${drawn.length ? `<div><p class="glabel">Reconstruction drawing${drawn.length > 1 ? "s" : ""}, ${drawn.length}</p><div class="figs">${drawn.join("")}</div></div>` : ""}
+      <div><p class="glabel">Photographs, ${ph.length}</p>${photos.length ? `<div class="figs">${photos.join("")}</div>` : `<p class="empty">No photograph is assigned to this panel yet. Photographs are assigned on the main page's <a href="edit.html">Edit</a> page.</p>`}</div>
+    </div>`;
+  el.scrollTop = top;
+  loadImg(AFTER).then(() => { const cv = $("cv-after"); if (cv && current === id) crop(cv, AFTER, D.SLOT[id], 300, 460, .15); }).catch(() => {});
+  if (ns.length) loadImg(BEFORE).then(() => { if (current !== id) return; ns.forEach(n => { const cv = $("cv-before-" + n), p = D.POLY.before[D.outlineOf(n)]; if (cv && p) crop(cv, BEFORE, p, 300, 460, .15); }); }).catch(() => {});
+}
+function openPanel(id, keepScroll) {
+  if (!D.SLOT[id]) return;
+  current = id; $("detail").hidden = false; document.body.classList.add("modal");
+  renderDetail(); if (!keepScroll) $("detail").scrollTop = 0;
+  try { history.replaceState(null, "", location.pathname + location.search + "#" + id); } catch (e) {}
+  $("d-close")?.focus({preventScroll: true});
+}
+function closePanel() {
+  const id = current; current = null; $("detail").hidden = true; document.body.classList.remove("modal");
+  try { history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
+  const c = id && $("c-" + id); if (c) { c.scrollIntoView({block: "nearest"}); c.querySelector(".open").focus({preventScroll: true}); }
+}
+function step(d) { const l = shown().includes(current) ? shown() : ORDER, i = l.indexOf(current); openPanel(l[(i + d + l.length) % l.length]); }
+
+// ---- enlarged view
+let lbAt = -1;
+function showFig(i) {
+  const f = figs[i]; if (!f) return; lbAt = i;
+  const l = $("lb"), im = l.querySelector("img");
+  im.src = f.canvas ? $("cv-" + f.canvas).toDataURL("image/jpeg", .92) : f.src; im.alt = f.cap;
+  l.querySelector("p").textContent = `${f.cap} (${i + 1} of ${figs.length})`;
+  l.classList.remove("big"); l.hidden = false; l.scrollTop = 0;
+}
+$("lb").addEventListener("click", e => {
+  const b = e.target.closest("[data-lb]");
+  if (b) { const d = +b.dataset.lb; if (d) showFig((lbAt + d + figs.length) % figs.length); else $("lb").hidden = true; return; }
+  if (e.target.matches("img")) $("lb").classList.toggle("big"); else $("lb").hidden = true;
+});
+
+// ---- controls
+document.addEventListener("click", e => {
+  const set = e.target.closest("[data-set]"); if (set && EDIT) { setImp(set.dataset.set, set.dataset.imp); return; }
+  const op = e.target.closest("[data-open]"); if (op) { openPanel(op.dataset.open); return; }
+  const fg = e.target.closest("[data-fig]"); if (fg) { showFig(+fg.dataset.fig); return; }
+  const f = e.target.closest("[data-f]"); if (f) { filt = f.dataset.f; renderFilter(); renderList(); return; }
+  if (e.target.id === "d-close") closePanel(); else if (e.target.id === "d-prev") step(-1); else if (e.target.id === "d-next") step(1);
+});
+$("sortb").addEventListener("click", e => { byImp = !byImp; e.currentTarget.setAttribute("aria-pressed", byImp); renderList(); });
+addEventListener("keydown", e => {
+  if (e.target.matches("input, select, textarea")) return;
+  const lb = !$("lb").hidden;
+  if (e.key === "Escape") { if (lb) $("lb").hidden = true; else if (current) closePanel(); }
+  else if (e.key === "ArrowLeft" || e.key === "ArrowRight") { const d = e.key === "ArrowLeft" ? -1 : 1;
+    if (lb) showFig((lbAt + d + figs.length) % figs.length); else if (current) step(d); }
+});
+if (EDIT) {
+  document.querySelectorAll(".edit-only").forEach(x => x.hidden = false); $("pagelink").textContent = "View"; $("pagelink").href = "list.html";
+  $("lede").insertAdjacentHTML("beforeend", ` To mark a panel, press one of the three circles under it: red for extremely important, yellow for medium, green for not that important; press the same circle again to take the mark off.`);
+  $("savef").addEventListener("click", () => {
+    const sorted = {v: 1, importance: Object.fromEntries(ORDER.filter(impOf).map(id => [id, impOf(id)]))};
+    const blob = new Blob([JSON.stringify(sorted, null, 1) + "\n"], {type: "application/json"}), a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = "list-edits.json"; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    status("File saved: list-edits.json");
+  });
+  $("loadf").addEventListener("change", async e => {
+    const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+    try { const j = JSON.parse(await f.text()); if (!j || typeof j.importance !== "object") throw 0;
+      M = cleanM(j); lsSet(LSB, pub); savedOk = lsSet(LS, M); status(); renderFilter(); renderList(); if (current) renderDetail(); }
+    catch (err) { status("That file could not be read"); }
+  });
+}
+
+const getJ = u => fetch(u + "?" + Date.now()).then(r => r.ok ? r.json() : null).catch(() => null);
+Promise.all([loadData(), getJ("list-edits.json")]).then(([, j]) => {
+  ORDER = Object.keys(D.SLOT).filter(id => D.GOLVIN[id]).sort((a, b) => D.GOLVIN[a] - D.GOLVIN[b]);
+  Object.keys(D.SLOT).forEach(id => ORDER.includes(id) || ORDER.push(id));          // a position Golvin does not number goes last
+  pub = j && typeof j.importance === "object" ? j : {v: 1, importance: {}}; mergeLocal();
+  status(); renderFilter(); renderList();
+  const h = decodeURIComponent(location.hash.slice(1)); if (D.SLOT[h]) openPanel(h);
+}).catch(err => {
+  $("list").innerHTML = `<p class="msg">The list could not be built: ${esc(err.message || err)}. The page reads <a href="index.html">the main page</a> for its data, so it has to be opened from the website or from a local web server, not as a file.</p>`;
+});
+</script>
+</body>
+</html>
