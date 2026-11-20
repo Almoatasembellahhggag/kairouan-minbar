@@ -11,7 +11,7 @@
   :root { --bg: #14110e; --fg: #eee6da; --dim: #b9ad9c; --accent: #e0b070; --line: #3a322a; --panel: rgba(24, 20, 16, .9); }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); font: 15px/1.45 Georgia, "Times New Roman", serif; overflow: hidden; }
-  canvas { display: block; }
+  canvas { display: block; touch-action: none; cursor: grab; }
   #ui { position: absolute; left: 12px; top: 12px; width: min(360px, calc(100vw - 24px)); max-height: calc(100vh - 24px); overflow: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
   h1 { font-size: 1.15rem; font-weight: normal; margin: 0 0 2px; }
   .sub { color: var(--dim); font-size: .85rem; margin: 0 0 10px; }
@@ -99,7 +99,7 @@
   </div>
   <details class="more">
     <summary>How to use</summary>
-    <p>Drag to turn, scroll to zoom, right-drag to move. Click a panel to see its photographs and notes on the right, as on the panel pages; click beside the minbar or press Escape to close them. Double-click a panel to face it square on; double-click beside the minbar to go back.</p>
+    <p>Drag to turn; scroll or pinch to zoom in on what the pointer is on; right-drag, Shift-drag or the arrow keys to move. Click a panel to see its photographs and notes on the right, as on the panel pages; click beside the minbar or press Escape to close them. Double-click a panel to face it square on; double-click beside the minbar to go back.</p>
     <p>Show turns the photograph, the drawings, the rail photographs and the stair photographs on the model on or off. View turns the model to one of its faces. Compare sets the photograph of before 1907 beside the model.</p>
     <p>Numbers are those of the panel site: Saladin's, placed by the saved edits (N is a new panel, ? a place with no panel assigned), or Golvin's. They run over the side and the outside of the mihrab-side rail. The inside of that rail holds other panels: each is named after the one in front of it, with r. The maqsūra-side rail, which neither of them numbered, is q1 to q18 from the top, with r on its inside. Stairs: riser.panel. A panel recorded at one of these places shows its Saladin number there.</p>
   </details>
@@ -161,7 +161,7 @@ addEventListener("error", () => { const el = document.getElementById("err"); if 
 </script>
 <script src="lib/three.min.js"></script>
 <script src="lib/OrbitControls.js"></script>
-<script src="data.js?v=20261120d"></script>   <!-- the version changes with every update, so the page never runs with older data -->
+<script src="data.js?v=20261120e"></script>   <!-- the version changes with every update, so the page never runs with older data -->
 <script>
 "use strict";
 // ---- photo space to metres. The frame runs from x = 435 to 2700 px on Creswell's photograph and stands on y = 2095.
@@ -197,6 +197,7 @@ renderer.shadowMap.autoUpdate = false; renderer.shadowMap.needsUpdate = true;   
 document.body.appendChild(renderer.domElement);
 const controls = new THREE.OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true; controls.maxPolarAngle = Math.PI * 0.5; controls.minDistance = 0.25; controls.maxDistance = 16;
+controls.dampingFactor = 0.14; controls.rotateSpeed = 0.75; controls.listenToKeyEvents(window); controls.keyPanSpeed = 14;      // the turn stops soon after the hand lets go; the arrow keys move the view
 const lin = hex => new THREE.Color(hex).convertSRGBToLinear();
 const paintC = (mat, v) => { if (typeof v === "number") mat.color.set(v).convertSRGBToLinear(); else mat.color.copy(v); };
 const ANISO = renderer.capabilities.getMaxAnisotropy();
@@ -668,7 +669,7 @@ function point(e) {
   mouse.set((e.clientX - r.left) / r.width * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1); ray.setFromCamera(mouse, camera);
   const h = ray.intersectObjects(pick, false)[0]?.object || null;
   if (h === hot) return;
-  hot = h;
+  hot = h; renderer.domElement.style.cursor = hot ? "pointer" : "grab";
   $("info-t").textContent = hot ? infoOf(hot) : idle;
   paint(); cmpRefresh();
 }
@@ -677,14 +678,43 @@ renderer.domElement.addEventListener("pointerleave", () => {   // off the model:
   if (!hot) return;
   hot = null; $("info-t").textContent = idle; paint(); cmpRefresh(); });
 renderer.domElement.addEventListener("pointermove", point);
-renderer.domElement.addEventListener("pointerdown", e => { downAt = [e.clientX, e.clientY]; flight = null; point(e); });
-renderer.domElement.addEventListener("wheel", () => { flight = null; }, {passive: true});      // the hand takes over from a move under way
+let pose0 = null, holdPose = null;      // a click must not turn the model: the view at the press is put back when the press turns out to be a click
+renderer.domElement.addEventListener("pointerdown", e => { downAt = [e.clientX, e.clientY, performance.now()]; flight = null; zoomLeft = 0; holdPose = null; pose0 = [camera.position.clone(), controls.target.clone()]; point(e); });
+// The wheel (and the pinch of a trackpad, which arrives as a wheel with ctrl): the view closes in on the point under the pointer, not on
+// the middle of the picture, and what the pointer is on stays under it. The step is carried out over a few frames, so a wheel's notch
+// does not jump. Caught on the window before the orbit controls see it, whose own wheel zoom always aims at the middle.
+let zoomLeft = 0, zoomAt = null;
+addEventListener("wheel", e => {
+  if (e.target !== renderer.domElement) return;
+  e.preventDefault(); e.stopPropagation(); flight = null;
+  const r = renderer.domElement.getBoundingClientRect();
+  mouse.set((e.clientX - r.left) / r.width * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1); ray.setFromCamera(mouse, camera);
+  const h = ray.intersectObjects(pick, false)[0];
+  if (h) zoomAt = h.point.clone();
+  else { const n = camera.getWorldDirection(new THREE.Vector3()), q = new THREE.Vector3();      // beside the panels: the point at the depth the view turns about
+    zoomAt = ray.ray.intersectPlane(new THREE.Plane().setFromNormalAndCoplanarPoint(n, controls.target), q) ? q : controls.target.clone(); }
+  const dy = e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 100 : 1);
+  zoomLeft = Math.max(-1.6, Math.min(1.6, zoomLeft + dy * (e.ctrlKey ? 0.011 : 0.0021)));
+}, {capture: true, passive: false});
+function stepZoom() {
+  if (!zoomAt || Math.abs(zoomLeft) < 1e-4) { zoomLeft = 0; return; }
+  const step = zoomLeft * 0.28; zoomLeft -= step;
+  const len = camera.position.distanceTo(controls.target), g = Math.min(controls.maxDistance, Math.max(controls.minDistance, len * Math.exp(step))) / len;
+  if (Math.abs(g - 1) < 1e-6) { zoomLeft = 0; return; }
+  camera.position.sub(zoomAt).multiplyScalar(g).add(zoomAt); controls.target.sub(zoomAt).multiplyScalar(g).add(zoomAt);
+}
 renderer.domElement.addEventListener("pointerup", e => {   // a click, not a drag: switch to the panel's other drawing
-  if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 5) { lastTap = null; return; }
-  const now = performance.now(), dbl = lastTap && now - lastTap[0] < 400 && Math.hypot(e.clientX - lastTap[1], e.clientY - lastTap[2]) < 24;
-  lastTap = dbl ? null : [now, e.clientX, e.clientY];
+  // a click may slip a little under the finger (10 px, or 16 when it was quick) and still be a click, not a turn of the model
+  const slip = downAt ? Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) : 99, quick = downAt && performance.now() - downAt[2] < 220;
+  if (slip > (quick ? 16 : 10)) { lastTap = null; return; }
+  if (pose0 && slip > 0 && e.button === 0) { camera.position.copy(pose0[0]); controls.target.copy(pose0[1]); holdPose = {p: pose0[0], t: pose0[1], n: 20}; }      // held for 20 frames, until the controls' own glide has died out
+  const now = performance.now(), dbl = lastTap && now - lastTap[0] < 500 && Math.hypot(e.clientX - lastTap[1], e.clientY - lastTap[2]) < 30;
+  // the second click goes to what the FIRST one was on: the first click opens the card, which narrows the picture and moves the
+  // model under the pointer, so the second would otherwise land on a neighbour or beside the minbar
+  const first = dbl ? lastTap[3] : null;
+  lastTap = dbl ? null : [now, e.clientX, e.clientY, hot];
   if (dbl) {                                                         // the second click of a double-click (or double tap)
-    if (hot) faceOn(hot); else if (backView) { fly(backView[0], backView[1]); backView = null; }
+    if (first || hot) faceOn(first || hot); else if (backView) { fly(backView[0], backView[1]); backView = null; }
   }
   if (EMBED && !dbl && hot && hot.userData.place) { clicked = plOf(hot); try { parent.from3d && parent.from3d(clicked); } catch (e) {} }
   if (cmpOn && !dbl) {                                               // while comparing, a click chooses a place; a click beside the minbar lets it go
@@ -692,8 +722,8 @@ renderer.domElement.addEventListener("pointerup", e => {   // a click, not a dra
     if (pl || chosen) { chosen = pl || null; paint(); cmpRefresh(); }
   }
   if (!EMBED && !cmpOn && !dbl) { const pl = plOf(hot); if (pl) openCard(pl); else if (!hot) closeCard(); }      // the card of the place clicked, beside the model; a click beside the minbar closes it
-  const o = drawingOf(hot);
-  if (o && o.d.v.length > 1) { o.i = (o.i + 1) % o.d.v.length; showDrawing(o); $("info-t").textContent = infoOf(hot); }
+  const o = drawingOf(first || hot);      // a double-click switches the drawing there and back
+  if (o && o.d.v.length > 1) { o.i = (o.i + 1) % o.d.v.length; showDrawing(o); if (hot) $("info-t").textContent = infoOf(hot); }
 });
 // the card of a panel: the panel site's own card (../index.html?card), framed on the right. It reports back when its Previous or Next
 // moves to another panel (cardAt), when it is closed (closeCard) and while a photograph is enlarged in it (cardWide).
@@ -944,7 +974,16 @@ window.MODEL = {faceOn, labels, railReady, closeCard,
   window.MODEL.editsFrom = editsFrom; drawOld(); relabel(); paint(); cmpRefresh();
   if (new URLSearchParams(location.search).has("compare")) setCmp(true);
 })();
-(function loop() { stepFlight(); controls.update(); renderer.render(scene, camera); requestAnimationFrame(loop); })();
+// When frames come slowly (more than 34 ms on average over 40 frames) the picture is drawn with fewer pixels, down to one per CSS
+// pixel, so that turning and zooming stay smooth on a weaker machine.
+let pxr = Math.min(devicePixelRatio, 2), ft = [], lastF = 0;
+(function loop() {
+  const now = performance.now(), dt = now - lastF; lastF = now;
+  if (dt < 250) { ft.push(dt); if (ft.length >= 40) { const avg = ft.reduce((a, b) => a + b, 0) / ft.length; ft = [];
+    if (avg > 34 && pxr > 1) { pxr = Math.max(1, pxr - 0.5); renderer.setPixelRatio(pxr); } } }
+  stepFlight(); stepZoom(); controls.update();
+  if (holdPose) { if (!flight && Math.abs(zoomLeft) < 1e-4) { camera.position.copy(holdPose.p); controls.target.copy(holdPose.t); camera.lookAt(controls.target); } if (flight || --holdPose.n <= 0) holdPose = null; }
+  renderer.render(scene, camera); requestAnimationFrame(loop); })();
 </script>
 </body>
 </html>
